@@ -472,74 +472,81 @@ class SupercoilingSimulation(object):
         A list of tuples, containing (times, states) for each integration interval.
         """
         # Reset sim state
-        self.simstate = np.zeros(0)
-        self.simstate_ode_funcs = []
-        self.polymerase_directions = np.zeros(0)
-        self.event_times = {}
-        result = []
         
-        last_t = tspan[0]
-        
-        while last_t < tspan[1]:
-            # Make a Gillepse draw to find the next event to occur
-            gillepse_mean_time = 1 / np.sum([x[0] for x in self.stochastic_events])
-            next_attempt_time = last_t + np.random.exponential(gillepse_mean_time)
-            
-            while last_t < next_attempt_time:
-                if len(self.simstate) > 0:
-                    # Do an ODE simulation
-                    stop_events = []
-                    mutate_funcs = []
-                    for polymerase_idx, events in enumerate(self.simstate_ode_funcs):
-                        # Weird lambda currying. MWE that explains the problem:
-                        # [(lambda curried_i:(lambda x: x * curried_i))(i) for i in range(10)]
-                        # vs 
-                        # [lambda x: x * i for i in range(10)]
-                        # https://stackoverflow.com/a/34021333
-                        stop_events += [(lambda curried:
-                                        lambda t, x: event[0](x,curried))(
-                            polymerase_idx) for event in events]
-                        mutate_funcs += [(lambda curried:
-                                        lambda s, t, x: event[1](s, t, x,curried))(
-                            polymerase_idx) for event in events]
-                    for i in range(len(stop_events)):
-                        stop_events[i].terminal = True
-                    ode_result = scipy.integrate.solve_ivp(
-                        lambda t,y:self.model.system_derivatives(y,
-                                                self.polymerase_directions),
-                        (last_t, next_attempt_time),
-                        self.simstate,
-                        events=stop_events,
-                        method='RK45')
-                    
-                    if ode_result.status == -1:
-                        print(ode_result.message)
-                        result.append((ode_result.y, ode_result.y))
-                        return result
-                    result.append((ode_result.t, ode_result.y))
-                    last_t = ode_result.t[-1]
-                    self.simstate = ode_result.y[:,-1]
+        success = False
+        while not success:
+            try:
+                self.simstate = np.zeros(0)
+                self.simstate_ode_funcs = []
+                self.polymerase_directions = np.zeros(0)
+                self.event_times = {}
+                result = []
 
-                    if ode_result.status == 1:
-                        # A polymerase hit a stop event site. See which one it is:
-                        event_idx = np.where(np.array(
-                            [len(x) for x in ode_result.t_events]) > 0)[0][0]
-                        # Mutate our state
-                        mutate_funcs[event_idx](self, last_t, self.simstate)
-                else:
-                    # Just advance the time directly; no polymerases right now
-                    last_t = next_attempt_time
+                last_t = tspan[0]
 
-            # Perform a Gillepsie draw
-            event_probs = gillepse_mean_time * np.array([x[0] for x in self.stochastic_events])
-            
-            #self.init_mean_time = 1 / np.sum(self.promoter_strength * self.base_promoter_rate)
-            #self.init_probability = self.promoter_strength * self.base_promoter_rate * self.init_mean_time
-            next_stochastic_idx = sample_discrete(event_probs)
-            # Apply the state-specific state value to see if we perform this event
-            if np.random.random() < self.stochastic_events[next_stochastic_idx][1](self.simstate):
-                # Perform the stochastic state mutation
-                self.stochastic_events[next_stochastic_idx][2](self, last_t, self.simstate)
+                while last_t < tspan[1]:
+                    # Make a Gillepse draw to find the next event to occur
+                    gillepse_mean_time = 1 / np.sum([x[0] for x in self.stochastic_events])
+                    next_attempt_time = last_t + np.random.exponential(gillepse_mean_time)
+
+                    while last_t < next_attempt_time:
+                        if len(self.simstate) > 0:
+                            # Do an ODE simulation
+                            stop_events = []
+                            mutate_funcs = []
+                            for polymerase_idx, events in enumerate(self.simstate_ode_funcs):
+                                # Weird lambda currying. MWE that explains the problem:
+                                # [(lambda curried_i:(lambda x: x * curried_i))(i) for i in range(10)]
+                                # vs 
+                                # [lambda x: x * i for i in range(10)]
+                                # https://stackoverflow.com/a/34021333
+                                stop_events += [(lambda curried:
+                                                lambda t, x: event[0](x,curried))(
+                                    polymerase_idx) for event in events]
+                                mutate_funcs += [(lambda curried:
+                                                lambda s, t, x: event[1](s, t, x,curried))(
+                                    polymerase_idx) for event in events]
+                            for i in range(len(stop_events)):
+                                stop_events[i].terminal = True
+
+                            ode_result = scipy.integrate.solve_ivp(
+                                lambda t,y:self.model.system_derivatives(y,
+                                                        self.polymerase_directions),
+                                (last_t, next_attempt_time),
+                                self.simstate,
+                                events=stop_events,
+                                method='RK45')
+
+                            if ode_result.status == -1:
+                                print(f'INTEGRATION FAILURE: {ode_result.message}, restarting')
+                                raise RuntimeError('Integration error')
+                            result.append((ode_result.t, ode_result.y))
+                            last_t = ode_result.t[-1]
+                            self.simstate = ode_result.y[:,-1]
+
+                            if ode_result.status == 1:
+                                # A polymerase hit a stop event site. See which one it is:
+                                event_idx = np.where(np.array(
+                                    [len(x) for x in ode_result.t_events]) > 0)[0][0]
+                                # Mutate our state
+                                mutate_funcs[event_idx](self, last_t, self.simstate)
+                        else:
+                            # Just advance the time directly; no polymerases right now
+                            last_t = next_attempt_time
+
+                    # Perform a Gillepsie draw
+                    event_probs = gillepse_mean_time * np.array([x[0] for x in self.stochastic_events])
+
+                    #self.init_mean_time = 1 / np.sum(self.promoter_strength * self.base_promoter_rate)
+                    #self.init_probability = self.promoter_strength * self.base_promoter_rate * self.init_mean_time
+                    next_stochastic_idx = sample_discrete(event_probs)
+                    # Apply the state-specific state value to see if we perform this event
+                    if np.random.random() < self.stochastic_events[next_stochastic_idx][1](self.simstate):
+                        # Perform the stochastic state mutation
+                        self.stochastic_events[next_stochastic_idx][2](self, last_t, self.simstate)
+            except RuntimeError:
+                pass # Retry
+            success = True
         return (result, self.event_times)
 
     def postprocess_run(self, sim_run, domain_points=1000, domain_endpoints=None):
@@ -589,33 +596,38 @@ class SupercoilingSimulation(object):
         
         # Now compute mRNA at each timepoint
         # The propensity of mRNA degrading is mrna_deg_rate * num_of_mrna
-        gene_expression = np.zeros((len(result['time']),len(events['genes'])))
+        gene_expression = np.zeros((len(result['time']),len(self.genes)))
         gene_idx = 0
-        for gene_start, creation_events in events['genes'].items():
-            time_accum = np.array([creation_events[0]])
-            mRNA_accum = np.array([1])
-            creation_idx = 1
-            while time_accum[-1] < result['time'][-1]:
-                # Draw the time to the next degradation
-                if mRNA_accum[-1] > 0:
-                    next_deg = time_accum[-1] + \
-                        np.random.exponential(1.0 / (mRNA_accum[-1] * self.mrna_deg_rate))
-                else:
-                    next_deg = result['time'][-1]
-                # Check if a creation event occurs
-                if creation_idx < len(creation_events):
-                    if next_deg < creation_events[creation_idx]:
-                        # Degradation occured!
+        for gene in self.genes:
+            time_accum = np.array([0])
+            mRNA_accum = np.array([0])
+            gene_start = gene[0]
+            if gene_start in events['genes']:
+                creation_events = events['genes'][gene_start]
+                time_accum = np.append(time_accum, np.array([creation_events[0]]))
+                mRNA_accum = np.append(mRNA_accum, np.array([1]))
+                creation_idx = 1
+                while time_accum[-1] < result['time'][-1]:
+                    # Draw the time to the next degradation
+                    if mRNA_accum[-1] > 0:
+                        next_deg = time_accum[-1] + \
+                            np.random.exponential(1.0 / (mRNA_accum[-1] * self.mrna_deg_rate))
+                    else:
+                        next_deg = result['time'][-1]
+                    # Check if a creation event occurs
+                    if creation_idx < len(creation_events):
+                        if next_deg < creation_events[creation_idx]:
+                            # Degradation occured!
+                            time_accum = np.append(time_accum, np.array([next_deg]))
+                            mRNA_accum = np.append(mRNA_accum, np.array([mRNA_accum[-1] - 1]))
+                            continue
+                        # Otherwise, a creation event occurs
+                        time_accum = np.append(time_accum, np.array([creation_events[creation_idx]]))
+                        mRNA_accum = np.append(mRNA_accum, np.array(mRNA_accum[-1] + 1))
+                        creation_idx += 1
+                    else:
                         time_accum = np.append(time_accum, np.array([next_deg]))
                         mRNA_accum = np.append(mRNA_accum, np.array([mRNA_accum[-1] - 1]))
-                        continue
-                    # Otherwise, a creation event occurs
-                    time_accum = np.append(time_accum, np.array([creation_events[creation_idx]]))
-                    mRNA_accum = np.append(mRNA_accum, np.array(mRNA_accum[-1] + 1))
-                    creation_idx += 1
-                else:
-                    time_accum = np.append(time_accum, np.array([next_deg]))
-                    mRNA_accum = np.append(mRNA_accum, np.array([mRNA_accum[-1] - 1]))
 
             gene_expression[:,gene_idx] = np.interp(result['time'], time_accum, mRNA_accum)
             gene_idx += 1
@@ -630,7 +642,8 @@ def expression_single_run(params, bcs, genes, gene_names, sim_time, i=0):
     id_val = np.ones(times.shape, dtype=int) * i
     df_result = pd.DataFrame(data={'id': id_val, 'time': times})
     for i, name in enumerate(gene_names):
-        df_result[name] = np.interp(times, result['time'], result['gene_expression'][:,i])
+        df_result[name + '_expression'] = np.interp(times, result['time'], result['gene_expression'][:,i])
+        df_result[name + '_promoter_strength'] = np.ones(times.shape) * genes[i][2]
     return df_result
     
 def bulk_simulation(params, bcs, genes, gene_names, sim_time, n_runs):
