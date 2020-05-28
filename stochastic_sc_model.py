@@ -4,6 +4,11 @@ from numba import njit, vectorize, float32, float64, boolean
 from numba.experimental import jitclass
 import multiprocessing
 import pandas as pd
+import tempfile
+import os
+import subprocess
+import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
 
 # Most member variables are float64's except for left_bc_free/right_bc_free
 supercoiling_varspec = [(name,float64) for name in
@@ -628,8 +633,11 @@ class SupercoilingSimulation(object):
                     else:
                         time_accum = np.append(time_accum, np.array([next_deg]))
                         mRNA_accum = np.append(mRNA_accum, np.array([mRNA_accum[-1] - 1]))
-
-            gene_expression[:,gene_idx] = np.interp(result['time'], time_accum, mRNA_accum)
+            
+            def expression_interp(t, t_known, known_expression):
+                time_idx = np.array([np.where(t_known <= tp)[0][-1] for tp in t])
+                return known_expression[time_idx]
+            gene_expression[:,gene_idx] = expression_interp(result['time'], time_accum, mRNA_accum)
             gene_idx += 1
         result['gene_expression'] = gene_expression
         return result
@@ -671,3 +679,103 @@ def bulk_simulation(params, bcs, genes, gene_names, sim_time, n_runs):
         p.close()
         p.join()
         return pd.concat([r.get() for r in runs])
+
+def gen_movie(run_result, genes, n_frames, name, outfolder, make_mp4=False):
+    """
+    Given a postprocessed run result, makes a movie of the state of the system.
+    The output movie is either a series of PNGs or a generated .mp4
+    
+    Args:
+    -----
+    run_result: A postprocessed simulation run result.
+    genes: Gene definitions, for plotting the gene boundaries.
+    n_frames: The number of frames to generate images at.
+    name: The name of the output movie. If outputting PNGs, filenames are appended with the frame number.
+        If outputing an mp4, the filename is directly output.
+    outfolder: The folder to save the movie to.
+    make_mp4: If mp4 output is preferred. This requires ffmpeg installed and accessible on PATH!
+    """
+    # Inspired, but not identical to https://stackoverflow.com/a/43775224
+    def multi_interp(x, xp, fp):
+        j = np.searchsorted(xp, x) - 1
+        d = (x - xp[j]) / (xp[j + 1] - xp[j])
+        return (1 - d) * fp[j, :] + fp[j + 1, :] * d
+
+    def expression_interp(t, t_known, known_expression):
+        time_idx = np.array([np.where(t_known <= tp)[0][-1] for tp in t])
+        return known_expression[time_idx, :].T
+
+    if not make_mp4:
+        png_folder = outfolder
+    else:
+        tempdir = tempfile.TemporaryDirectory()
+        png_folder = tempdir.name
+    n_digits = int(np.ceil(np.log10(n_frames)))
+    
+    frame_times = np.linspace(run_result['time'][0] + .1, run_result['time'][-1] - .1, n_frames)
+    interp_expression = expression_interp(frame_times, run_result['time'], run_result['gene_expression'])
+    for i, time in enumerate(frame_times):
+        # Locate which raw segment this frame is in
+        in_range = np.where([np.any(r[0] <= time) & np.any(r[0] >= time) for r in run_result['raw']])[0][0]
+        excess_twist = multi_interp(time, run_result['time'], run_result['excess_twist'])
+        sc_density = multi_interp(time, run_result['time'], run_result['sc_density'])
+        
+        x_domain = run_result['x_domain']
+        polymerase_state = multi_interp(time, run_result['raw'][in_range][0], run_result['raw'][in_range][1].T)
+        
+        fig, axs = plt.subplots(1, 2, figsize=(10, 3), gridspec_kw={'width_ratios': [2, 1]})
+        # Plot genes
+        for gene in genes:
+            axs[0].plot([gene[0], gene[1]], [0, 0],
+                    linewidth=20, alpha=.5, zorder=1)
+        
+        # Plot DNA segments
+        domain_points = np.array([x_domain, np.zeros(x_domain.shape)]).T.reshape(-1,1,2)
+        segments = np.concatenate([domain_points[:-1], domain_points[1:]], axis=1)
+        max_excursion = np.max(np.abs([np.min(run_result['sc_density']), np.max(run_result['sc_density'])]))
+        cmap_norm = plt.Normalize(-.125, .125)
+        dna_segments = LineCollection(segments, cmap='Spectral', norm=cmap_norm)
+        dna_segments.set_array(sc_density)
+        dna_segments.set_linewidth(8)
+        line = axs[0].add_collection(dna_segments)
+        fig.colorbar(line, ax=axs[0])
+        
+        # Plot polymerases
+        polymerase_locations = polymerase_state[::3]
+        polymerase_transcripts = polymerase_state[1::3]
+        axs[0].plot(polymerase_locations, np.zeros(polymerase_locations.shape), 'k.')
+        
+        n_polymerases = len(polymerase_locations)
+        transcript_segments = np.zeros((n_polymerases, 2, 2))
+        transcript_segments[:,:,0] = polymerase_locations[:,np.newaxis]
+        transcript_segments[:,1,1] = polymerase_transcripts
+        
+        transcript_line = axs[0].add_collection(LineCollection(transcript_segments))
+        axs[0].set_xlim(x_domain[0], x_domain[-1])
+        axs[0].set_ylim(-0.5 * max([abs(g[1] - g[0]) for g in genes]), max([abs(g[1] - g[0]) for g in genes]))
+        
+        # Plot transcript levels
+        if i > 0:
+            axs[1].plot(frame_times[:i], interp_expression[:,:i].T)
+            axs[1].set_xlim(frame_times[0], frame_times[-1])
+            axs[1].set_ylim(0, np.max(interp_expression))
+            axs[1].set_xlabel('Time')
+            axs[1].set_ylabel('Expression level')
+
+        #plt.show()
+        plt.savefig(os.path.join(png_folder, '{}_{:0{}}.png'.format(name, i, n_digits)))
+        pixel_size = plt.gcf().get_size_inches()*plt.gcf().dpi 
+        plt.close()
+    if make_mp4:
+        output = subprocess.run(['ffmpeg', '-y', '-r', '60', '-f', 'image2', '-s',
+                                      '{}x{}'.format(int(pixel_size[0]), int(pixel_size[1])),
+                                      '-i',
+                                      os.path.join(png_folder, '{}_%0{}d.png'.format(name, n_digits)),
+                                      '-vcodec', 'libx264', '-crf',
+                                      '25', '-pix_fmt', 'yuv420p',
+                                      os.path.join(outfolder, '{}.mp4'.format(name))],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        tempdir.cleanup()
+        if output.returncode != 0:
+            print(output)
+            raise RuntimeError('ffmpeg call failed!')
