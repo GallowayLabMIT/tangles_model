@@ -6,6 +6,7 @@ import multiprocessing
 import pandas as pd
 import tempfile
 import os
+import gc
 import subprocess
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
@@ -320,7 +321,8 @@ class SupercoilingSimulation(object):
                 base_promoter_initiation_rate: Rate that promoters add polymerases (1/sec)
         bcs: A 2-tuple encoding (left_bc, right_bc). A BC is either
             the string "free", or a tuple of (location, value).
-        genes: An optional list of 2-tuples encoding (gene_start, gene_end, promoter_strength).
+        genes: An optional list of tuples encoding the arguments to add_stochastic_gene_init_event
+            (gene_start, gene_end, promoter_strength, readthrough_func, terminate_at_tes).
             The gene direction is inferred from these values.
         """
         self.model = bind_supercoiling_model(params, bcs)
@@ -383,7 +385,8 @@ class SupercoilingSimulation(object):
         
         return (self.topo_rate, state_dependent_func, remove_supercoiling)
     
-    def add_polymerase(self, location, direction, termination_func, event_functions=[]):
+    def add_polymerase(self, location, direction,
+                       termination_func, terminate_gene_names=[], event_functions=[]):
         """
         Adds a polymerase to the current state. A termination function is passed
         which specifies when the polymerase should be removed from the simulation.
@@ -400,6 +403,8 @@ class SupercoilingSimulation(object):
         termination_func: A function that takes two arguments, returns 0 when termination should occur
             X: the 3N number of states encoding (position, transcript_length, excess_twist)
             i: The index of the polymerase you belong to
+        terminate_gene_names: A list of strings specifying gene names. When RNAP termination
+            occurs, expression of these gene names is increased by one.
         event_functions: A list of tuples (event_func, mutate_func)
             event_func: A function with the same signature as above.
             mutate_func: A function that takes the time, state, and 
@@ -411,24 +416,31 @@ class SupercoilingSimulation(object):
         insert_idx = np.where(possible_inserts > location)[0][0]
         # Insert new polymerase state into the correct location
         self.simstate = np.insert(self.simstate, insert_idx * 3, [location, 0, new_twist])
+        self.tes_time = np.insert(self.tes_time, insert_idx, np.inf)
         self.polymerase_directions = np.insert(self.polymerase_directions, insert_idx, direction)
         
         # Add ODE functions
         def terminate_transcription(self, t, state, i):
             self.simstate = np.delete(self.simstate, np.s_[(i * 3):((i + 1) * 3)])
             self.polymerase_directions = np.delete(self.polymerase_directions, i)
+            self.tes_time = np.delete(self.tes_time, i)
             del self.simstate_ode_funcs[i]
             # Add event time
             if 'genes' not in self.event_times:
                 self.event_times['genes'] = {}
-            if location not in self.event_times['genes']:
-                self.event_times['genes'][location] = []
-            self.event_times['genes'][location].append(t)
+            for name in terminate_gene_names:
+                if name not in self.event_times['genes']:
+                    self.event_times['genes'][name] = []
+                self.event_times['genes'][name].append(t)
                 
         self.simstate_ode_funcs.insert(insert_idx,
                                        [(termination_func, terminate_transcription)] + event_functions)
 
-    def add_stochastic_gene_init_event(self, gene_start, gene_end, strength, state_func=lambda x: 1.0):
+    def add_stochastic_gene_init_event(self, gene_start, gene_end, strength,
+                                       gene_names=None,
+                                       readthrough_mean=0.0,
+                                       readthrough_in_nm=True,
+                                       state_func=lambda x: 1.0):
         """
         Initalizes a simple gene which has a state-independent initiation
         rate, and whose spawned polymerases debind exactly at the gene end.
@@ -441,6 +453,11 @@ class SupercoilingSimulation(object):
         gene_start: The location of the gene starting location
         gene_end: The location of the gene ending location
         strength: The state-independent multiplier on the base polymerase addition rate
+        gene_names: A list of gene names that this gene spans.
+        readthrough_mean: The mean of an exponential distribution used to calcualte
+            readthrough distance/time.
+        readthrough_in_nm: If true, the readthrough func is a distance from the TES.
+            If false, the readthrough func is a time in seconds past the TES.
         state_func: An optional function that takes the state of the system (3N vector)
             and returns an additional state-dependent multiplier
         
@@ -448,11 +465,46 @@ class SupercoilingSimulation(object):
         -------------
         Adds this gene to the stochastic_events struct.
         """
+        if gene_names is None:
+            gene_names = [str(gene_start)]
         direction = np.sign(gene_end - gene_start)
         def mutate_func(self, t, state):
-            # Our mutate function simply calls add_polymerase, with a lambda that
-            # triggers an event when the polymerase reaches the gene end
-            self.add_polymerase(gene_start, direction, lambda x, i: x[3*i] - gene_end)
+            # Our mutate function simply calls add_polymerase.
+            # We terminate at gene_end + readthrough_func() if in nm
+            # and at tes_time + readthrough_func() if in seconds
+            # If sthere is > 0nm of readthrough,
+            # we add a state lambda that increases expression levels.
+            readthrough = np.random.exponential(readthrough_mean)
+            if readthrough == 0:
+                self.add_polymerase(gene_start, direction,
+                                    lambda s, t, x, i: x[3*i] - (gene_end + readthrough),
+                                    gene_names)
+            else:
+                # Otherwise, we need to add a mutate function
+                # that updates transcript levels at the TES site.
+                def tes_update_helper(self, t, state, i):
+                    # Set transcript length to zero, bumping polymerase slightly forward.
+                    self.simstate[(i * 3) + 1] = 0
+                    self.simstate[i * 3] += .0001 * direction
+                    self.tes_time[i] = t # store transcript release time.
+                    # Update genes expressed from released transcript
+                    if 'genes' not in self.event_times:
+                        self.event_times['genes'] = {}
+                    for name in gene_names:
+                        if name not in self.event_times['genes']:
+                            self.event_times['genes'][name] = []
+                        self.event_times['genes'][name].append(t)
+
+                if readthrough_in_nm:
+                    termination_func = lambda s, t, x, i: x[3 * i] - (gene_end + direction * readthrough)
+                else:
+                    termination_func = lambda s, t, x, i: t - (s.tes_time[i] + readthrough)
+                self.add_polymerase(gene_start, direction,
+                                    termination_func,
+                                    event_functions=[
+                                        (lambda s, t, x, i: x[3 * i] - gene_end,
+                                        tes_update_helper)
+                                    ])
         # Define a function that stops polymerase addition if there is already a polymerase
         # occupying the site
         reject_occupied_site = lambda x: np.min(
@@ -484,7 +536,8 @@ class SupercoilingSimulation(object):
                 self.simstate = np.zeros(0)
                 self.simstate_ode_funcs = []
                 self.polymerase_directions = np.zeros(0)
-                self.event_times = {}
+                self.event_times = {'genes': {}}
+                self.tes_time = np.zeros(0)
                 result = []
 
                 last_t = tspan[0]
@@ -499,18 +552,25 @@ class SupercoilingSimulation(object):
                             # Do an ODE simulation
                             stop_events = []
                             mutate_funcs = []
+                            def rebind_event_func(event, p_idx):
+                                def bound(t, x):
+                                    return event[0](self, t, x, p_idx)
+                                return bound
+                            def rebind_mutate_func(event, p_idx):
+                                def bound(s, t, x):
+                                    return event[1](s, t, x, p_idx)
+                                return bound
+                            
                             for polymerase_idx, events in enumerate(self.simstate_ode_funcs):
                                 # Weird lambda currying. MWE that explains the problem:
                                 # [(lambda curried_i:(lambda x: x * curried_i))(i) for i in range(10)]
                                 # vs 
                                 # [lambda x: x * i for i in range(10)]
                                 # https://stackoverflow.com/a/34021333
-                                stop_events += [(lambda curried:
-                                                lambda t, x: event[0](x,curried))(
-                                    polymerase_idx) for event in events]
-                                mutate_funcs += [(lambda curried:
-                                                lambda s, t, x: event[1](s, t, x,curried))(
-                                    polymerase_idx) for event in events]
+                                stop_events += [rebind_event_func(event, polymerase_idx)
+                                                for event in events]
+                                mutate_funcs += [rebind_mutate_func(event, polymerase_idx)
+                                                 for event in events]
                             for i in range(len(stop_events)):
                                 stop_events[i].terminal = True
 
@@ -549,8 +609,8 @@ class SupercoilingSimulation(object):
                     if np.random.random() < self.stochastic_events[next_stochastic_idx][1](self.simstate):
                         # Perform the stochastic state mutation
                         self.stochastic_events[next_stochastic_idx][2](self, last_t, self.simstate)
-            except RuntimeError:
-                pass # Retry
+            except (RuntimeError, FloatingPointError):
+                continue # Retry
             success = True
         return (result, self.event_times)
 
@@ -601,38 +661,38 @@ class SupercoilingSimulation(object):
         
         # Now compute mRNA at each timepoint
         # The propensity of mRNA degrading is mrna_deg_rate * num_of_mrna
-        gene_expression = np.zeros((len(result['time']),len(self.genes)))
+        gene_names = sorted(events['genes'].keys())
+        gene_expression = np.zeros((len(result['time']),len(gene_names)))
         gene_idx = 0
-        for gene in self.genes:
+        for gene_name in gene_names:
             time_accum = np.array([0])
             mRNA_accum = np.array([0])
-            gene_start = gene[0]
-            if gene_start in events['genes']:
-                creation_events = events['genes'][gene_start]
-                time_accum = np.append(time_accum, np.array([creation_events[0]]))
-                mRNA_accum = np.append(mRNA_accum, np.array([1]))
-                creation_idx = 1
-                while time_accum[-1] < result['time'][-1]:
-                    # Draw the time to the next degradation
-                    if mRNA_accum[-1] > 0:
-                        next_deg = time_accum[-1] + \
-                            np.random.exponential(1.0 / (mRNA_accum[-1] * self.mrna_deg_rate))
-                    else:
-                        next_deg = result['time'][-1]
-                    # Check if a creation event occurs
-                    if creation_idx < len(creation_events):
-                        if next_deg < creation_events[creation_idx]:
-                            # Degradation occured!
-                            time_accum = np.append(time_accum, np.array([next_deg]))
-                            mRNA_accum = np.append(mRNA_accum, np.array([mRNA_accum[-1] - 1]))
-                            continue
-                        # Otherwise, a creation event occurs
-                        time_accum = np.append(time_accum, np.array([creation_events[creation_idx]]))
-                        mRNA_accum = np.append(mRNA_accum, np.array(mRNA_accum[-1] + 1))
-                        creation_idx += 1
-                    else:
+            
+            creation_events = events['genes'][gene_name]
+            time_accum = np.append(time_accum, np.array([creation_events[0]]))
+            mRNA_accum = np.append(mRNA_accum, np.array([1]))
+            creation_idx = 1
+            while time_accum[-1] < result['time'][-1]:
+                # Draw the time to the next degradation
+                if mRNA_accum[-1] > 0:
+                    next_deg = time_accum[-1] + \
+                        np.random.exponential(1.0 / (mRNA_accum[-1] * self.mrna_deg_rate))
+                else:
+                    next_deg = result['time'][-1]
+                # Check if a creation event occurs
+                if creation_idx < len(creation_events):
+                    if next_deg < creation_events[creation_idx]:
+                        # Degradation occured!
                         time_accum = np.append(time_accum, np.array([next_deg]))
                         mRNA_accum = np.append(mRNA_accum, np.array([mRNA_accum[-1] - 1]))
+                        continue
+                    # Otherwise, a creation event occurs
+                    time_accum = np.append(time_accum, np.array([creation_events[creation_idx]]))
+                    mRNA_accum = np.append(mRNA_accum, np.array(mRNA_accum[-1] + 1))
+                    creation_idx += 1
+                else:
+                    time_accum = np.append(time_accum, np.array([next_deg]))
+                    mRNA_accum = np.append(mRNA_accum, np.array([mRNA_accum[-1] - 1]))
             
             def expression_interp(t, t_known, known_expression):
                 time_idx = np.array([np.where(t_known <= tp)[0][-1] for tp in t])
@@ -640,6 +700,7 @@ class SupercoilingSimulation(object):
             gene_expression[:,gene_idx] = expression_interp(result['time'], time_accum, mRNA_accum)
             gene_idx += 1
         result['gene_expression'] = gene_expression
+        result['gene_names'] = gene_names
         return result
 
 def expression_single_run(params, bcs, genes, gene_names, sim_time, i=0):
@@ -649,9 +710,13 @@ def expression_single_run(params, bcs, genes, gene_names, sim_time, i=0):
     times = np.linspace(*sim_time)
     id_val = np.ones(times.shape, dtype=int) * i
     df_result = pd.DataFrame(data={'id': id_val, 'time': times})
-    for i, name in enumerate(gene_names):
-        df_result[name + '_expression'] = np.interp(times, result['time'], result['gene_expression'][:,i])
-        df_result[name + '_promoter_strength'] = np.ones(times.shape) * genes[i][2]
+    for name in gene_names:
+        if name not in result['gene_names']:
+            df_result[name + '_expression'] = np.zeros(times.shape)
+        else:
+            df_result[name + '_expression'] = np.interp(times,
+                                                        result['time'],
+                                                        result['gene_expression'][:,result['gene_names'].index(name)])
     return df_result
     
 def bulk_simulation(params, bcs, genes, gene_names, sim_time, n_runs):
@@ -662,7 +727,6 @@ def bulk_simulation(params, bcs, genes, gene_names, sim_time, n_runs):
     Args:
     -----
     params, bcs, genes: Parameters required by the SupercoilingSimulation constructor
-    gene_names: Names attached to each gene, used when generating the aggregate dataframe.
     sim_time: A tuple containing (start_time, end_time, n_points) over which the simulation should be run.
     n_runs: The number of runs to aggregate
     
@@ -680,7 +744,7 @@ def bulk_simulation(params, bcs, genes, gene_names, sim_time, n_runs):
         p.join()
         return pd.concat([r.get() for r in runs])
 
-def gen_movie(run_result, genes, n_frames, name, outfolder, make_mp4=False):
+def gen_movie(run_result, genes, n_frames, name, outfolder, make_mp4=False, x_range_override=None):
     """
     Given a postprocessed run result, makes a movie of the state of the system.
     The output movie is either a series of PNGs or a generated .mp4
@@ -694,6 +758,7 @@ def gen_movie(run_result, genes, n_frames, name, outfolder, make_mp4=False):
         If outputing an mp4, the filename is directly output.
     outfolder: The folder to save the movie to.
     make_mp4: If mp4 output is preferred. This requires ffmpeg installed and accessible on PATH!
+    x_range_override: Optionally gives the x axis range for the DNA view.
     """
     # Inspired, but not identical to https://stackoverflow.com/a/43775224
     def multi_interp(x, xp, fp):
@@ -715,20 +780,24 @@ def gen_movie(run_result, genes, n_frames, name, outfolder, make_mp4=False):
     frame_times = np.linspace(run_result['time'][0] + .1, run_result['time'][-1] - .1, n_frames)
     interp_expression = expression_interp(frame_times, run_result['time'], run_result['gene_expression'])
     for i, time in enumerate(frame_times):
+        # Skip first frame
+        if i == 0:
+            continue
+        fig, axs = plt.subplots(1, 2, figsize=(10, 3), gridspec_kw={'width_ratios': [2, 1]})
+        
         # Locate which raw segment this frame is in
-        in_range = np.where([np.any(r[0] <= time) & np.any(r[0] >= time) for r in run_result['raw']])[0][0]
+        lookup_results =  np.where([np.any(r[0] <= time) & np.any(r[0] >= time) for r in run_result['raw']])
+        
         excess_twist = multi_interp(time, run_result['time'], run_result['excess_twist'])
         sc_density = multi_interp(time, run_result['time'], run_result['sc_density'])
-        
+
         x_domain = run_result['x_domain']
-        polymerase_state = multi_interp(time, run_result['raw'][in_range][0], run_result['raw'][in_range][1].T)
         
-        fig, axs = plt.subplots(1, 2, figsize=(10, 3), gridspec_kw={'width_ratios': [2, 1]})
         # Plot genes
         for gene in genes:
             axs[0].plot([gene[0], gene[1]], [0, 0],
                     linewidth=20, alpha=.5, zorder=1)
-        
+
         # Plot DNA segments
         domain_points = np.array([x_domain, np.zeros(x_domain.shape)]).T.reshape(-1,1,2)
         segments = np.concatenate([domain_points[:-1], domain_points[1:]], axis=1)
@@ -739,21 +808,28 @@ def gen_movie(run_result, genes, n_frames, name, outfolder, make_mp4=False):
         dna_segments.set_linewidth(8)
         line = axs[0].add_collection(dna_segments)
         fig.colorbar(line, ax=axs[0])
-        
-        # Plot polymerases
-        polymerase_locations = polymerase_state[::3]
-        polymerase_transcripts = polymerase_state[1::3]
-        axs[0].plot(polymerase_locations, np.zeros(polymerase_locations.shape), 'k.')
-        
-        n_polymerases = len(polymerase_locations)
-        transcript_segments = np.zeros((n_polymerases, 2, 2))
-        transcript_segments[:,:,0] = polymerase_locations[:,np.newaxis]
-        transcript_segments[:,1,1] = polymerase_transcripts
-        
-        transcript_line = axs[0].add_collection(LineCollection(transcript_segments))
+        if len(lookup_results[0]) > 0:
+            in_range = lookup_results[0][0]
+
+            polymerase_state = multi_interp(time, run_result['raw'][in_range][0], run_result['raw'][in_range][1].T)
+
+            # Plot polymerases
+            polymerase_locations = polymerase_state[::3]
+            polymerase_transcripts = polymerase_state[1::3]
+            axs[0].plot(polymerase_locations, np.zeros(polymerase_locations.shape), 'k.')
+
+            n_polymerases = len(polymerase_locations)
+            transcript_segments = np.zeros((n_polymerases, 2, 2))
+            transcript_segments[:,:,0] = polymerase_locations[:,np.newaxis]
+            transcript_segments[:,1,1] = polymerase_transcripts
+
+            transcript_line = axs[0].add_collection(LineCollection(transcript_segments))
         axs[0].set_xlim(x_domain[0], x_domain[-1])
+        if x_range_override is not None:
+            axs[0].set_xlim(*x_range_override)
         axs[0].set_ylim(-0.5 * max([abs(g[1] - g[0]) for g in genes]), max([abs(g[1] - g[0]) for g in genes]))
-        
+        axs[0].get_yaxis().set_visible(False)
+        axs[0].set_xlabel('Distances (nm)')
         # Plot transcript levels
         if i > 0:
             axs[1].plot(frame_times[:i], interp_expression[:,:i].T)
@@ -763,10 +839,12 @@ def gen_movie(run_result, genes, n_frames, name, outfolder, make_mp4=False):
             axs[1].set_ylabel('Expression level')
 
         #plt.show()
+        plt.tight_layout()
         plt.savefig(os.path.join(png_folder, '{}_{:0{}}.png'.format(name, i, n_digits)))
         pixel_size = plt.gcf().get_size_inches()*plt.gcf().dpi 
         plt.close()
     if make_mp4:
+        gc.collect()
         output = subprocess.run(['ffmpeg', '-y', '-r', '60', '-f', 'image2', '-s',
                                       '{}x{}'.format(int(pixel_size[0]), int(pixel_size[1])),
                                       '-i',
