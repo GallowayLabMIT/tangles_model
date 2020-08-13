@@ -744,6 +744,93 @@ def bulk_simulation(params, bcs, genes, gene_names, sim_time, n_runs):
         p.join()
         return pd.concat([r.get() for r in runs])
 
+def write_single_frame(run_result, interp_expression, frame_times, frame_idx, genes, x_range_override, png_name):
+    """
+    Writes a single animation frame to disk as a PNG. This
+    is intended as a helper function to be run in parallel.
+    
+    Args:
+    -----
+    run_result: A postprocessed simulation dataset.
+    interp_expression: A interpolated expression dataset to use for plotting
+    frame_times: A list of available frame times to plot at.
+    frame_idx: The current frame being generated
+    genes: A list of genes to draw on the plot.
+    x_range_override: A 2-tuple encoding an overridden x-range, if specified
+    png_name: The filename to save the figure at.
+    
+    Returns:
+    ---------
+    The saved figure size, in pixels.
+    """
+    time = frame_times[frame_idx]
+    i = frame_idx
+    # Inspired, but not identical to https://stackoverflow.com/a/43775224
+    def multi_interp(x, xp, fp):
+        j = np.searchsorted(xp, x) - 1
+        d = (x - xp[j]) / (xp[j + 1] - xp[j])
+        return (1 - d) * fp[j, :] + fp[j + 1, :] * d
+    
+    fig, axs = plt.subplots(1, 2, figsize=(10, 3), gridspec_kw={'width_ratios': [2, 1]})
+       
+    # Locate which raw segment this frame is in
+    lookup_results =  np.where([np.any(r[0] <= time) & np.any(r[0] >= time) for r in run_result['raw']])
+       
+    excess_twist = multi_interp(time, run_result['time'], run_result['excess_twist'])
+    sc_density = multi_interp(time, run_result['time'], run_result['sc_density'])
+
+    x_domain = run_result['x_domain']
+        
+    # Plot genes
+    for gene in genes:
+        axs[0].plot([gene[0], gene[1]], [0, 0],
+                linewidth=20, alpha=.5, zorder=1)
+
+    # Plot DNA segments
+    domain_points = np.array([x_domain, np.zeros(x_domain.shape)]).T.reshape(-1,1,2)
+    segments = np.concatenate([domain_points[:-1], domain_points[1:]], axis=1)
+    max_excursion = np.max(np.abs([np.min(run_result['sc_density']), np.max(run_result['sc_density'])]))
+    cmap_norm = plt.Normalize(-.125, .125)
+    dna_segments = LineCollection(segments, cmap='Spectral', norm=cmap_norm)
+    dna_segments.set_array(sc_density)
+    dna_segments.set_linewidth(8)
+    line = axs[0].add_collection(dna_segments)
+    fig.colorbar(line, ax=axs[0])
+    if len(lookup_results[0]) > 0:
+        in_range = lookup_results[0][0]
+        polymerase_state = multi_interp(time, run_result['raw'][in_range][0], run_result['raw'][in_range][1].T)
+
+        # Plot polymerases
+        polymerase_locations = polymerase_state[::3]
+        polymerase_transcripts = polymerase_state[1::3]
+        axs[0].plot(polymerase_locations, np.zeros(polymerase_locations.shape), 'k.')
+
+        n_polymerases = len(polymerase_locations)
+        transcript_segments = np.zeros((n_polymerases, 2, 2))
+        transcript_segments[:,:,0] = polymerase_locations[:,np.newaxis]
+        transcript_segments[:,1,1] = polymerase_transcripts
+
+        transcript_line = axs[0].add_collection(LineCollection(transcript_segments))
+    axs[0].set_xlim(x_domain[0], x_domain[-1])
+    if x_range_override is not None:
+        axs[0].set_xlim(*x_range_override)
+    axs[0].set_ylim(-0.5 * max([abs(g[1] - g[0]) for g in genes]), max([abs(g[1] - g[0]) for g in genes]))
+    axs[0].get_yaxis().set_visible(False)
+    axs[0].set_xlabel('Distances (nm)')
+    # Plot transcript levels
+    axs[1].plot(frame_times[:i], interp_expression[:,:i].T)
+    axs[1].set_xlim(frame_times[0], frame_times[-1])
+    axs[1].set_ylim(0, np.max(interp_expression))
+    axs[1].set_xlabel('Time')
+    axs[1].set_ylabel('Expression level')
+
+    #plt.show()
+    plt.tight_layout()
+    plt.savefig(png_name)
+    pixel_size = plt.gcf().get_size_inches()*plt.gcf().dpi 
+    plt.close()
+    return pixel_size
+
 def gen_movie(run_result, genes, n_frames, name, outfolder, make_mp4=False, x_range_override=None):
     """
     Given a postprocessed run result, makes a movie of the state of the system.
@@ -760,12 +847,6 @@ def gen_movie(run_result, genes, n_frames, name, outfolder, make_mp4=False, x_ra
     make_mp4: If mp4 output is preferred. This requires ffmpeg installed and accessible on PATH!
     x_range_override: Optionally gives the x axis range for the DNA view.
     """
-    # Inspired, but not identical to https://stackoverflow.com/a/43775224
-    def multi_interp(x, xp, fp):
-        j = np.searchsorted(xp, x) - 1
-        d = (x - xp[j]) / (xp[j + 1] - xp[j])
-        return (1 - d) * fp[j, :] + fp[j + 1, :] * d
-
     def expression_interp(t, t_known, known_expression):
         time_idx = np.array([np.where(t_known <= tp)[0][-1] for tp in t])
         return known_expression[time_idx, :].T
@@ -779,70 +860,14 @@ def gen_movie(run_result, genes, n_frames, name, outfolder, make_mp4=False, x_ra
     
     frame_times = np.linspace(run_result['time'][0] + .1, run_result['time'][-1] - .1, n_frames)
     interp_expression = expression_interp(frame_times, run_result['time'], run_result['gene_expression'])
+    
     for i, time in enumerate(frame_times):
-        # Skip first frame
         if i == 0:
             continue
-        fig, axs = plt.subplots(1, 2, figsize=(10, 3), gridspec_kw={'width_ratios': [2, 1]})
-        
-        # Locate which raw segment this frame is in
-        lookup_results =  np.where([np.any(r[0] <= time) & np.any(r[0] >= time) for r in run_result['raw']])
-        
-        excess_twist = multi_interp(time, run_result['time'], run_result['excess_twist'])
-        sc_density = multi_interp(time, run_result['time'], run_result['sc_density'])
-
-        x_domain = run_result['x_domain']
-        
-        # Plot genes
-        for gene in genes:
-            axs[0].plot([gene[0], gene[1]], [0, 0],
-                    linewidth=20, alpha=.5, zorder=1)
-
-        # Plot DNA segments
-        domain_points = np.array([x_domain, np.zeros(x_domain.shape)]).T.reshape(-1,1,2)
-        segments = np.concatenate([domain_points[:-1], domain_points[1:]], axis=1)
-        max_excursion = np.max(np.abs([np.min(run_result['sc_density']), np.max(run_result['sc_density'])]))
-        cmap_norm = plt.Normalize(-.125, .125)
-        dna_segments = LineCollection(segments, cmap='Spectral', norm=cmap_norm)
-        dna_segments.set_array(sc_density)
-        dna_segments.set_linewidth(8)
-        line = axs[0].add_collection(dna_segments)
-        fig.colorbar(line, ax=axs[0])
-        if len(lookup_results[0]) > 0:
-            in_range = lookup_results[0][0]
-
-            polymerase_state = multi_interp(time, run_result['raw'][in_range][0], run_result['raw'][in_range][1].T)
-
-            # Plot polymerases
-            polymerase_locations = polymerase_state[::3]
-            polymerase_transcripts = polymerase_state[1::3]
-            axs[0].plot(polymerase_locations, np.zeros(polymerase_locations.shape), 'k.')
-
-            n_polymerases = len(polymerase_locations)
-            transcript_segments = np.zeros((n_polymerases, 2, 2))
-            transcript_segments[:,:,0] = polymerase_locations[:,np.newaxis]
-            transcript_segments[:,1,1] = polymerase_transcripts
-
-            transcript_line = axs[0].add_collection(LineCollection(transcript_segments))
-        axs[0].set_xlim(x_domain[0], x_domain[-1])
-        if x_range_override is not None:
-            axs[0].set_xlim(*x_range_override)
-        axs[0].set_ylim(-0.5 * max([abs(g[1] - g[0]) for g in genes]), max([abs(g[1] - g[0]) for g in genes]))
-        axs[0].get_yaxis().set_visible(False)
-        axs[0].set_xlabel('Distances (nm)')
-        # Plot transcript levels
-        if i > 0:
-            axs[1].plot(frame_times[:i], interp_expression[:,:i].T)
-            axs[1].set_xlim(frame_times[0], frame_times[-1])
-            axs[1].set_ylim(0, np.max(interp_expression))
-            axs[1].set_xlabel('Time')
-            axs[1].set_ylabel('Expression level')
-
-        #plt.show()
-        plt.tight_layout()
-        plt.savefig(os.path.join(png_folder, '{}_{:0{}}.png'.format(name, i, n_digits)))
-        pixel_size = plt.gcf().get_size_inches()*plt.gcf().dpi 
-        plt.close()
+        pixel_size = write_single_frame(run_result, interp_expression,
+                                        frame_times, i, genes,
+                                        x_range_override,
+                                        os.path.join(png_folder, '{}_{:0{}}.png'.format(name, i, n_digits)))
     if make_mp4:
         gc.collect()
         output = subprocess.run(['ffmpeg', '-y', '-r', '60', '-f', 'image2', '-s',
