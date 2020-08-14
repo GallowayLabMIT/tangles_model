@@ -1,3 +1,7 @@
+# Output datafiles
+output/dataframes/*
+output/stdout/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -84,4 +84,4 @@ if __name__ == '__main__':
             accum.append(bulk_topology_simulation(geometry, int(sys.argv[1]), (expression, 1), 12000, 5000))
             print(f'Finished {geometry}/expression:{expression}')
     df = pd.DataFrame(accum, columns=['geometry', 'spacing', 'A_promoter_strength', 'B_promoter_strength', 'A_mean', 'A_std', 'B_mean', 'B_std'])
-    df.to_feather(f'output/dataframes/dx{expression}.feather')
+    df.to_feather(f'output/dataframes/dx{int(sys.argv[1])}.feather')
