@@ -103,4 +103,4 @@ if __name__ == '__main__':
                         print(f'Finished {geometry}/expression:{expression}/dx:{dx}/topo_multiplier:{topo}')
                     run_id += 1
     df = pd.DataFrame(accum, columns=['geometry', 'spacing', 'topo_rate', 'A_promoter_strength', 'B_promoter_strength', 'A_mean', 'A_std', 'B_mean', 'B_std'])
-    df.to_feather(f'output/dataframes/dx{int(sys.argv[1])}.feather')
+    df.to_feather(f'output/dataframes/worker_{args.runner_id}.feather')
