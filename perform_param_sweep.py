@@ -57,6 +57,8 @@ def bulk_topology_simulation(geometry, dx_in_bp, topo_rate_multiplier, expressio
     
     barriers = ((0,0), (end_barrier, 0))
     genes = []
+
+    # Update the state function (last gene argument) to use supercoiling dependent.
     # Gene A faces to the right if tandem/convergent, otherwise left for divergent
     genes.append((gene_A_boundaries[1], gene_A_boundaries[0], expression_levels[0], 'A')
                  if geometry == 'divergent' else
@@ -99,7 +101,7 @@ if __name__ == '__main__':
             for dx in [400, 500, 750, 1000, 1500, 2000, 2500, 3000]:
                 for topo in [1, 2, 5, 10]:
                     if (run_id % args.num_runners) == args.runner_id:
-                        accum.append(bulk_topology_simulation(geometry, dx, 1, (1, expression), 12000, args.n_simulations))
+                        accum.append(bulk_topology_simulation(geometry, dx, topo, (1, expression), 12000, args.n_simulations))
                         print(f'Finished {geometry}/expression:{expression}/dx:{dx}/topo_multiplier:{topo}')
                     run_id += 1
     df = pd.DataFrame(accum, columns=['geometry', 'spacing', 'topo_rate', 'A_promoter_strength', 'B_promoter_strength', 'A_mean', 'A_std', 'B_mean', 'B_std'])

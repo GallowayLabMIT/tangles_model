@@ -35,7 +35,7 @@ class SupercoilingPolymeraseModel(object):
                  chi, eta, alpha, left_bc_free, right_bc_free,
                  left_bc_loc, right_bc_loc, left_bc_val, right_bc_val):
         """
-        Constructor that takes all relevant system constants and initalizes
+        Constructor that takes all relevant system constants and initializes
         internal parameters used by other functions.
     
         Args:
@@ -49,9 +49,9 @@ class SupercoilingPolymeraseModel(object):
         critical_torque: Torque (in pN nm) at which the
             polymerases begin to stall.
         stall_torque_width: How wide the stall torque distribution is (pN)
-        rnac_r: The radius of a RNAP (used for hard-sphere replusion)
+        rnac_r: The radius of a RNAP (used for hard-sphere repulsion)
         chi: The DNA twisting mobility (s pN nm)
-        eta: The The mRNA drag coefficent (pN (nm^(alpha - 1)))
+        eta: The The mRNA drag coefficient (pN (nm^(alpha - 1)))
         alpha: The mRNA power-law scaling exponent.
         left_bc_free: A boolean representing if the left BC is free.
         right_bc_free: A boolean representing if the right BC is free.
@@ -306,16 +306,16 @@ class SupercoilingSimulation(object):
     
     def __init__(self, params, bcs, genes):
         """
-        Takes the problem formulation and initalizes the
+        Takes the problem formulation and initializes the
         simulation internals.
         
-        Additionally initalizes an stochastic_events list, that contains
+        Additionally initializes an stochastic_events list, that contains
         events in the form of tuples
         (base_rate, state_multiplier_func,state_mutate_function)
         
         Args:
         -----
-        params: A dictionary containing all relevant physical paramteres. See
+        params: A dictionary containing all relevant physical parameters. See
             the docstring of `bind_supercoiling_model` for details.
             The extra parameters expected by this method are:
                 base_promoter_initiation_rate: Rate that promoters add polymerases (1/sec)
