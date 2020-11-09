@@ -6,10 +6,29 @@ import multiprocessing
 import pandas as pd
 import tempfile
 import os
+import enum
 import gc
 import subprocess
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
+
+DEFAULT_PARAMS = {
+    'mRNA_drag': 1/20, # pN nm^(alpha / 1)
+    'mRNA_exponent': 1, # the value of alpha
+    'DNA_twist_mobility': 10, # s pN nm
+    'RNAP_radius': 15, # nm
+    'RNAP_velocity': 20, # nm / s
+    'RNAP_torque_cutoff': 12, # pN nm
+    'RNAP_stall_torque_width': 3, #pN
+    'DNA_force': 1, # pN
+    'DNA_bend_plength': 50, # pN
+    'DNA_twist_plength': 95, # pN
+    'DNA_plectonome_twist_plength': 24, # pN
+    'temperature': 298, # K
+    'base_promoter_initiation_rate': 1 / 120, # 1 / sec
+    'topo_rate': 1 / 1200, # 1 / sec
+    'mRNA_deg_rate': 1 / 1200 # 1 / sec
+}
 
 # Most member variables are float64's except for left_bc_free/right_bc_free
 supercoiling_varspec = [(name,float64) for name in
@@ -221,52 +240,320 @@ class SupercoilingPolymeraseModel(object):
         derivatives[2::3] = angular_changes
         return derivatives
 
-def bind_supercoiling_model(params, bcs):
+class BoundaryCondition(object):
     """
-    Given the system parameters and boundary conditions,
-    returns a PolymeraseSupercoilingModel representing the system.
-    
-    Args:
-    -----
-    params: A dictionary containing the following keys:
-        mRNA_drag:            pN nm^(alpha / 1)
-        mRNA_exponent:        the value of alpha
-        DNA_twist_mobility:   s pN nm
-        RNAP_radius:           nm
-        RNAP_velocity:        nm / s
-        RNAP_torque_cutoff:   pN nm
-        RNAP_stall_torque_width: pN
-        DNA_force:            pN
-        DNA_bend_plength:     pN
-        DNA_twist_plength:    pN
-        DNA_plectonome_twist_plength: pN
-        temperature:          K
-    bcs: A 2-tuple encoding (left_bc, right_bc). A BC is either
-        the string "free", or a tuple of (location, value).
-    
-    Returns:
-    --------
-    A SupercoilingPolymeraseModel with all relevant values set.
+    Simple tuple-like class that stores boundary conditions,
+    with simple helper static methods for creating BCs.
     """
-    # Calculate BCs
-    left_bc_free = bcs[0] == 'free'
-    right_bc_free = bcs[1] == 'free'
-    left_bc = (0, 0)
-    right_bc = (0, 0)
-    if not left_bc_free:
-        left_bc = bcs[0]
-    if not right_bc_free:
-        right_bc = bcs[1]
+
+    def __init__(self, location, twist_value, is_free):
+        """
+        Sets internal state for this BoundaryCondition
+
+        Args:
+        -----
+        location: Location in nm of this boundary condition.
+        twist_values: Excess DNA twist, in radians, at the given location.
+        is_free: If the BC is "free", e.g. has unrestricted twist.
+        """
+        self.loc = location
+        self.excess_twist = twist_value
+        self.is_free = is_free
     
-    return SupercoilingPolymeraseModel(
+    @staticmethod
+    def free(location):
+        """
+        Returns a free BC at the given location.
+
+        Args:
+        -----
+        location: Location in nm of this free BC.
+        """
+        return BoundaryCondition(location, 0, True)
+    
+    @staticmethod
+    def fixed(location, excess_twist=0):
+        """
+        Returns a fixed-twist BC at the given location.
+
+        Args:
+        -----
+        location: Location in nm of this fixed-twist BC.
+        excess_twist: The fixed excess twist at this location. Default is zero excess twist.
+        """
+        return BoundaryCondition(location, excess_twist, False)
+
+class PromoterType(enum.Enum):
+    STATIC = enum.auto()
+    SC_DEPENDENT = enum.auto()
+
+class PAS_Type(enum.Enum):
+    NO_RT = enum.auto()
+    LENGTH_RT = enum.auto()
+    TIME_RT = enum.auto()
+
+class Promoter(object):
+    """
+    Stores the information required to represent a promoter
+    """
+    def __init__(self, type, rate, location, direction):
+        """
+        Args:
+        -----
+        type: a PromoterType specifying the specific type of promoter.
+        rate: A base promoter on-rate, specified in units of 1/s
+        location: The location in nm of the promoter.
+        direction: Either +/-1, representing the direction polymerases start
+        """
+        self.type = type
+        self.base_rate = rate
+        self.location = location
+        self.direction = direction
+
+class PAS(object):
+    """
+    Stores information required to represent a polyA signal
+    """
+    def __init__(self, type, location, direction, readthrough_duration=0.0):
+        """
+        Args:
+        -----
+        type: a PAS_Type specifying the type of polyA-signal.
+        location: A location in nm of the PAS.
+        direction: Either +/-1, representing the direction in which we terminate.
+        readthrough_duration: Either a distance in nm or time in seconds to readthrough, on average.
+        """
+        self.type = type
+        self.location = location
+        self.direction = direction
+        self.readthrough_duration = readthrough_duration
+
+
+class SimulationState(object):
+    """
+    Class that stores all relevant information about the system state needed for a simulation.
+
+    This class includes the base SupercoilngPolymeraseModel, which stores the dynamic information
+    necessary for a simulation, as well as the normal (3N,) vector that describes the current
+    dynamic motion of the relevant LNCs.
+
+    This class also includes dynamic information that is _not_ directly used in the ODE solver,
+    such as the location of genes, direction of each polymerase, and termination conditions.
+
+    Finally, this class contains mutation functions that describe common operations, such
+    as adding a polymerase, removing a polymerase, and topoisomerase action.
+
+    Member variables:
+    -----------------
+    bcs: A 2-tuple containing the bounding BoundaryCondition's
+    params: A dictionary containing all relevant physical constants.
+    physical_model: A SupercoilingPolymeraseModel used to evaluate all ODE equations.
+    time: the current simulation time.
+    state: a (3N,) ndarray representing triples of (location, mRNA_length, excess_twist)
+        for each active polymerase.
+    genes: A list of the form [(gene_name, (gene_start_in_nm, gene_end_in_nm))].
+        Genes are sorted by location!
+    polymerase_state: a N x 3 ndarray that stores [direction, start_loc, uid] for each active polymerase.
+        This is used to identify which transcripts to create when termination occurs.
+    transcripts: a G x 1 ndarray that stores the number of transcripts for each gene. This can be used
+        to simulate higher-order interactions between genes.
+    """
+    def __init__(self, start_time, bcs, genes, params, physical_model):
+        """
+        Given the system parameters and boundary conditions,
+        initializes a SimulationState.
+        
+        Args:
+        -----
+        start_time: The initial time to start the simulation at.
+        bcs: A 2-tuple encoding (Left_BoundaryCondition, Right_BoundaryCondition). 
+            Each BC should be an element of type BoundaryCondition.
+        genes: A dictionary, where keys are gene names and values are (start, end) tuples
+            encoding the start/end of genes.
+        params: A dictionary encoding relevant keyvalue pairs representing physical constants.
+            See the docstring for `create_physical_model`.
+        physical_model: A SupercoilingPolymeraseModel representing the underlying physics.
+            Can be created with SimulationState.create_physical_model
+        
+        Returns:
+        --------
+        A SimulationState with all relevant values set.
+        """
+        self.bcs = bcs
+        self.params = params
+        
+        # Init model
+        self.physical_model = physical_model
+        
+        # Init helper things to track.
+        self.time = start_time
+        self.state = np.zeros(0)
+        self.genes = sorted(genes.items(), key=lambda x:min(x[1]))
+        self.polymerase_state = np.zeros((0,3))
+        self.transcripts = np.zeros((len(self.genes),))
+        self.next_uid = 0
+        pass
+
+    @staticmethod
+    def create_physical_model(bcs, params=DEFAULT_PARAMS):
+        """
+        Given a dictionary of parameters, creates a SupercoilingPolymeraseModel.
+        Use this static function to create the physical model, so that we don't
+        have to recompute all of the time.
+
+        Args:
+        -----
+        bcs: A 2-tuple encoding (Left_BoundaryCondition, Right_BoundaryCondition). 
+            Each BC should be an element of type BoundaryCondition.
+        params: A dictionary containing the following keys:
+            mRNA_drag:            pN nm^(alpha / 1)
+            mRNA_exponent:        the value of alpha
+            DNA_twist_mobility:   s pN nm
+            RNAP_radius:           nm
+            RNAP_velocity:        nm / s
+            RNAP_torque_cutoff:   pN nm
+            RNAP_stall_torque_width: pN
+            DNA_force:            pN
+            DNA_bend_plength:     pN
+            DNA_twist_plength:    pN
+            DNA_plectonome_twist_plength: pN
+            temperature:          K
+        """
+        return SupercoilingPolymeraseModel(
             params['DNA_bend_plength'], params['DNA_twist_plength'],
             params['DNA_plectonome_twist_plength'], params['temperature'],
             params['DNA_force'], params['RNAP_velocity'],
             params['RNAP_torque_cutoff'], params['RNAP_stall_torque_width'],
             params['RNAP_radius'],
             params['DNA_twist_mobility'], params['mRNA_drag'],
-            params['mRNA_exponent'], left_bc_free, right_bc_free,
-            left_bc[0], right_bc[0], left_bc[1], right_bc[1])
+            params['mRNA_exponent'], bcs[0].is_free, bcs[1].is_free,
+            bcs[0].loc, bcs[1].loc, bcs[0].excess_twist, bcs[1].excess_twist)
+        
+    def calculate_torque(self, location):
+        augmented_loc = np.concatenate((np.array([self.physical_model.left_bc_position]),
+                                        self.state[::3],
+                                        np.array([self.physical_model.right_bc_position])))
+        augmented_phi = np.concatenate((np.array([self.physical_model.left_bc_val]),
+                                        self.state[2::3],
+                                        np.array([self.physical_model.right_bc_val])))
+        # Replace these with free BCs if needed
+        if self.physical_model.left_bc_free:
+            # Step w0 away from BC, to avoid divide by zero errors.
+            augmented_loc[0] = augmented_loc[1] - 1
+            augmented_phi[0] = augmented_phi[1]
+        if self.physical_model.right_bc_free:
+            augmented_loc[-1] = augmented_loc[-2] + 1
+            augmented_phi[-1] = augmented_phi[-2]
+        # Compute supercoiling in each N + 1 region
+        supercoiling = np.diff(augmented_phi) / (np.diff(augmented_loc) * -self.physical_model.w0)
+        rnac_torque = self.physical_model.torque_response(supercoiling[1:]) - self.physical_model.torque_response(supercoiling[:-1])
+
+        relative_loc = augmented_loc - location
+        region_idx = np.where(augmented_loc - location < 0)[0][-1]
+        return rnac_torque[region_idx] if len(rnac_torque) > 0 else 0
+
+    def remove_supercoiling(self):
+        """
+        Randomly removes all supercoiling in an intergenic region.
+        """
+        if len(self.state) == 0:
+            return
+        # Genes are already sorted
+        # We now rewrite all polymerases that are sitting on the range
+        # (idx).start to (idx + 1).end
+        # We do this by removing all relevant polymerases from state, then
+        # using the model.compute_twist function to recalculate, at each
+        # of the polymerases to rewrite
+        if len(self.genes) == 1:
+            lower_bound = -np.inf
+            upper_bound = np.inf
+        else:
+            relax_after_idx = np.random.choice(range(len(self.genes) - 1))
+            lower_bound = min(self.genes[relax_after_idx][1])
+            upper_bound = max(self.genes[relax_after_idx + 1][1])
+        polymerase_rewrite_idx = np.where(
+            (self.state[::3] > lower_bound) & (self.state[::3] < upper_bound))
+        polymerase_positions = self.state[::3][polymerase_rewrite_idx]
+        if len(polymerase_positions) == 0:
+            # No polymerases in this range: just return
+            return
+        # Exploit polymerases always being sorted
+        effective_state = np.delete(self.state, range(np.min(polymerase_rewrite_idx) * 3,
+                                            (np.max(polymerase_rewrite_idx) + 1) * 3))
+        self.state[2::3][polymerase_rewrite_idx] = \
+            self.physical_model.evaluate_twist(polymerase_positions, effective_state)
+    
+    def add_polymerase(self, location, direction):
+        """
+        Adds a new polymerase, given a location and direction.
+
+        If the promoter site is already occupied, nothing happens.
+
+        Args:
+        -----
+        location: double, the location in nm to start the polymerase.
+        direction: +/-1, an integer representing which direction the polymerase should move.
+        """
+        # Skip if promoter site already occupied
+        if np.min(
+            np.abs(np.concatenate((np.array([np.inf]), self.state[::3])) - location)) < self.physical_model.rnac_r:
+            return
+
+        new_twist = self.physical_model.evaluate_twist(location, self.state)
+        # Find the correct insertion index
+        possible_inserts = np.append(self.state[::3], np.inf)
+        insert_idx = np.where(possible_inserts > location)[0][0]
+        # Insert new polymerase state into the correct location
+        self.state = np.insert(self.state, insert_idx * 3, [location, 0, new_twist])
+        self.polymerase_state = np.insert(self.polymerase_state, insert_idx,
+            [direction, location, self.next_uid], axis=0)
+        self.next_uid += 1
+
+    def remove_polymerase(self, polymerase_id):
+        """
+        Removes a polymerase by index. Given the polymerase status, this acts as termination (e.g.
+        creates any necessary transcripts)
+        
+        Args:
+        -----
+        polymerase_id: An integer representing which polymerase to remove.
+        """
+        self.cleave_transcript(polymerase_id)
+        self.state = np.delete(self.state, np.s_[(polymerase_id * 3):((polymerase_id + 1) * 3)])
+        self.polymerase_state = np.delete(self.polymerase_state, polymerase_id, axis=0)
+
+    def cleave_transcript(self, polymerase_id):
+        """
+        Simulates a polyA-site cleavage of of a transcript. This means that we update
+        the transcripts counter for any genes included, and set the mRNA length back to zero.
+
+        Args:
+        -----
+        polymerase_id: The polymerase ID to cleave.
+        """
+        # Compute transcript region
+        region = sorted([self.polymerase_state[polymerase_id,1], self.state[3 * polymerase_id]])
+        direction = self.polymerase_state[polymerase_id,0]
+        # Update transcripts for any gene that falls within this region that is in the right direction
+        for i, gene in enumerate(self.genes):
+            if min(gene[1]) >= region[0] and max(gene[1]) <= region[1] and np.sign(gene[1][1] - gene[1][0]) == direction:
+                # Transcript encompasses this gene
+                self.transcripts[i] += 1
+        # Update polymerase state, by cleaving mRNA length and bumping slightly forward
+        self.state[(polymerase_id * 3) + 1] = 0
+        self.state[polymerase_id * 3] += .0001 * direction
+    
+    def degrade_transcript(self, gene_idx):
+        """
+        Removes a transcript from a specific gene, reducing its count by one.
+
+        Args:
+        -----
+        gene_idx: The index of the gene transcript to degrade.
+        """
+        if self.transcripts[gene_idx] > 0:
+            self.transcripts[gene_idx] -= 1
+
 
 @njit
 def sample_discrete(probs):
@@ -282,467 +569,281 @@ def sample_discrete(probs):
         i += 1
     return i - 1
 
-def attach_on_call(func):
-    """Decorator for adding a stochastic event."""
-    def wrap(self):
-        self.stochastic_events.append(func(self))
-    return wrap
-
-class SupercoilingSimulation(object):
+class SimulationResult(object):
     """
-    A base class that encodes a Gillepse-algorithm method
-    for stochastically simulating transcript initiation, alongside
-    a supercoiling model.
-    
-    This code tracks the location of polymerases as they move over
-    the genome. Events such as polymerase addition and removal are
-    natively tracked using built-in functions. Other genomic activity
-    such as topoisomerase activity can be extended with this model.
-    
-    A decorator @attach_on_call is provided that allows arbitrary hooking
-    into the event system. Events can be predicated on an ODE
-    integrated state or as a Gillepsie-style stochastic event.
+    An all-in-one container for the results of a stochastic simulation. Multiple helper functions
+    are available that summarize this data, or give other outputs (such as a created movie)
+
+    Member variables:
+    -----------------
+    gene_map: A list of gene names, where the i'th entry is the name of the i'th gene.
+    transcript_snapshots: A (t x (g + 1)) ndarray storing the number of each gene transcript
+        at a given simulation time. Each row is a snapshot, with the first entry being the time and the 
+        next entries being the number of transcripts.
+    polymerase_history: A list of 2-tuples, encoding (time_array, polymerase_state), e.g. a concatnation of 
+        ODE solution results.
+    events: A dictionary of the form {event_name_str : list}, where a list of times
+        at which point the events occurred are listed.
     """
-    
-    def __init__(self, params, bcs, genes):
+    def __init__(self, genes, bcs, tspan):
         """
-        Takes the problem formulation and initializes the
-        simulation internals.
-        
-        Additionally initializes an stochastic_events list, that contains
-        events in the form of tuples
-        (base_rate, state_multiplier_func,state_mutate_function)
-        
-        Args:
-        -----
-        params: A dictionary containing all relevant physical parameters. See
-            the docstring of `bind_supercoiling_model` for details.
-            The extra parameters expected by this method are:
-                base_promoter_initiation_rate: Rate that promoters add polymerases (1/sec)
-        bcs: A 2-tuple encoding (left_bc, right_bc). A BC is either
-            the string "free", or a tuple of (location, value).
-        genes: An optional list of tuples encoding the arguments to add_stochastic_gene_init_event
-            (gene_start, gene_end, promoter_strength, readthrough_func, terminate_at_tes).
-            The gene direction is inferred from these values.
-        """
-        self.model = bind_supercoiling_model(params, bcs)
-        self.genes = [(g[0], g[1]) for g in genes]
-        self.base_promoter_rate = params['base_promoter_initiation_rate']
-        self.topo_rate = params['topo_rate']
-        self.mrna_deg_rate = params['mRNA_deg_rate']
-        
-        self.stochastic_events = []
-        
-        for g in genes:
-            self.add_stochastic_gene_init_event(*g)
-    
-    @attach_on_call
-    def enable_topo_relaxation(self):
-        """
-        Returns the stochastic event information
-        required to relax DNA.
-        
-        Returns:
-        --------
-        A tuple (base_rate, state_dependent_rate, mutate_func).
-        Here, the base rate is set to the relaxation rate constant
-        and the state_dependent_rate is always set to 1. Mutate_func is
-        the key function that removes supercoiling from a gene pair.
-        """
-        state_dependent_func = lambda x: 1.0
-        def remove_supercoiling(self, t, state):
-            if len(state) == 0:
-                return
-            # Sort genes by physical location
-            sorted_genes = sorted(self.genes, key=lambda x: min(x))
-            # We now rewrite all polymerases that are sitting on the range
-            # (idx).start to (idx + 1).end
-            # We do this by removing all relevant polymerases from state, then
-            # using the model.compute_twist function to recalculate, at each
-            # of the polymerases to rewrite
-            if len(sorted_genes) == 1:
-                lower_bound = -np.inf
-                upper_bound = np.inf
-            else:
-                relax_after_idx = np.random.choice(range(len(sorted_genes) - 1))
-                lower_bound = min(sorted_genes[relax_after_idx])
-                upper_bound = max(sorted_genes[relax_after_idx + 1])
-            polymerase_rewrite_idx = np.where(
-                (state[::3] > lower_bound) & (state[::3] < upper_bound))
-            polymerase_positions = state[::3][polymerase_rewrite_idx]
-            if len(polymerase_positions) == 0:
-                # No polymerases in this range: just return
-                return
-            # Exploit polymerases always being sorted
-            new_state = np.delete(state, range(np.min(polymerase_rewrite_idx) * 3,
-                                               (np.max(polymerase_rewrite_idx) + 1) * 3))
-            self.simstate[2::3][polymerase_rewrite_idx] = \
-                self.model.evaluate_twist(polymerase_positions, new_state)
-            
-            if 'topo' not in self.event_times:
-                self.event_times['topo'] = []
-            self.event_times['topo'].append(t)
-        
-        return (self.topo_rate, state_dependent_func, remove_supercoiling)
-    
-    def add_polymerase(self, location, direction,
-                       termination_func, terminate_gene_names=[], event_functions=[]):
-        """
-        Adds a polymerase to the current state. A termination function is passed
-        which specifies when the polymerase should be removed from the simulation.
-        
-        Additional event functions can be passed which encode when extra ODE events
-        should be triggered, in addition to a function
-        specifying what happens when that event occurs. This can be used to simulate
-        things such as transcript cleavage, stalling, etc.
-        
-        Args:
-        -----
-        location: A float encoding the start location
-        direction: An integer, either +1 or -1, to indicate polymerase motion direction
-        termination_func: A function that takes two arguments, returns 0 when termination should occur
-            X: the 3N number of states encoding (position, transcript_length, excess_twist)
-            i: The index of the polymerase you belong to
-        terminate_gene_names: A list of strings specifying gene names. When RNAP termination
-            occurs, expression of these gene names is increased by one.
-        event_functions: A list of tuples (event_func, mutate_func)
-            event_func: A function with the same signature as above.
-            mutate_func: A function that takes the time, state, and 
-               polymerase index and mutates them somehow, returning nothing.
-        """
-        new_twist = self.model.evaluate_twist(location, self.simstate)
-        # Find the correct insertion index
-        possible_inserts = np.append(self.simstate[::3], np.inf)
-        insert_idx = np.where(possible_inserts > location)[0][0]
-        # Insert new polymerase state into the correct location
-        self.simstate = np.insert(self.simstate, insert_idx * 3, [location, 0, new_twist])
-        self.tes_time = np.insert(self.tes_time, insert_idx, np.inf)
-        self.polymerase_directions = np.insert(self.polymerase_directions, insert_idx, direction)
-        
-        # Add ODE functions
-        def terminate_transcription(self, t, state, i):
-            self.simstate = np.delete(self.simstate, np.s_[(i * 3):((i + 1) * 3)])
-            self.polymerase_directions = np.delete(self.polymerase_directions, i)
-            self.tes_time = np.delete(self.tes_time, i)
-            del self.simstate_ode_funcs[i]
-            # Add event time
-            if 'genes' not in self.event_times:
-                self.event_times['genes'] = {}
-            for name in terminate_gene_names:
-                if name not in self.event_times['genes']:
-                    self.event_times['genes'][name] = []
-                self.event_times['genes'][name].append(t)
-                
-        self.simstate_ode_funcs.insert(insert_idx,
-                                       [(termination_func, terminate_transcription)] + event_functions)
+        Create a SimulationResult container, with the necessary variables describing
+        the simulation.
 
-    def add_stochastic_gene_init_event(self, gene_start, gene_end, strength,
-                                       gene_names=None,
-                                       readthrough_mean=0.0,
-                                       readthrough_in_nm=True,
-                                       state_func=lambda x: 1.0):
-        """
-        Initalizes a simple gene which has a state-independent initiation
-        rate, and whose spawned polymerases debind exactly at the gene end.
-        
-        Polymerases are not allowed to add if there is a polymerase already
-        occupying the starting site.
-        
         Args:
         -----
-        gene_start: The location of the gene starting location
-        gene_end: The location of the gene ending location
-        strength: The state-independent multiplier on the base polymerase addition rate
-        gene_names: A list of gene names that this gene spans.
-        readthrough_mean: The mean of an exponential distribution used to calcualte
-            readthrough distance/time.
-        readthrough_in_nm: If true, the readthrough func is a distance from the TES.
-            If false, the readthrough func is a time in seconds past the TES.
-        state_func: An optional function that takes the state of the system (3N vector)
-            and returns an additional state-dependent multiplier
-        
-        Side effects:
-        -------------
-        Adds this gene to the stochastic_events struct.
+        genes: A dictionary, where keys are gene names and values are (start, end) tuples
+            encoding the start/end of genes.
+        bcs: A 2-tuple encoding (Left_BoundaryCondition, Right_BoundaryCondition). 
+            Each BC should be an element of type BoundaryCondition.
+        tspan: A 2-tuple encoding (start_time, end_time)
         """
-        if gene_names is None:
-            gene_names = [str(gene_start)]
-        direction = np.sign(gene_end - gene_start)
-        def mutate_func(self, t, state):
-            # Our mutate function simply calls add_polymerase.
-            # We terminate at gene_end + readthrough_func() if in nm
-            # and at tes_time + readthrough_func() if in seconds
-            # If sthere is > 0nm of readthrough,
-            # we add a state lambda that increases expression levels.
-            readthrough = np.random.exponential(readthrough_mean)
-            if readthrough == 0:
-                self.add_polymerase(gene_start, direction,
-                                    lambda s, t, x, i: x[3*i] - (gene_end + readthrough),
-                                    gene_names)
-            else:
-                # Otherwise, we need to add a mutate function
-                # that updates transcript levels at the TES site.
-                def tes_update_helper(self, t, state, i):
-                    # Set transcript length to zero, bumping polymerase slightly forward.
-                    self.simstate[(i * 3) + 1] = 0
-                    self.simstate[i * 3] += .0001 * direction
-                    self.tes_time[i] = t # store transcript release time.
-                    # Update genes expressed from released transcript
-                    if 'genes' not in self.event_times:
-                        self.event_times['genes'] = {}
-                    for name in gene_names:
-                        if name not in self.event_times['genes']:
-                            self.event_times['genes'][name] = []
-                        self.event_times['genes'][name].append(t)
+        self.genes = genes
+        self.bcs = bcs
+        self.tspan = tspan
 
-                if readthrough_in_nm:
-                    termination_func = lambda s, t, x, i: x[3 * i] - (gene_end + direction * readthrough)
-                else:
-                    termination_func = lambda s, t, x, i: t - (s.tes_time[i] + readthrough)
-                self.add_polymerase(gene_start, direction,
-                                    termination_func,
-                                    event_functions=[
-                                        (lambda s, t, x, i: x[3 * i] - gene_end,
-                                        tes_update_helper)
-                                    ])
-        # Define a function that stops polymerase addition if there is already a polymerase
-        # occupying the site
-        reject_occupied_site = lambda x: np.min(
-            np.abs(np.concatenate((np.array([np.inf]), x[::3])) - gene_start)
-        ) > self.model.rnac_r
-        final_state_func = lambda x: reject_occupied_site(x) * state_func(x)
-        self.stochastic_events.append((self.base_promoter_rate * strength,
-                                       final_state_func,
-                                       mutate_func))
-        
-    def simulate(self, tspan):
+        self.gene_map = [x[0] for x in sorted(genes.items(), key=lambda y: min(y[1]))]
+
+        self.transcript_snapshots = np.array([[0] * (1 + len(self.gene_map))])
+        self.polymerase_history = []
+        self.events = {}
+    
+    def add_event(self, event_name, time):
         """
-        Given a timespan, integrates using a Gillepse-inspired ODE
-        solution.
-        
+        Adds an event to the event record.
+
         Args:
         -----
-        tspan: A tuple containing (t_start, t_end) [s]
-        
-        Returns:
-        --------
-        A list of tuples, containing (times, states) for each integration interval.
+        event_name: str, the type of event to record.
+        time: double, the time at which the event occurred.
         """
-        # Reset sim state
-        
-        success = False
-        while not success:
+        if event_name not in self.events:
+            self.events[event_name] = [time]
+        else:
+            self.events[event_name].append(time)
+    
+    def add_transcript_snapshot(self, transcripts, time):
+        """
+        Adds an updated transcript count at the given time.
+
+        Args:
+        -----
+        transcripts: A (g x 1) ndarray specifying the number of transcripts.
+        time: double, the time at which this snapshot is valid.
+        """
+        self.transcript_snapshots = np.append(self.transcript_snapshots,
+            np.concatenate(([time], transcripts))[np.newaxis,:], axis=0)
+    
+    def add_polymerase_history(self, time_arr, state_arr):
+        """
+        Update the polymerase activity history.
+
+        Args:
+        -----
+        time_arr: A ndarray representing the times at which the state was simulated
+        state:arr: A (t x 3N) ndarray representing the simulated state of the system.
+        """
+        self.polymerase_history.append((time_arr, state_arr))
+
+
+
+class SimulationRunner(object):
+    """
+    This class is responsible for setting up and running simulations. It handles multiprocessing-based runs as well.
+
+    After initialization, call the `simulate` function to generate SimulationResults
+    """
+    def __init__(self, genes, promoters, PASes, bcs, tspan, params=DEFAULT_PARAMS):
+        """
+        Create a new SimulationRunner, with all internal state necessary to run simulations.
+
+        Args:
+        -----
+        genes: A dictionary, where keys are gene names and values are (start, end) tuples
+            encoding the start/end of genes.
+        promoter: A list of Promoter objects.
+        PASes: A list of PAS objects.
+        bcs: A 2-tuple encoding (Left_BoundaryCondition, Right_BoundaryCondition). 
+            Each BC should be an element of type BoundaryCondition.
+        tspan: A 2-tuple encoding (start_time, end_time)
+        params: A dictionary encoding relevant keyvalue pairs representing physical constants.
+            See the docstring for `create_physical_model`.
+        """
+
+        self.genes = genes
+        self.promoters = promoters
+        self.pas = PASes
+        self.bcs = bcs
+        self.tspan = tspan
+        self.params = params
+        self.physical_model = SimulationState.create_physical_model(bcs, params)
+    
+    def multi_simulation(self, n):
+        """
+        Calculates multiple runs in parallel
+        """
+        return [self.single_simulation() for _ in range(n)]
+
+    def single_simulation(self ,idx=0):
+        """
+        Runs a simulation, returning a SimulationResult.
+        """
+        while True:
             try:
-                self.simstate = np.zeros(0)
-                self.simstate_ode_funcs = []
-                self.polymerase_directions = np.zeros(0)
-                self.event_times = {'genes': {}}
-                self.tes_time = np.zeros(0)
-                result = []
+                state = SimulationState(self.tspan[0], self.bcs, self.genes, self.params, self.physical_model)
+                result = SimulationResult(self.genes, self.bcs, self.tspan)
 
-                last_t = tspan[0]
+                timed_terminations  = [] # stores (polymerase_uid, stop_time)
+                length_terminations = [] # stores (polymerase_uid, stop_distance)
+                
+                while state.time < self.tspan[1]:
+                    # Perform a Gillespie draw to determine the next event to occur.
+                    # For N promoters and G genes, we have N + G + 1 stochastic events to pull from.
+                    # The first N are promoter initiation events, the next G are mRNA degradation events,
+                    # and the last is topoisomerase activity.
+                    #
+                    # For this draw, we use base rates to determine when to check a condition.
+                    stochastic_propensities = np.concatenate((np.array([x.base_rate for x in self.promoters])
+                                                                * self.params["base_promoter_initiation_rate"],
+                                                             state.transcripts * self.params["mRNA_deg_rate"],
+                                                             np.array([self.params["topo_rate"]])))
+                    for i, promoter in enumerate(self.promoters):
+                        if promoter.type == PromoterType.SC_DEPENDENT:
+                            # Multiply base rate by 3*kb*T
+                            stochastic_propensities[i] *= np.exp(2 * state.physical_model.kb * state.params['temperature'])
+                    gillespie_mean_time = 1 / np.sum(stochastic_propensities)
+                    attempt_offset = np.random.exponential(gillespie_mean_time)
 
-                while last_t < tspan[1]:
-                    # Make a Gillepse draw to find the next event to occur
-                    gillepse_mean_time = 1 / np.sum([x[0] for x in self.stochastic_events])
-                    next_attempt_time = last_t + np.random.exponential(gillepse_mean_time)
 
-                    while last_t < next_attempt_time:
-                        if len(self.simstate) > 0:
-                            # Do an ODE simulation
-                            stop_events = []
-                            mutate_funcs = []
-                            def rebind_event_func(event, p_idx):
-                                def bound(t, x):
-                                    return event[0](self, t, x, p_idx)
-                                return bound
-                            def rebind_mutate_func(event, p_idx):
-                                def bound(s, t, x):
-                                    return event[1](s, t, x, p_idx)
-                                return bound
+                    # Try to simulate until the next offset
+                    if state.state.shape[0] > 0:
+                        # Run an ODE model. We need stop conditions.
+                        # The first stop condition is if any polymerase reached a PAS in the correct direction.
+                        def reached_pas(t, y, i):
+                            # Checks if polymerase i is close to a PAS.
+                            return min([y[3*i] - pas.location for pas in self.pas if pas.direction == state.polymerase_state[i,0]])
+                        def reached_time_termination(t, y, j):
+                            return t - timed_terminations[j][1]
+                        def reached_length_termination(t,y,j):
+                            return y[3 * uid_mapping[length_terminations[j][0]]] - length_terminations[j][1]
+
+                        def rebind_stop_func(func, index):
+                            def bound(t, x):
+                                return func(t, x, index)
+                            return bound
+                        
+
+                        num_polymerases = state.polymerase_state.shape[0]
+                        # Calculate UID to index mapping
+                        uid_mapping = {}
+                        for i in range(num_polymerases):
+                            uid_mapping[state.polymerase_state[i,2]] = i
+                        # Remove any unnecessary termination commands
+                        timed_terminations = [x for x in timed_terminations if x[0] in uid_mapping]
+                        length_terminations = [x for x in length_terminations if x[0] in uid_mapping]
+
+
+
+                        num_time_terminations = len(timed_terminations)
+                        num_length_terminations = len(length_terminations)
+                        stop_funcs = ([rebind_stop_func(reached_pas, i) for i in range(num_polymerases)]
+                                    + [rebind_stop_func(reached_time_termination,i) for i in range(num_time_terminations)]
+                                    + [rebind_stop_func(reached_length_termination, i) for i in range(num_length_terminations)])
+
+                        for i in range(len(stop_funcs)):
+                            stop_funcs[i].terminal = True
+
+                        ode_result = scipy.integrate.solve_ivp(
+                            lambda t,y:self.physical_model.system_derivatives(y,
+                                                    state.polymerase_state[:,0].flatten()),
+                            (state.time, state.time + attempt_offset),
+                            state.state,
+                            events=stop_funcs,
+                            method='RK45')
+                        
+                        if ode_result.status == -1:
+                            print('-', end='', flush=True)
+                            raise RuntimeError('Integration error')
+                        
+                        state.time = ode_result.t[-1]
+                        state.state = ode_result.y[:,-1]
+                        result.add_polymerase_history(ode_result.t, ode_result.y)
+
+                        if ode_result.status == 1:
+                            # Handle an event and continue
+                            event_idx = np.where(np.array(
+                                [len(x) for x in ode_result.t_events]) > 0)[0][0]
                             
-                            for polymerase_idx, events in enumerate(self.simstate_ode_funcs):
-                                # Weird lambda currying. MWE that explains the problem:
-                                # [(lambda curried_i:(lambda x: x * curried_i))(i) for i in range(10)]
-                                # vs 
-                                # [lambda x: x * i for i in range(10)]
-                                # https://stackoverflow.com/a/34021333
-                                stop_events += [rebind_event_func(event, polymerase_idx)
-                                                for event in events]
-                                mutate_funcs += [rebind_mutate_func(event, polymerase_idx)
-                                                 for event in events]
-                            for i in range(len(stop_events)):
-                                stop_events[i].terminal = True
+                            if event_idx < num_polymerases:
+                                # Identify which PAS was closest:
+                                pas_idx = np.argmin(np.abs(np.array([pas.location - state.state[event_idx * 3] for pas in self.pas])))
+                                pas = self.pas[pas_idx]
+                                # Handle PAS
+                                if pas.type == PAS_Type.NO_RT:
+                                    state.remove_polymerase(event_idx)
+                                elif pas.type == PAS_Type.TIME_RT:
+                                    state.cleave_transcript(event_idx)
+                                    timed_terminations.append((state.polymerase_state[event_idx,2],
+                                        state.time + np.random.exponential(pas.readthrough_duration)))
+                                elif pas.type == PAS_Type.LENGTH_RT:
+                                    state.cleave_transcript(event_idx)
+                                    length_terminations.append((state.polymerase_state[event_idx,2],
+                                        state.state[event_idx * 3] + np.random.exponential(
+                                        pas.readthrough_duration)))
+                                else:
+                                    raise RuntimeError('Invalid PAS type')
 
-                            ode_result = scipy.integrate.solve_ivp(
-                                lambda t,y:self.model.system_derivatives(y,
-                                                        self.polymerase_directions),
-                                (last_t, next_attempt_time),
-                                self.simstate,
-                                events=stop_events,
-                                method='RK45')
+                                pass
+                            elif event_idx < num_polymerases + num_time_terminations:
+                                # Time termination
+                                idx = event_idx - num_polymerases
+                                state.remove_polymerase(uid_mapping[timed_terminations[idx][0]])
+                                del timed_terminations[idx]
+                            else:
+                                # Space termination
+                                idx = event_idx - num_polymerases - num_time_terminations
+                                state.remove_polymerase(uid_mapping[length_terminations[idx][0]])
+                                del length_terminations[idx]
+                            
+                            result.add_transcript_snapshot(state.transcripts, state.time)
+                            # We're done, skip the Gillespie draw.
+                            continue
 
-                            if ode_result.status == -1:
-                                print(f'INTEGRATION FAILURE: {ode_result.message}, restarting')
-                                raise RuntimeError('Integration error')
-                            result.append((ode_result.t, ode_result.y))
-                            last_t = ode_result.t[-1]
-                            self.simstate = ode_result.y[:,-1]
+                    # If we are here, we reached the final offset. This means our initial Gillespie draw
+                    # was valid.
+                    event_idx = sample_discrete(stochastic_propensities / np.sum(stochastic_propensities))
 
-                            if ode_result.status == 1:
-                                # A polymerase hit a stop event site. See which one it is:
-                                event_idx = np.where(np.array(
-                                    [len(x) for x in ode_result.t_events]) > 0)[0][0]
-                                # Mutate our state
-                                mutate_funcs[event_idx](self, last_t, self.simstate)
+                    assert(event_idx < len(stochastic_propensities))
+                    if event_idx == len(stochastic_propensities) - 1:
+                        # Topo rate
+                        result.add_event('topo', state.time)
+                        state.remove_supercoiling()
+                    elif event_idx < len(self.promoters):
+                        # Try initating a promoter
+                        promoter = self.promoters[event_idx]
+                        if promoter.type == PromoterType.STATIC:
+                            pass
+                        elif promoter.type == PromoterType.SC_DEPENDENT:
+                            # Check for supercoiling dependence, that is 1.2 * 2 Pi * torque at that location. Do this by finding a probability
+                            # and multiplying by the exp[-E / (kb * t)]
+                            energy = state.calculate_torque(promoter.location) * 1.2 * 2.0 * np.pi
+                            # Adjust for 2kB T shift
+                            if np.random.random() > np.exp((-energy / (state.physical_model.kb * state.params['temperature'])) - 2):
+                                # Skip; the initiation doesn't happen
+                                continue
                         else:
-                            # Just advance the time directly; no polymerases right now
-                            last_t = next_attempt_time
+                            raise RuntimeError('Invalid promoter type')
 
-                    # Perform a Gillepsie draw
-                    event_probs = gillepse_mean_time * np.array([x[0] for x in self.stochastic_events])
-
-                    #self.init_mean_time = 1 / np.sum(self.promoter_strength * self.base_promoter_rate)
-                    #self.init_probability = self.promoter_strength * self.base_promoter_rate * self.init_mean_time
-                    next_stochastic_idx = sample_discrete(event_probs)
-                    # Apply the state-specific state value to see if we perform this event
-                    if np.random.random() < self.stochastic_events[next_stochastic_idx][1](self.simstate):
-                        # Perform the stochastic state mutation
-                        self.stochastic_events[next_stochastic_idx][2](self, last_t, self.simstate)
+                        state.add_polymerase(promoter.location, promoter.direction)
+                    else:
+                        # Degrade a mRNA
+                        transcript_idx = event_idx - len(self.promoters)
+                        state.degrade_transcript(transcript_idx)
+                        result.add_transcript_snapshot(state.transcripts, state.time)
+                print('+', end='', flush=True)
+                return result
             except (RuntimeError, FloatingPointError):
                 continue # Retry
-            success = True
-        return (result, self.event_times)
-
-    def postprocess_run(self, sim_run, domain_points=1000, domain_endpoints=None):
-        """
-        Given the raw run data, calculates parameters
-        of interest. Namely, this is the supercoiling density,
-        the number of mRNAs over time (calculated using the degradation rate)
-        
-        Args:
-        -----
-        sim_run: A tuple of the form (raw, event_times):
-            raw: A list of tuples, of the form (time_ndarray, 3N-state_ndarray)
-            event_times: A dictionary containing details on when events occured
-        domain_ponts: The number of points used to discritize space
-        domain_endpoints: (optional) A tuple containing (domain_start, domain_end)
-            to explicitly discritize over.
-        
-        Returns:
-        --------
-        A dictionary containing the following key-value pairs:
-            raw: The input sim_run
-            time: A single ndarray containing all timepoints
-            x_domain: A vector of the locations that were sampled
-            excess_twist: A sample of the excess twist, phi, across the domain for each timepoint
-            sc_density: The supercoiling density across the domain for each timepoint
-            gene_expression: The expression of each gene over time (calculated with a secondary
-                Gillepsie run)
-        """
-        raw, events = sim_run
-        result = {'raw': raw}
-        
-        result['time'] = np.concatenate(list(x[0] for x in raw))
-        min_x = min([np.min(x[1][::3]) for x in raw])
-        max_x = max([np.max(x[1][::3]) for x in raw])
-        if domain_endpoints is None:
-            domain_endpoints = (min_x, max_x)
-        result['x_domain'] = np.linspace(*domain_endpoints, domain_points)
-        result['excess_twist'] = np.zeros((len(result['time']), domain_points))
-        compute_idx = 0
-        for run in raw:
-            for i in range(len(run[0])):
-                result['excess_twist'][compute_idx, :] = self.model.evaluate_twist(
-                    result['x_domain'], run[1][:,i])
-                compute_idx += 1
-        dx = (max_x - min_x) / domain_points
-        result['sc_density'] = np.diff(result['excess_twist']) / (dx * -self.model.w0)
-        
-        # Now compute mRNA at each timepoint
-        # The propensity of mRNA degrading is mrna_deg_rate * num_of_mrna
-        gene_names = sorted(events['genes'].keys())
-        gene_expression = np.zeros((len(result['time']),len(gene_names)))
-        gene_idx = 0
-        for gene_name in gene_names:
-            time_accum = np.array([0])
-            mRNA_accum = np.array([0])
-            
-            creation_events = events['genes'][gene_name]
-            time_accum = np.append(time_accum, np.array([creation_events[0]]))
-            mRNA_accum = np.append(mRNA_accum, np.array([1]))
-            creation_idx = 1
-            while time_accum[-1] < result['time'][-1]:
-                # Draw the time to the next degradation
-                if mRNA_accum[-1] > 0:
-                    next_deg = time_accum[-1] + \
-                        np.random.exponential(1.0 / (mRNA_accum[-1] * self.mrna_deg_rate))
-                else:
-                    next_deg = result['time'][-1]
-                # Check if a creation event occurs
-                if creation_idx < len(creation_events):
-                    if next_deg < creation_events[creation_idx]:
-                        # Degradation occured!
-                        time_accum = np.append(time_accum, np.array([next_deg]))
-                        mRNA_accum = np.append(mRNA_accum, np.array([mRNA_accum[-1] - 1]))
-                        continue
-                    # Otherwise, a creation event occurs
-                    time_accum = np.append(time_accum, np.array([creation_events[creation_idx]]))
-                    mRNA_accum = np.append(mRNA_accum, np.array(mRNA_accum[-1] + 1))
-                    creation_idx += 1
-                else:
-                    time_accum = np.append(time_accum, np.array([next_deg]))
-                    mRNA_accum = np.append(mRNA_accum, np.array([mRNA_accum[-1] - 1]))
-            
-            def expression_interp(t, t_known, known_expression):
-                time_idx = np.array([np.where(t_known <= tp)[0][-1] for tp in t])
-                return known_expression[time_idx]
-            gene_expression[:,gene_idx] = expression_interp(result['time'], time_accum, mRNA_accum)
-            gene_idx += 1
-        result['gene_expression'] = gene_expression
-        result['gene_names'] = gene_names
-        return result
-
-def expression_single_run(params, bcs, genes, gene_names, sim_time, i=0):
-    sim = SupercoilingSimulation(params, bcs, genes)
-    sim.enable_topo_relaxation()
-    result = sim.postprocess_run(sim.simulate((sim_time[0], sim_time[1])))
-    times = np.linspace(*sim_time)
-    id_val = np.ones(times.shape, dtype=int) * i
-    df_result = pd.DataFrame(data={'id': id_val, 'time': times})
-    for name in gene_names:
-        if name not in result['gene_names']:
-            df_result[name + '_expression'] = np.zeros(times.shape)
-        else:
-            df_result[name + '_expression'] = np.interp(times,
-                                                        result['time'],
-                                                        result['gene_expression'][:,result['gene_names'].index(name)])
-    return df_result
-    
-def bulk_simulation(params, bcs, genes, gene_names, sim_time, n_runs):
-    """
-    Given the relevant parameters to a supercoiling simulation,
-    runs several rounds of simulations in order to reach aggregate averages.
-    
-    Args:
-    -----
-    params, bcs, genes: Parameters required by the SupercoilingSimulation constructor
-    sim_time: A tuple containing (start_time, end_time, n_points) over which the simulation should be run.
-    n_runs: The number of runs to aggregate
-    
-    Returns:
-    --------
-    A single dataframe containing the columns:
-        run_id: Integer containing which run it came from
-        time: The time value of the datapoint
-        gene_names: A series of columns with name = each of the names in gene_names
-    """
-    with multiprocessing.Pool() as p:
-        runs = [p.apply_async(expression_single_run, args=(params, bcs, genes, gene_names, sim_time, i))
-                for i in range(n_runs)]
-        p.close()
-        p.join()
-        return pd.concat([r.get() for r in runs])
 
 def write_single_frame(run_result, interp_expression, frame_times, frame_idx, genes, x_range_override, png_name):
     """
