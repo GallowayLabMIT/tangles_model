@@ -55,7 +55,7 @@ def run_sweep(dx_in_bp, topo_multiplier, n_runs, ptype, id):
     result_pd['dx'] = dx_in_bp
     result_pd['topo_rate'] = topo_multiplier
     result_pd['sc_dependent'] = ptype == ssc.PromoterType.SC_DEPENDENT
-    out_file = f'output/dataframes/dx-{dx_in_bp}_topo-{topo_multiplier}_id-{id}_sc={ptype!=ssc.PromoterType.STATIC}.feather'
+    out_file = f'output/dataframes/sc_only-dx-{dx_in_bp}_topo-{topo_multiplier}_id-{id}_sc={ptype!=ssc.PromoterType.STATIC}.feather'
     print(f'Finished run dx={dx_in_bp}/topo={topo_multiplier}/ptype={ptype}/id={id}, saving to file{out_file}')
     result_pd.to_feather(out_file)
 
@@ -64,5 +64,5 @@ if __name__ == '__main__':
     pool.map(lambda args: run_sweep(args[0], args[1], 50, args[2], args[3]), itertools.product(
         [400, 500, 750, 1000, 1500, 2000, 2500, 3000],
         [1, 2, 3, 5, 7, 9, 10],
-        [ssc.PromoterType.STATIC,ssc.PromoterType.SC_DEPENDENT],
+        [ssc.PromoterType.SC_DEPENDENT],
         range(100)))

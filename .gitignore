@@ -1,5 +1,6 @@
 # Output datafiles
 output/dataframes/*
+output/dataframes*
 output/stdout/*
 
 # Output images/files

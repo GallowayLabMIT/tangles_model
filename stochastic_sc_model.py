@@ -447,11 +447,11 @@ class SimulationState(object):
             augmented_phi[-1] = augmented_phi[-2]
         # Compute supercoiling in each N + 1 region
         supercoiling = np.diff(augmented_phi) / (np.diff(augmented_loc) * -self.physical_model.w0)
-        rnac_torque = self.physical_model.torque_response(supercoiling[1:]) - self.physical_model.torque_response(supercoiling[:-1])
+        torque = self.physical_model.torque_response(supercoiling)
 
         relative_loc = augmented_loc - location
         region_idx = np.where(augmented_loc - location < 0)[0][-1]
-        return rnac_torque[region_idx] if len(rnac_torque) > 0 else 0
+        return torque[region_idx] if len(torque) > 0 else 0
 
     def remove_supercoiling(self):
         """
@@ -690,7 +690,7 @@ class SimulationRunner(object):
         """
         runs = [self.single_simulation() for _ in range(n)]
         cols = [gene + '_expresssion' for gene in runs[0].gene_map]
-        df = pd.DataFrame(data=np.concatenate([run.transcript_snapshots[-1][1:] for run in runs]),
+        df = pd.DataFrame(data=np.concatenate([run.transcript_snapshots[-1][np.newaxis,1:] for run in runs]),
             columns=cols)
         return df
 
