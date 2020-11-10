@@ -10,4 +10,4 @@ if __name__ == '__main__':
     bcs = (ssc.BoundaryCondition.fixed(0), ssc.BoundaryCondition.fixed(4000))
 
     runner = ssc.SimulationRunner(genes, promoter, pas, bcs, (0, 10000))
-    print(runner.multi_simulation(50))
+    print(runner.multi_simulation(5))

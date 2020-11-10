@@ -1,3 +1,4 @@
+from numpy.core.multiarray import concatenate
 import scipy.integrate
 import numpy as np
 from numba import njit, vectorize, float32, float64, boolean
@@ -680,9 +681,19 @@ class SimulationRunner(object):
     
     def multi_simulation(self, n):
         """
-        Calculates multiple runs in parallel
+        Calculates multiple runs in parallel, returning a summary data frame
+        of the final gene expression values.
+
+        Args:
+        -----
+        n: the number of runs to perform.
         """
-        return [self.single_simulation() for _ in range(n)]
+        runs = [self.single_simulation() for _ in range(n)]
+        cols = [gene + '_expresssion' for gene in runs[0].gene_map]
+        df = pd.DataFrame(data=np.concatenate([run.transcript_snapshots[-1][1:] for run in runs]),
+            columns=cols)
+        return df
+
 
     def single_simulation(self ,idx=0):
         """
