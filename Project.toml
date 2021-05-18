@@ -1,0 +1,8 @@
+name = "tangles_model"
+uuid = "30e675b9-f37d-497c-b6a4-f0a41e9b3b09"
+authors = ["Christopher Johnstone <meson800@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+MultiScaleArrays = "f9640e96-87f6-5992-9c3b-0743c6a49ffa"
