@@ -69,10 +69,11 @@ struct SimulationParameters
     base_promoter_rate::Float64     # (1 / sec) The base rate of RNAP initiation.
     topoisomerase_rate::Float64     # (1 / sec) The base rate of topoisomerase activity.
     mRNA_degradation_rate::Float64  # (1 / sec) The base rate of mRNA degradation.
+    sc_dependent::Bool              # If supercoiling-dependent initiation is used
 end
 DEFAULT_SIM_PARAMS = SimulationParameters(
     DEFAULT_mRNA_PARAMS, DEFAULT_RNAP_PARAMS, DEFAULT_DNA_PARAMS,
-    298, 1 / 120, 1 / 1200, 1 / 1200
+    298, 1 / 120, 1 / 1200, 1 / 1200, false
 )
 
 struct InternalParameters
@@ -95,6 +96,9 @@ struct InternalParameters
     τ_p::Float64    # (pN nm) Critical plectonemic torque.
     σ_s::Float64    # (unitless) Critical stretched-phase supercoiling density.
     σ_p::Float64    # (unitless) Critical plectonemic-phase supercoiling density.
+    topo_rate::Float64      # (1 / s) base topoisomerase activity rate
+    mRNA_deg_rate::Float64  # (1 / s) base mRNA degradation rate
+    sc_dependent::Bool      # If supercoiling dependent initiation is used
 end
 
 abstract type BoundaryParameters end
@@ -165,7 +169,10 @@ function InternalParameters(sim_params::SimulationParameters)
         τ_s,
         τ_p,
         σ_s,
-        σ_p
+        σ_p,
+        sim_params.topoisomerase_rate,
+        sim_params.mRNA_degradation_rate,
+        sim_params.sc_dependent
 )
 end
 
@@ -366,6 +373,20 @@ function terminate!(c::TanglesArray, idx::UInt32)
     end
 end
 
+function _destroy_mRNA!(c::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, idx::UInt32)
+    _destroy_mRNA!(c.u, idx)
+end
+
+function _destroy_mRNA!(c::TanglesArray, idx::UInt32)
+    c.mRNA[idx] -= 1
+end
+
+function degrade_mRNA!(integrator, idx::UInt32)
+    for c in full_cache(integrator)
+        _destroy_mRNA!(c, idx)
+    end
+end
+
 function FiniteDiff.resize!(c::TanglesArray, i::Int64)
     resize!(c.x, i)
 end
@@ -386,24 +407,31 @@ function extend_rnap!(c::TanglesArray, position::Float64, insert_idx::UInt32, tw
 end
 
 function add_polymerase!(integrator, position::Float64, gene::UInt32, terminate_end::Float64)
-    print("Attempting to add polymerase. Current u:")
-    println(integrator.u)
+    #print("Attempting to add polymerase. Current u:")
+    #println(integrator.u)
     insert_idx::UInt32, twist::Float64 = interp_twist(position, integrator.u, integrator.p.bc_params, integrator.p.sim_params.ω_0)
-    println("Adding to full_cache vars")
+    #println("Adding to full_cache vars")
     for c in full_cache(integrator)
         extend_rnap!(c, position, insert_idx, twist,  gene, terminate_end)
     end
-    println("Printing new cache...")
-    for c in full_cache(integrator)
-        println(c)
-    end
-    println("Done adding!")
+    #println("Printing new cache...")
+    #for c in full_cache(integrator)
+    #    println(c)
+    #end
+    #println("Done adding!")
 end
 
+function mRNA_degradation_rate(u::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, p::TanglesParams, t, idx::UInt32)
+    mRNA_degradation_rate(u.u, p, t, idx)
+end
+function mRNA_degradation_rate(u::TanglesArray, p::TanglesParams, t, idx::UInt32)
+    return p.sim_params.mRNA_deg_rate * u.mRNA[idx]
+end
 
 function polymerase_initiation_rate(u::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, p::TanglesParams, t, promoter::Promoter)::Float64
     return polymerase_initiation_rate(u.u, p, t, promoter)
 end
+
 
 function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promoter::Promoter)::Float64
     # Initiation rate is zero if initiation site is occupied
@@ -431,23 +459,23 @@ end
 
 function terminate_polymerase!(integrator)
     # Identify polymerase to be terminated
-    print("Attempting to terminate. Current u:")
-    println(integrator.u)
+    #print("Attempting to terminate. Current u:")
+    #println(integrator.u)
     p_idx::UInt32 = findmin(abs.(integrator.u.u[1:3:(end-1)] - integrator.u.u.polymerase_stop))[2]
     # Update gene lists
     remove_idx = (1 + ((p_idx - 1) * 3)):(p_idx * 3)
-    println("Deleting full_cache vars")
+    #println("Deleting full_cache vars")
     # Update all internal caches
     for c in full_cache(integrator)
         terminate!(c, p_idx)
     end
-    println("Deleting non-user cache")
+    #println("Deleting non-user cache")
     deleteat_non_user_cache!(integrator,remove_idx)
-    println("Printing remaining cache...")
-    for c in full_cache(integrator)
-        println(c)
-    end
-    println("Done terminating")
+    #println("Printing remaining cache...")
+    #for c in full_cache(integrator)
+    #    println(c)
+    #end
+    #println("Done terminating")
 end
 
 function tangles_derivatives!(du, u::TanglesArray, params::TanglesParams, t)
@@ -464,7 +492,6 @@ function tangles_derivatives!(du, u::TanglesArray, params::TanglesParams, t)
 
     ns = 3 # number of states
     num_polymerases::Int64 = convert(Int64, (length(u) - 1) / ns)
-    println(u)
 
     # Unpack useful constants
     ω0 = params.sim_params.ω_0
@@ -494,23 +521,22 @@ function tangles_derivatives!(du, u::TanglesArray, params::TanglesParams, t)
 end
 
 function out_of_domain(u, p, t)
-    println("In OOD check")
-    print(length(u.u))
-    print(",")
-    println(u.u)
     if length(u.u) == 1
         return false
     end
     return any(diff(u.u[1:3:end-1]) .< 0)
 end
 
-function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, t_end::Float64)
-    u0 = TanglesArray([0.0], [0], [], [], [])
+function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, genes::Array{Gene}, n_genes::Int64, t_end::Float64)
+    u0 = TanglesArray([0.0], zeros(n_genes), [], [], [])
     problem = ODEProblem(tangles_derivatives!, u0, [0.0, t_end], TanglesParams(
         InternalParameters(sim_params), bcs))
     termination_callback = ContinuousCallback(polymerase_termination_check, terminate_polymerase!,
                                 save_positions=(true,true))
-    jump_problem = JumpProblem(problem, Direct(), generate_jump(Gene(1/120, 1, 100, 500), false))
+    jump_problem = JumpProblem(problem, Direct(),
+        generate_jump.(genes, sim_params.sc_dependent)...,
+        [VariableRateJump((u,p,t)->mRNA_degradation_rate(u,p,t,convert(UInt32,i)), (int)->degrade_mRNA!(int, convert(UInt32,i))) for i in 1:n_genes]...
+    )
     return () -> solve(jump_problem, Tsit5(), callback=termination_callback, dtmax=10, isoutofdomain=out_of_domain)
 end
 
@@ -524,7 +550,9 @@ pc_circular_params = TanglesParams(
 ODEProblem(tangles_derivatives!, TanglesArray([0.0], [], [], [], []), [0, 1000.0], pc_linear_params)
 ODEProblem(tangles_derivatives!, TanglesArray([0.0], [], [], [], []), [0, 1000.0], pc_circular_params)
 
-tangles_derivatives!([0.0, 0.0, 0.0, 0.0], TanglesArray([100,0,0, 0], [0], [1], [500], [1]),pc_linear_params, 0)
-tangles_derivatives!([0.0, 0.0, 0.0, 0.0], TanglesArray([100,0,0, 0], [0], [1], [500], [1]),pc_circular_params, 0)
+tangles_derivatives!([0.0, 0.0, 0.0, 0.0], TanglesArray([100,0,0,0], [0], [1], [500], [1]),pc_linear_params, 0)
+@time tangles_derivatives!([0.0, 0.0, 0.0, 0.0], TanglesArray([100,0,0,0], [0], [1], [500], [1]),pc_linear_params, 0)
+tangles_derivatives!([0.0, 0.0, 0.0, 0.0], TanglesArray([100,0,0,0], [0], [1], [500], [1]),pc_circular_params, 0)
+@time tangles_derivatives!([0.0, 0.0, 0.0, 0.0], TanglesArray([100,0,0,0], [0], [1], [500], [1]),pc_circular_params, 0)
 
 end # module TanglesModel
