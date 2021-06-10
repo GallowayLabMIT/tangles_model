@@ -73,6 +73,33 @@ double_u = TM.TanglesArray([100, 1, 0, 300, 2, 200, 0], [0], [1], [500, 500], [1
         @test TM.torque_response(σ_p + .1, test_params) ≈ τ_p * (σ_p + 0.1)
         @test TM.torque_response(-σ_p - .1, test_params) ≈ -τ_p * (σ_p + 0.1)
     end # testset Internals/torque_response
+    @testset "interp_twist" begin
+        @testset "empty u's" begin
+            @test all(TM.interp_twist(50.0, empty_u, linear_bcs, 1.0) .≈ (1, 0.0))
+            @test all(TM.interp_twist(50.0, empty_u, circular_bcs, 1.0) .≈ (1, 0.0))
+        end
+        @testset "single linear u's" begin
+        @test all(TM.interp_twist(50.0, single_u, linear_bcs, 1.0) .≈ (1, 0.5))
+        @test all(TM.interp_twist(2550.0, single_u, linear_bcs, 1.0) .≈ (2, 0.5))
+        end
+        @testset "linear free ends" begin
+            @test all(TM.interp_twist(50.0, single_u, TM.LinearBoundaryParameters(5000, true, false), 1.0) .≈ (1, 1.0))
+            @test all(TM.interp_twist(50.0, single_u, TM.LinearBoundaryParameters(5000, false, true), 1.0) .≈ (1, 0.5))
+            @test all(TM.interp_twist(2550.0, single_u, TM.LinearBoundaryParameters(5000, false, true), 1.0) .≈ (2, 1.0))
+            @test all(TM.interp_twist(2550.0, single_u, TM.LinearBoundaryParameters(5000, true, false), 1.0) .≈ (2, 0.5))
+            @test all(TM.interp_twist(50.0, single_u, TM.LinearBoundaryParameters(5000, true, true), 1.0) .≈ (1, 1.0))
+            @test all(TM.interp_twist(2550.0, single_u, TM.LinearBoundaryParameters(5000, true, true), 1.0) .≈ (2, 1.0))
+        end
+        @testset "circular bcs" begin
+            println(TM.interp_twist(50.0, double_u, circular_bcs, 1.0))
+            println(TM.interp_twist(200.0, double_u, circular_bcs, 1.0))
+            println(TM.interp_twist(400.0, double_u, circular_bcs, 1.0))
+            @test all(TM.interp_twist(50.0, double_u, circular_bcs, 1.0) .≈ (1, 1 + 50.0 / 4800.0))
+            @test all(TM.interp_twist(200.0, double_u, circular_bcs, 1.0) .≈ (2, 1.5))
+            @test all(TM.interp_twist(400.0, double_u, circular_bcs, 1.0) .≈ (3, 2 - 100.0 / 4800.0))
+        end
+
+    end # testset Internals/interp_twist
 end #testset Internals/
 
 @testset "Integration" begin
