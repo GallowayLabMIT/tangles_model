@@ -6,5 +6,6 @@ version = "0.1.0"
 [deps]
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 FiniteDiff = "6a86dc24-6348-571c-b903-95158fe2bd41"
+HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
 MultiScaleArrays = "f9640e96-87f6-5992-9c3b-0743c6a49ffa"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

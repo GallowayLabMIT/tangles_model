@@ -6,6 +6,7 @@ using Base: UInt32
 using MultiScaleArrays: length
 using DifferentialEquations
 using MultiScaleArrays
+using HDF5
 import FiniteDiff
 
 function check_nonnegative(x, name)
@@ -540,6 +541,91 @@ function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters
     return () -> solve(jump_problem, Tsit5(), callback=termination_callback, dtmax=10, isoutofdomain=out_of_domain)
 end
 
+function write_bcs(group::HDF5.Group, bcs::LinearBoundaryParameters)
+    attributes(group)["bcs.is_circular"] = false
+    attributes(group)["bcs.length"] = bcs.length
+    attributes(group)["bcs.left_free"] = bcs.left_is_free
+    attributes(group)["bcs.right_free"] = bcs.right_is_free
+end
+function write_bcs(group::HDF5.Group, bcs::CircularBoundaryParameters)
+    attributes(group)["bcs.is_circular"] = true
+    attributes(group)["bcs.length"] = bcs.length
+end
+
+function write_h5_attributes(group::HDF5.Group, genes::Array{Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
+    attributes(group)["gene.start"] = [gene.start for gene in genes]
+    attributes(group)["gene.end"] = [gene.terminate for gene in genes]
+    attributes(group)["gene.base_rate"] = [gene.base_rate for gene in genes]
+    attributes(group)["rates.topo"] = sim_params.topoisomerase_rate
+    attributes(group)["rates.mRNA_degradation"] = sim_params.mRNA_degradation_rate
+    write_bcs(group, bcs)
+end
+function postprocess_to_h5(filename::String, solution, genes::Array{Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
+    h5open(filename, "cw") do h5
+        run_idx = 1
+        while haskey(h5, "tangles_full_run." * lpad(run_idx, 6, "0"))
+            run_idx += 1
+        end
+        g = create_group(h5, "tangles_full_run." * lpad(run_idx, 6, "0"))
+        g["time"] = soln.t
+        len = length(soln.u)
+        width = maximum([length(u.u.x) for u in soln.u]) - 1
+
+        rnap_loc::Matrix{Float64} = -ones(len, convert(Int,width / 3))
+        ϕ::Matrix{Float64} = -ones(len, convert(Int,width / 3))
+        z::Matrix{Float64} = -ones(len, convert(Int,width / 3))
+        for (index, val) in enumerate(soln.u)
+            x = val.u.x[1:end-1]
+            n_polymerases = convert(Int, length(x) / 3)
+            rnap_loc[index,1:n_polymerases] = x[1:3:end]
+            ϕ[index,1:n_polymerases] = x[2:3:end]
+            z[index,1:n_polymerases] = x[3:3:end]
+        end
+        g["rnap_location"] = rnap_loc
+        g["phi"] = ϕ
+        g["mRNA_length"] = z
+        write_h5_attributes(g, genes, sim_params, bcs)
+    end
+end
+
+function simulate_full_examples(
+    filename::String,
+    n_simulations::Int64,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    genes::Array{Gene},
+    n_genes::Int64,
+    t_end::Float64)
+    solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
+    for _ in 1:n_simulations
+        postprocess_to_h5(filename, solver(), genes, sim_params, bcs)
+    end
+end
+
+function simulate_summarized_runs(
+    filename::String,
+    n_simulations::Int64,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    genes::Array{Gene},
+    n_genes::Int64,
+    t_end::Float64)
+    solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
+    mRNA_results = zeros(Int32, n_simulations, n_genes)
+    for i in 1:n_simulations
+        mRNA_results[i,:] = solver().u[end].u.mRNA
+    end
+    h5open(filename, "cw") do h5
+        run_idx = 1
+        while haskey(h5, "tangles_summarized_run." * lpad(run_idx, 6, "0"))
+            run_idx += 1
+        end
+        g = create_group(h5, "tangles_summarized_run." * lpad(run_idx, 6, "0"))
+        g["final_mRNA"] = mRNA_results
+        write_h5_attributes(g, genes, sim_params, bcs)
+    end
+end
+
 # precompile hints
 pc_linear_params = TanglesParams(
     InternalParameters(DEFAULT_SIM_PARAMS),
@@ -549,10 +635,7 @@ pc_circular_params = TanglesParams(
     CircularBoundaryParameters(5000))
 ODEProblem(tangles_derivatives!, TanglesArray([0.0], [], [], [], []), [0, 1000.0], pc_linear_params)
 ODEProblem(tangles_derivatives!, TanglesArray([0.0], [], [], [], []), [0, 1000.0], pc_circular_params)
-
-tangles_derivatives!([0.0, 0.0, 0.0, 0.0], TanglesArray([100,0,0,0], [0], [1], [500], [1]),pc_linear_params, 0)
-@time tangles_derivatives!([0.0, 0.0, 0.0, 0.0], TanglesArray([100,0,0,0], [0], [1], [500], [1]),pc_linear_params, 0)
-tangles_derivatives!([0.0, 0.0, 0.0, 0.0], TanglesArray([100,0,0,0], [0], [1], [500], [1]),pc_circular_params, 0)
-@time tangles_derivatives!([0.0, 0.0, 0.0, 0.0], TanglesArray([100,0,0,0], [0], [1], [500], [1]),pc_circular_params, 0)
+TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.LinearBoundaryParameters(5000, false, false), [TanglesModel.Gene(1/120.0, 1, 100, 1000), TanglesModel.Gene(1/120.0, 2, 3000, 2000)], 2, 3000.0)()
+TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.CircularBoundaryParameters(5000), [TanglesModel.Gene(1/120.0, 1, 100, 1000), TanglesModel.Gene(1/120.0, 2, 3000, 2000)], 2, 3000.0)()
 
 end # module TanglesModel

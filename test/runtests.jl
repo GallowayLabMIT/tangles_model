@@ -91,9 +91,6 @@ double_u = TM.TanglesArray([100, 1, 0, 300, 2, 200, 0], [0], [1], [500, 500], [1
             @test all(TM.interp_twist(2550.0, single_u, TM.LinearBoundaryParameters(5000, true, true), 1.0) .≈ (2, 1.0))
         end
         @testset "circular bcs" begin
-            println(TM.interp_twist(50.0, double_u, circular_bcs, 1.0))
-            println(TM.interp_twist(200.0, double_u, circular_bcs, 1.0))
-            println(TM.interp_twist(400.0, double_u, circular_bcs, 1.0))
             @test all(TM.interp_twist(50.0, double_u, circular_bcs, 1.0) .≈ (1, 1 + 50.0 / 4800.0))
             @test all(TM.interp_twist(200.0, double_u, circular_bcs, 1.0) .≈ (2, 1.5))
             @test all(TM.interp_twist(400.0, double_u, circular_bcs, 1.0) .≈ (3, 2 - 100.0 / 4800.0))
@@ -103,6 +100,8 @@ double_u = TM.TanglesArray([100, 1, 0, 300, 2, 200, 0], [0], [1], [500, 500], [1
 end #testset Internals/
 
 @testset "Integration" begin
-    problem = TM.build_problem(TM.DEFAULT_SIM_PARAMS, linear_bcs, 1000.0)
-    print(problem())
+    problem      = TM.build_problem(TM.DEFAULT_SIM_PARAMS, TM.LinearBoundaryParameters(5000, false, false), [TM.Gene(1/120.0, 1, 100, 1000), TM.Gene(1/120.0, 2, 3000, 2000)], 2, 1000.0)
+    circ_problem = TM.build_problem(TM.DEFAULT_SIM_PARAMS, TM.CircularBoundaryParameters(5000), [TM.Gene(1/120.0, 1, 100, 1000), TM.Gene(1/120.0, 2, 3000, 2000)], 2, 1000.0)
+    problem()
+    circ_problem()
 end
