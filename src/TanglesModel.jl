@@ -164,6 +164,68 @@ mutable struct TanglesArray <: DEDataArray{Float64,1}
     polymerase_gene::Array{UInt32,1}
 end
 
+
+function interp_twist(position::Float64, u::TanglesArray, bcs::LinearBoundaryParameters, ω0::Float64)
+    insert_location::Int64 = 1
+    num_polymerases::Int64 = convert(UInt32, (length(u) - 1) / 3)
+
+    if num_polymerases == 0
+        return (1, 0.0)
+    end
+
+    x = @view u.x[1:3:(end-1)]
+    ϕ = @view u.x[2:3:(end-1)]
+
+    while insert_location <= num_polymerases && x[insert_location] < position
+        insert_location += 1
+    end
+
+    σ_target = supercoiling_density(u, insert_location, bcs, ω0)
+    # σ = Δϕ / (Δx (-ω0)), so Δϕ = -ω0 σ Δx
+
+    if insert_location == 1
+        # Special case, depends on BCs
+        if bcs.left_is_free
+            return (insert_location, ϕ[insert_location])
+        end
+        return (insert_location, σ_target * -ω0 * position)
+    end
+
+    if insert_location == num_polymerases && bcs.right_is_free
+        # Special case, no twist needed on free right end
+        return (insert_location, ϕ[insert_location])
+    end
+    # Calculate distance to previous polymerase and use that to set twist.
+    return (insert_location,
+        σ_target * -ω0 * (position - x[insert_location - 1]) + ϕ[insert_location - 1])
+end
+
+function interp_twist(position::Float64, u::TanglesArray, bcs::CircularBoundaryParameters, ω0::Float64)
+    insert_location::Int64 = 1
+    num_polymerases::Int64 = convert(UInt32, (length(u) - 1) / 3)
+
+    if num_polymerases == 0
+        return (1, 0.0)
+    end
+
+    x = @view u.x[1:3:(end-1)]
+    ϕ = @view u.x[2:3:(end-1)]
+
+    while insert_location <= num_polymerases && x[insert_location] < position
+        insert_location += 1
+    end
+    σ_target = supercoiling_density(u, insert_location, bcs, ω0)
+
+    # σ = Δϕ / (Δx (-ω0)), so Δϕ = -ω0 σ Δx
+    if insert_location == 1
+        # Here, calculate this by the distance to the last polymerase.
+        return (insert_location,
+            ϕ[num_polymerases] + -ω0 * σ_target * (position + bcs.length - x[num_polymerases]))
+    end
+    return (insert_location,
+            σ_target * -ω0 * (position - x[insert_location - 1]) + ϕ[insert_location - 1])
+end
+
 function supercoiling_density(
     u::TanglesArray,
     i::Int64,
@@ -262,11 +324,6 @@ end
 function terminate!(c::TanglesArray, idx::UInt32)
     remove_idx = (1 + ((idx - 1) * 3)):(idx * 3)
 
-    print("Attempting to delete polymerase ")
-    print(idx)
-    print(" so deleting variables ")
-    println(remove_idx)
-
     if remove_idx[end] > length(c)
         @warn "Data array is too small!"
     else
@@ -282,6 +339,40 @@ function FiniteDiff.resize!(c::TanglesArray, i::Int64)
     resize!(c.x, i)
 end
 
+
+function extend_rnap!(c::TanglesArray, position::Float64, twist::Float64, gene::UInt32, terminate_end::Float64)
+    insert_idx::UInt32 = 1
+    num_polymerases::UInt32 = convert(UInt32, (length(c) - 1) / 3)
+
+    while insert_idx <= num_polymerases && c.x[insert_idx * 3] < position
+        insert_idx += 1
+    end
+
+    # Insert items in reverse order
+    insert!(c.x,3 * insert_idx, 0.0)
+    insert!(c.x,3 * insert_idx, twist)
+    insert!(c.x,3 * insert_idx, position)
+    insert!(c.polymerase_direction, insert_idx, terminate_end > position ? 1.0 : -1.0)
+    insert!(c.polymerase_stop, insert_idx, terminate_end)
+    insert!(c.polymerase_gene, insert_idx, gene)
+end
+
+function add_polymerase!(integrator, position::Float64, gene::UInt32, terminate_end::Float64)
+    print("Attempting to add polymerase. Current u:")
+    println(integrator.u)
+    twist::Float64 = interp_twist(position, integrator.u, integrator.p.bc_params, integrator.p.sim_params.ω_0)
+    println("Adding to full_cache vars")
+    for c in full_cache(integrator)
+        extend_rnap!(c, position, twist,  gene, terminate_end)
+    end
+    println("Printing new cache...")
+    for c in full_cache(integrator)
+        println(c)
+    end
+    println("Done adding!")
+end
+
+
 function terminate_polymerase!(integrator)
     # Identify polymerase to be terminated
     print("Attempting to terminate. Current u:")
@@ -290,12 +381,10 @@ function terminate_polymerase!(integrator)
     # Update gene lists
     remove_idx = (1 + ((p_idx - 1) * 3)):(p_idx * 3)
     println("Deleting full_cache vars")
+    # Update all internal caches
     for c in full_cache(integrator)
         terminate!(c, p_idx)
     end
-
-    println("Deleting integrator.u")
-    terminate!(integrator.u, p_idx)
     println("Deleting non-user cache")
     deleteat_non_user_cache!(integrator,remove_idx)
     println("Printing remaining cache...")
