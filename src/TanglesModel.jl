@@ -109,6 +109,19 @@ struct LinearBoundaryParameters <: BoundaryParameters
     right_is_free::Bool
 end
 
+struct Promoter
+    position::Float64
+    base_rate::Float64
+    supercoiling_dependent::Bool
+end
+
+struct Gene
+    base_rate::Float64
+    idx::UInt32
+    start::Float64
+    terminate::Float64
+end
+
 function InternalParameters(sim_params::SimulationParameters)
     # Computes intermediate values, initializing a InternalParameters struct
     # from the better-documented SimulationParameters object.
@@ -165,8 +178,22 @@ mutable struct TanglesArray <: DEDataArray{Float64,1}
 end
 
 
+function get_sc_region(position::Float64, u::TanglesArray)::Int64
+    loc::Int64 = 1
+    num_polymerases::Int64 = convert(UInt32, (length(u) - 1) / 3)
+    x = @view u.x[1:3:(end-1)]
+    while loc <= num_polymerases && x[loc] < position
+        loc += 1
+    end
+    return loc
+end
+
+function interp_twist(position::Float64, u::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, bcs::BoundaryParameters, ω0::Float64)
+    return interp_twist(position, u.u, bcs, ω0)
+end
+
 function interp_twist(position::Float64, u::TanglesArray, bcs::LinearBoundaryParameters, ω0::Float64)
-    insert_location::Int64 = 1
+    # Returns (insert_idx, insert_twist)
     num_polymerases::Int64 = convert(UInt32, (length(u) - 1) / 3)
 
     if num_polymerases == 0
@@ -176,9 +203,7 @@ function interp_twist(position::Float64, u::TanglesArray, bcs::LinearBoundaryPar
     x = @view u.x[1:3:(end-1)]
     ϕ = @view u.x[2:3:(end-1)]
 
-    while insert_location <= num_polymerases && x[insert_location] < position
-        insert_location += 1
-    end
+    insert_location::Int64 = get_sc_region(position, u)
 
     σ_target = supercoiling_density(u, insert_location, bcs, ω0)
     # σ = Δϕ / (Δx (-ω0)), so Δϕ = -ω0 σ Δx
@@ -201,7 +226,7 @@ function interp_twist(position::Float64, u::TanglesArray, bcs::LinearBoundaryPar
 end
 
 function interp_twist(position::Float64, u::TanglesArray, bcs::CircularBoundaryParameters, ω0::Float64)
-    insert_location::Int64 = 1
+    # Returns (insert_idx, insert_twist)
     num_polymerases::Int64 = convert(UInt32, (length(u) - 1) / 3)
 
     if num_polymerases == 0
@@ -211,9 +236,7 @@ function interp_twist(position::Float64, u::TanglesArray, bcs::CircularBoundaryP
     x = @view u.x[1:3:(end-1)]
     ϕ = @view u.x[2:3:(end-1)]
 
-    while insert_location <= num_polymerases && x[insert_location] < position
-        insert_location += 1
-    end
+    insert_location::Int64 = get_sc_region(position, u)
     σ_target = supercoiling_density(u, insert_location, bcs, ω0)
 
     # σ = Δϕ / (Δx (-ω0)), so Δϕ = -ω0 σ Δx
@@ -313,12 +336,20 @@ function polymerase_velocity(σ_b::Float64, σ_f::Float64, params::TanglesParams
         )
 end
 
+function polymerase_termination_check(u::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, t, integrator)
+    return polymerase_termination_check(u.u, t, integrator)
+end
+
 function polymerase_termination_check(u::TanglesArray, t, integrator) 
     if length(u) > 1
-        return min((u[1:3:(end-1)] - u.polymerase_stop)...)
+        return min(((u.polymerase_stop - u[1:3:(end-1)]) .* u.polymerase_direction)...)
     end
     # Never trigger polymerase termination 
     return 1
+end
+
+function terminate!(c::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, idx::UInt32)
+    terminate!(c.u, idx)
 end
 
 function terminate!(c::TanglesArray, idx::UInt32)
@@ -340,19 +371,16 @@ function FiniteDiff.resize!(c::TanglesArray, i::Int64)
 end
 
 
-function extend_rnap!(c::TanglesArray, position::Float64, twist::Float64, gene::UInt32, terminate_end::Float64)
-    insert_idx::UInt32 = 1
-    num_polymerases::UInt32 = convert(UInt32, (length(c) - 1) / 3)
+function extend_rnap!(c::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, position::Float64, insert_idx::UInt32, twist::Float64, gene::UInt32, terminate_end::Float64)
+    extend_rnap!(c.u, position, insert_idx, twist, gene, terminate_end)
+end
 
-    while insert_idx <= num_polymerases && c.x[insert_idx * 3] < position
-        insert_idx += 1
-    end
-
+function extend_rnap!(c::TanglesArray, position::Float64, insert_idx::UInt32, twist::Float64, gene::UInt32, terminate_end::Float64)
     # Insert items in reverse order
-    insert!(c.x,3 * insert_idx, 0.0)
-    insert!(c.x,3 * insert_idx, twist)
-    insert!(c.x,3 * insert_idx, position)
-    insert!(c.polymerase_direction, insert_idx, terminate_end > position ? 1.0 : -1.0)
+    insert!(c.x,1 + 3 * (insert_idx - 1), 0.0)
+    insert!(c.x,1 + 3 * (insert_idx - 1), twist)
+    insert!(c.x,1 + 3 * (insert_idx - 1), position)
+    insert!(c.polymerase_direction, insert_idx, terminate_end > position ? 1 : -1)
     insert!(c.polymerase_stop, insert_idx, terminate_end)
     insert!(c.polymerase_gene, insert_idx, gene)
 end
@@ -360,10 +388,10 @@ end
 function add_polymerase!(integrator, position::Float64, gene::UInt32, terminate_end::Float64)
     print("Attempting to add polymerase. Current u:")
     println(integrator.u)
-    twist::Float64 = interp_twist(position, integrator.u, integrator.p.bc_params, integrator.p.sim_params.ω_0)
+    insert_idx::UInt32, twist::Float64 = interp_twist(position, integrator.u, integrator.p.bc_params, integrator.p.sim_params.ω_0)
     println("Adding to full_cache vars")
     for c in full_cache(integrator)
-        extend_rnap!(c, position, twist,  gene, terminate_end)
+        extend_rnap!(c, position, insert_idx, twist,  gene, terminate_end)
     end
     println("Printing new cache...")
     for c in full_cache(integrator)
@@ -373,11 +401,39 @@ function add_polymerase!(integrator, position::Float64, gene::UInt32, terminate_
 end
 
 
+function polymerase_initiation_rate(u::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, p::TanglesParams, t, promoter::Promoter)::Float64
+    return polymerase_initiation_rate(u.u, p, t, promoter)
+end
+
+function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promoter::Promoter)::Float64
+    # Initiation rate is zero if initiation site is occupied
+    if length(u.x) == 1
+        return promoter.base_rate
+    end
+
+    if minimum(abs,u.x[1:3:end-1] .- promoter.position) < p.sim_params.r_rnap * 2
+        return 0.0
+    end
+
+    energy::Float64 = torque_response(supercoiling_density(
+        u, get_sc_region(promoter.position, u), p.bc_params, p.sim_params.ω_0), p) * 1.2 * 2.0 * π
+    sc_rate_factor::Float64 = exp(-energy / (p.sim_params.k_b * p.sim_params.T))
+    
+    return promoter.base_rate * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
+end
+
+function generate_jump(gene::Gene, sc_dependent::Bool)::VariableRateJump
+    return VariableRateJump(
+                (u,p,t) -> polymerase_initiation_rate(u,p,t,Promoter(gene.start,gene.base_rate,sc_dependent)),
+                (int)   -> add_polymerase!(int, gene.start, gene.idx, gene.terminate))
+end
+
+
 function terminate_polymerase!(integrator)
     # Identify polymerase to be terminated
     print("Attempting to terminate. Current u:")
     println(integrator.u)
-    p_idx::UInt32 = findmin(abs.(integrator.u[1:3:(end-1)] - integrator.u.polymerase_stop))[2]
+    p_idx::UInt32 = findmin(abs.(integrator.u.u[1:3:(end-1)] - integrator.u.u.polymerase_stop))[2]
     # Update gene lists
     remove_idx = (1 + ((p_idx - 1) * 3)):(p_idx * 3)
     println("Deleting full_cache vars")
@@ -419,7 +475,7 @@ function tangles_derivatives!(du, u::TanglesArray, params::TanglesParams, t)
     for i = 1:num_polymerases
         x = u[1 + (ns * (i - 1))]
         ϕ = u[2 + (ns * (i - 1))]
-        z = u[2 + (ns * (i - 1))]
+        z = u[3 + (ns * (i - 1))]
 
         σ_b = supercoiling_density(u, i, params.bc_params, params.sim_params.ω_0)
         σ_f = supercoiling_density(u, i + 1, params.bc_params, params.sim_params.ω_0)
@@ -431,19 +487,31 @@ function tangles_derivatives!(du, u::TanglesArray, params::TanglesParams, t)
         dϕ = drag * v * ω0 / (χ + drag) .- τ / (χ + drag)
 
         du[1 + (ns * (i - 1))] = v
-        du[2 + (ns * (i - 1))] = abs(v)
-        du[3 + (ns * (i - 1))] = dϕ
+        du[2 + (ns * (i - 1))] = dϕ
+        du[3 + (ns * (i - 1))] = abs(v)
     end
     du[end] = 0.0
 end
 
+function out_of_domain(u, p, t)
+    println("In OOD check")
+    print(length(u.u))
+    print(",")
+    println(u.u)
+    if length(u.u) == 1
+        return false
+    end
+    return any(diff(u.u[1:3:end-1]) .< 0)
+end
+
 function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, t_end::Float64)
-    u0 = TanglesArray([100, 0, 0, 0.0], [0], [1], [500], [1])
+    u0 = TanglesArray([0.0], [0], [], [], [])
     problem = ODEProblem(tangles_derivatives!, u0, [0.0, t_end], TanglesParams(
         InternalParameters(sim_params), bcs))
     termination_callback = ContinuousCallback(polymerase_termination_check, terminate_polymerase!,
                                 save_positions=(true,true))
-    return () -> solve(problem, AutoTsit5(Rosenbrock23(autodiff=false)), callback=termination_callback)
+    jump_problem = JumpProblem(problem, Direct(), generate_jump(Gene(1/120, 1, 100, 500), false))
+    return () -> solve(jump_problem, Tsit5(), callback=termination_callback, dtmax=10, isoutofdomain=out_of_domain)
 end
 
 # precompile hints
