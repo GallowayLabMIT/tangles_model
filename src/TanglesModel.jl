@@ -9,6 +9,12 @@ using MultiScaleArrays
 using HDF5
 import FiniteDiff
 
+export mRNA_Parameters, DEFAULT_mRNA_PARAMS
+export RNAP_Parameters, DEFAULT_RNAP_PARAMS, DNA_Parameters, DEFAULT_DNA_PARAMS
+export SimulationParameters, DEFAULT_SIM_PARAMS
+export LinearBoundaryParameters, CircularBoundaryParameters, Gene
+export simulate_full_examples, simulate_summarized_runs
+
 function check_nonnegative(x, name)
     if x < 0 
         error(name + " must be non-negative!")
@@ -67,14 +73,13 @@ struct SimulationParameters
     RNAP_params::RNAP_Parameters
     DNA_params::DNA_Parameters
     temperature::Float64            # (K) The temperature over which to run the simulation.
-    base_promoter_rate::Float64     # (1 / sec) The base rate of RNAP initiation.
     topoisomerase_rate::Float64     # (1 / sec) The base rate of topoisomerase activity.
     mRNA_degradation_rate::Float64  # (1 / sec) The base rate of mRNA degradation.
     sc_dependent::Bool              # If supercoiling-dependent initiation is used
 end
 DEFAULT_SIM_PARAMS = SimulationParameters(
     DEFAULT_mRNA_PARAMS, DEFAULT_RNAP_PARAMS, DEFAULT_DNA_PARAMS,
-    298, 1 / 120, 1 / 1200, 1 / 1200, false
+    298, 1 / 1200, 1 / 1200, false
 )
 
 struct InternalParameters
@@ -446,7 +451,7 @@ function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promot
 
     energy::Float64 = torque_response(supercoiling_density(
         u, get_sc_region(promoter.position, u), p.bc_params, p.sim_params.ω_0), p) * 1.2 * 2.0 * π
-    sc_rate_factor::Float64 = exp(-energy / (p.sim_params.k_b * p.sim_params.T))
+    sc_rate_factor::Float64 = min(50.0,exp(-energy / (p.sim_params.k_b * p.sim_params.T)))
     
     return promoter.base_rate * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
 end
@@ -478,6 +483,114 @@ function terminate_polymerase!(integrator)
     #end
     #println("Done terminating")
 end
+
+function internal_relax_supercoiling!(u::TanglesArray, n_rnap::Int64, start_idx::Int64, end_idx::Int64, bcs::CircularBoundaryParameters)
+    x = @view u.x[1:3:end-1]
+    ϕ = @view u.x[2:3:end-1]
+
+    # If we cover all polymerases, relax all:
+    if start_idx == 1 && end_idx == n_rnap
+        ϕ[start_idx:end_idx] .= 0
+        return
+    end
+    # Handle the edge cases properly by setting the x "boundaries"
+    if start_idx == 1
+        x_lower = x[end] - bcs.length
+        ϕ_lower = ϕ[end]
+        x_upper = x[end_idx + 1]
+        ϕ_upper = ϕ[end_idx + 1]
+    elseif end_idx == n_rnap
+        x_lower = x[start_idx - 1]
+        ϕ_lower = ϕ[start_idx - 1]
+        x_upper = bcs.length + x[1]
+        ϕ_upper = ϕ[1]
+    else
+        x_lower = x[start_idx - 1]
+        ϕ_lower = ϕ[start_idx - 1]
+        x_upper = x[end_idx + 1]
+        ϕ_upper = ϕ[end_idx + 1]
+    end
+    for i in start_idx:end_idx
+        α = (x_upper - x[i]) / (x_upper - x_lower)
+        ϕ[i] = (ϕ_lower * α) + (ϕ_upper * (1 - α))
+    end
+end
+
+function internal_relax_supercoiling!(u::TanglesArray, n_rnap::Int64, start_idx::Int64, end_idx::Int64, bcs::LinearBoundaryParameters)
+    x = @view u.x[1:3:end-1]
+    ϕ = @view u.x[2:3:end-1]
+
+    # Handle special cases
+    # Relax everything if either we cover all polymerases...
+    if start_idx == 1 && end_idx == n_rnap
+        ϕ[start_idx:end_idx] .= 0
+        return
+    end
+    # or if we are at the edges and that edge is free
+    if (start_idx == 1 && bcs.left_is_free) || (start_idx == n_rnap && bcs.right_is_free)
+        ϕ[start_idx:end_idx] .= 0
+        return
+    end
+
+    if start_idx == 1
+        # We have at least one polymerase to the right to interpolate with
+        for i in start_idx:end_idx
+            ϕ[i] = ϕ[end_idx + 1] * x[i] / x[end_idx + 1]
+        end
+        return
+    end
+
+    if end_idx == n_rnap
+        # Interpolate from the left
+        for i in start_idx:end_idx
+            ϕ[i] = ϕ[start_idx - 1] * (bcs.length - x[i]) / (bcs.length - x[start_idx - 1])
+        end
+        return
+    end
+    
+    # Otherwise, interpolate between left and right values
+    for i in start_idx:end_idx
+        α = (x[end_idx + 1] - x[i]) / (x[end_idx + 1] - x[start_idx - 1])
+        ϕ[i] = (ϕ[start_idx - 1] * α) + (ϕ[end_idx + 1] * (1 - α))
+    end
+end
+
+function relax_supercoiling!(u::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, left::Float64, right::Float64, bcs::BoundaryParameters)
+    relax_supercoiling!(u.u, left, right, bcs)
+end
+
+function relax_supercoiling!(u::TanglesArray, left::Float64, right::Float64, bcs::BoundaryParameters)
+    num_polymerases::Int64 = convert(UInt32, (length(u) - 1) / 3)
+    if num_polymerases == 0
+        return
+    end
+
+    x = @view u.x[1:3:end-1]
+    ϕ = @view u.x[2:3:end-1]
+
+    start_idx = 1
+    end_idx = 1
+    for i in 1:num_polymerases
+        rnap_pos::Float64 = u.x[1 + 3 * (start_idx - 1)]
+        if rnap_pos < left
+            start_idx += 1
+        end
+        if rnap_pos < right
+            end_idx += 1
+        end
+    end
+    # Correct for the off-by-one error
+    end_idx -= 1
+    internal_relax_supercoiling!(u, num_polymerases, start_idx,end_idx, bcs)
+end
+
+
+function relax_supercoiling!(integrator, left::Float64, right::Float64)
+    for c in full_cache(integrator)
+        relax_supercoiling!(c, left, right, integrator.p.bc_params)
+    end
+end
+
 
 function tangles_derivatives!(du, u::TanglesArray, params::TanglesParams, t)
     # Arguments
@@ -534,11 +647,26 @@ function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters
         InternalParameters(sim_params), bcs))
     termination_callback = ContinuousCallback(polymerase_termination_check, terminate_polymerase!,
                                 save_positions=(true,true))
+
+    # Calculate intergenic regions
+    sorted_genes::Array{Gene} = sort(genes, by=(g::Gene)->min(g.start, g.terminate))
+    # Duplicate gene if there is only one
+    if length(sorted_genes) == 1
+        push!(sorted_genes, sorted_genes[1])
+    end
+    topo_jumps = [
+        ConstantRateJump(
+            (u,p,t)->sim_params.topoisomerase_rate / (n_genes - 1.0),
+            (int)->relax_supercoiling!(int,
+                min(sorted_genes[i].start, sorted_genes[i].terminate),
+                min(sorted_genes[i+1].start, sorted_genes[i+1].terminate)))
+            for i in 1:(length(sorted_genes)-1)]
     jump_problem = JumpProblem(problem, Direct(),
         generate_jump.(genes, sim_params.sc_dependent)...,
+        topo_jumps...,
         [VariableRateJump((u,p,t)->mRNA_degradation_rate(u,p,t,convert(UInt32,i)), (int)->degrade_mRNA!(int, convert(UInt32,i))) for i in 1:n_genes]...
     )
-    return () -> solve(jump_problem, Tsit5(), callback=termination_callback, dtmax=10, isoutofdomain=out_of_domain)
+    return () -> solve(jump_problem, Tsit5(), callback=termination_callback, maxiters=2e5, dtmax=10, isoutofdomain=out_of_domain)
 end
 
 function write_bcs(group::HDF5.Group, bcs::LinearBoundaryParameters)
@@ -552,29 +680,30 @@ function write_bcs(group::HDF5.Group, bcs::CircularBoundaryParameters)
     attributes(group)["bcs.length"] = bcs.length
 end
 
-function write_h5_attributes(group::HDF5.Group, genes::Array{Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
+function write_h5_attributes(group::HDF5.Group, comment::String, genes::Array{Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
     attributes(group)["gene.start"] = [gene.start for gene in genes]
     attributes(group)["gene.end"] = [gene.terminate for gene in genes]
     attributes(group)["gene.base_rate"] = [gene.base_rate for gene in genes]
     attributes(group)["rates.topo"] = sim_params.topoisomerase_rate
     attributes(group)["rates.mRNA_degradation"] = sim_params.mRNA_degradation_rate
+    attributes(group)["comment"] = comment
     write_bcs(group, bcs)
 end
-function postprocess_to_h5(filename::String, solution, genes::Array{Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
+function postprocess_to_h5(filename::String, solution, comment::String, genes::Array{Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
     h5open(filename, "cw") do h5
         run_idx = 1
         while haskey(h5, "tangles_full_run." * lpad(run_idx, 6, "0"))
             run_idx += 1
         end
         g = create_group(h5, "tangles_full_run." * lpad(run_idx, 6, "0"))
-        g["time"] = soln.t
-        len = length(soln.u)
-        width = maximum([length(u.u.x) for u in soln.u]) - 1
+        g["time"] = solution.t
+        len = length(solution.u)
+        width = maximum([length(u.u.x) for u in solution.u]) - 1
 
         rnap_loc::Matrix{Float64} = -ones(len, convert(Int,width / 3))
         ϕ::Matrix{Float64} = -ones(len, convert(Int,width / 3))
         z::Matrix{Float64} = -ones(len, convert(Int,width / 3))
-        for (index, val) in enumerate(soln.u)
+        for (index, val) in enumerate(solution.u)
             x = val.u.x[1:end-1]
             n_polymerases = convert(Int, length(x) / 3)
             rnap_loc[index,1:n_polymerases] = x[1:3:end]
@@ -584,13 +713,14 @@ function postprocess_to_h5(filename::String, solution, genes::Array{Gene}, sim_p
         g["rnap_location"] = rnap_loc
         g["phi"] = ϕ
         g["mRNA_length"] = z
-        write_h5_attributes(g, genes, sim_params, bcs)
+        write_h5_attributes(g, comment, genes, sim_params, bcs)
     end
 end
 
 function simulate_full_examples(
     filename::String,
     n_simulations::Int64,
+    comment::String,
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
     genes::Array{Gene},
@@ -598,13 +728,14 @@ function simulate_full_examples(
     t_end::Float64)
     solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
     for _ in 1:n_simulations
-        postprocess_to_h5(filename, solver(), genes, sim_params, bcs)
+        postprocess_to_h5(filename, solver(), comment, genes, sim_params, bcs)
     end
 end
 
 function simulate_summarized_runs(
     filename::String,
     n_simulations::Int64,
+    comment::String,
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
     genes::Array{Gene},
@@ -622,7 +753,7 @@ function simulate_summarized_runs(
         end
         g = create_group(h5, "tangles_summarized_run." * lpad(run_idx, 6, "0"))
         g["final_mRNA"] = mRNA_results
-        write_h5_attributes(g, genes, sim_params, bcs)
+        write_h5_attributes(g, comment, genes, sim_params, bcs)
     end
 end
 
