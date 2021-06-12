@@ -622,7 +622,7 @@ function tangles_derivatives!(du, u::TanglesArray, params::TanglesParams, t)
         σ_f = supercoiling_density(u, i + 1, params.bc_params, params.sim_params.ω_0)
         # Compute polymerase direction and velocity
         v = u.polymerase_direction[i] * polymerase_velocity(σ_b, σ_f, params)
-        τ = torque_response(σ_f - σ_b,params)
+        τ = torque_response(σ_f, params) - torque_response(σ_b,params)
 
         drag = η * z^α
         dϕ = drag * v * ω0 / (χ + drag) .- τ / (χ + drag)
@@ -670,13 +670,13 @@ function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters
 end
 
 function write_bcs(group::HDF5.Group, bcs::LinearBoundaryParameters)
-    attributes(group)["bcs.is_circular"] = false
+    attributes(group)["bcs.is_circular"] = 0
     attributes(group)["bcs.length"] = bcs.length
     attributes(group)["bcs.left_free"] = bcs.left_is_free
     attributes(group)["bcs.right_free"] = bcs.right_is_free
 end
 function write_bcs(group::HDF5.Group, bcs::CircularBoundaryParameters)
-    attributes(group)["bcs.is_circular"] = true
+    attributes(group)["bcs.is_circular"] = 1
     attributes(group)["bcs.length"] = bcs.length
 end
 
@@ -686,6 +686,7 @@ function write_h5_attributes(group::HDF5.Group, comment::String, genes::Array{Ge
     attributes(group)["gene.base_rate"] = [gene.base_rate for gene in genes]
     attributes(group)["rates.topo"] = sim_params.topoisomerase_rate
     attributes(group)["rates.mRNA_degradation"] = sim_params.mRNA_degradation_rate
+    attributes(group)["rates.sc_dependent"] = sim_params.sc_dependent ? 1.0 : 0.0
     attributes(group)["comment"] = comment
     write_bcs(group, bcs)
 end
@@ -728,7 +729,11 @@ function simulate_full_examples(
     t_end::Float64)
     solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
     for _ in 1:n_simulations
-        postprocess_to_h5(filename, solver(), comment, genes, sim_params, bcs)
+        try
+            postprocess_to_h5(filename, solver(), comment, genes, sim_params, bcs)
+        catch err
+            @warn "Solver failed!"
+        end
     end
 end
 
@@ -744,7 +749,11 @@ function simulate_summarized_runs(
     solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
     mRNA_results = zeros(Int32, n_simulations, n_genes)
     for i in 1:n_simulations
-        mRNA_results[i,:] = solver().u[end].u.mRNA
+        try
+            mRNA_results[i,:] = solver().u[end].u.mRNA
+        catch err
+            @warn "Solver failed!"
+        end
     end
     h5open(filename, "cw") do h5
         run_idx = 1
