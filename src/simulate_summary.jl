@@ -14,32 +14,50 @@ function gen_sim_params(;
     )
 end
 
+node_idx = parse(Int32, ARGS[1])
+n_nodes = parse(Int32, ARGS[2])
+filename = "output/julia_summary_sims-node" * lpad(node_idx, 3, "0")
+
+println("""
+====================================
+Run summary:
+""", "\tnode_idx: ", node_idx, "\n\ttotal number of nodes: ", node_idx,
+"""
+
+====================================""")
+
 base_rate = 1.0 / 120.0
-n_examples = 5
-#for topo_multiplier in exp10.(range(-1,1,length=5)),
-for topo_multiplier in [0.1, 0.3, 0.5, 1.0],
+n_examples_per_node = 100
+i = 0
+
+for _ in 1:20,
+    topo_multiplier in [0.1, 0.3, 0.5, 1.0, 2.0],
     is_plasmid in [false, true],
     sc_dependent in [false, true],
     induction in exp10.(range(-2,0.5,length=5))
 
     start_time = time()
+    
+    if i % n_nodes == node_idx
+        continue
+    end
 
     bcs_2_gene = is_plasmid ? CircularBoundaryParameters(9616.0 * 0.34) : LinearBoundaryParameters(9616.0 * 0.34, false, false)
     genes_tandem_2 = [Gene(base_rate * induction, 1, 2329.0 * 0.34, 3372.0 * 0.34), Gene(base_rate, 2, 5067.0 * 0.34, 5810.0 * 0.34)]
     genes_convergent_2 = [Gene(base_rate * induction, 1, 2329.0 * 0.34, 3372.0 * 0.34), Gene(base_rate, 2, 4758.0 * 0.34, 4050.0 * 0.34)]
     genes_divergent_2 = [Gene(base_rate * induction, 1, 3614.0 * 0.34, 2555.0 * 0.34), Gene(base_rate, 2, 5067.0 * 0.34, 5810.0 * 0.34)]
 
-    simulate_full_examples("output/julia_example_sims.h5", n_examples, "2_gene.tandem",
+    simulate_summarized_runs(filename, n_examples_per_node, "2_gene.tandem",
             gen_sim_params(topo_rate_factor=topo_multiplier,sc_dependent=sc_dependent), bcs_2_gene,
             genes_tandem_2, 2, 15000.0)
     println("Done with 2_gene.tandem with params:\n\ttopo: ", topo_multiplier, "\n\tis_plasmid: ", is_plasmid,
         "\n\tsc_dependent: ", sc_dependent, "\n\t induction: ", induction)
-    simulate_full_examples("output/julia_example_sims.h5", n_examples, "2_gene.convergent",
+    simulate_summarized_runs(filename, n_examples_per_node, "2_gene.convergent",
             gen_sim_params(topo_rate_factor=topo_multiplier,sc_dependent=sc_dependent), bcs_2_gene,
             genes_convergent_2, 2, 15000.0)
     println("Done with 2_gene.convergent with params:\n\ttopo: ", topo_multiplier, "\n\tis_plasmid: ", is_plasmid,
         "\n\tsc_dependent: ", sc_dependent, "\n\t induction: ", induction)
-    simulate_full_examples("output/julia_example_sims.h5", n_examples, "2_gene.divergent",
+    simulate_summarized_runs(filename, n_examples_per_node, "2_gene.divergent",
             gen_sim_params(topo_rate_factor=topo_multiplier,sc_dependent=sc_dependent), bcs_2_gene,
             genes_divergent_2, 2, 15000.0)
     println("Done with 2_gene.convergent with params:\n\ttopo: ", topo_multiplier, "\n\tis_plasmid: ", is_plasmid,
@@ -49,20 +67,20 @@ for topo_multiplier in [0.1, 0.3, 0.5, 1.0],
     genes_tandem_3 = [Gene(base_rate, 3, 2620.0 * 0.34, 3723.0 * 0.34), Gene(base_rate * induction, 1, 4225.0 * 0.34, 5003.0 * 0.34), Gene(base_rate, 2, 6682.0 * 0.34, 7443.0 * 0.34)]
     genes_convergent_3 = [Gene(base_rate, 3, 2620.0 * 0.34, 3723.0 * 0.34), Gene(base_rate * induction, 1, 4225.0 * 0.34, 5003.0 * 0.34), Gene(base_rate, 2, 6387.0 * 0.34, 5669.0 * 0.34)]
     genes_divergent_3 = [Gene(base_rate, 3, 3398.0 * 0.34, 2487.0 * 0.34), Gene(base_rate * induction, 1, 4917.0 * 0.34, 4151.0 * 0.34), Gene(base_rate, 2, 6682.0 * 0.34, 7443.0 * 0.34)]
-    simulate_full_examples("output/julia_example_sims.h5", n_examples, "3_gene.tandem",
+    simulate_summarized_runs(filename, n_examples_per_node, "3_gene.tandem",
             gen_sim_params(topo_rate_factor=topo_multiplier,sc_dependent=sc_dependent), bcs_3_gene,
             genes_tandem_3, 3, 15000.0)
     println("Done with 3_gene.tandem with params:\n\ttopo: ", topo_multiplier, "\n\tis_plasmid: ", is_plasmid,
         "\n\tsc_dependent: ", sc_dependent, "\n\t induction: ", induction)
-    simulate_full_examples("output/julia_example_sims.h5", n_examples, "3_gene.convergent",
+    simulate_summarized_runs(filename, n_examples_per_node, "3_gene.convergent",
             gen_sim_params(topo_rate_factor=topo_multiplier,sc_dependent=sc_dependent), bcs_3_gene,
             genes_convergent_3, 3, 15000.0)
     println("Done with 3_gene.convergent with params:\n\ttopo: ", topo_multiplier, "\n\tis_plasmid: ", is_plasmid,
         "\n\tsc_dependent: ", sc_dependent, "\n\t induction: ", induction)
-    simulate_full_examples("output/julia_example_sims.h5", n_examples, "3_gene.divergent",
+    simulate_summarized_runs(filename, n_examples_per_node, "3_gene.divergent",
             gen_sim_params(topo_rate_factor=topo_multiplier,sc_dependent=sc_dependent), bcs_3_gene,
             genes_divergent_3, 3, 15000.0)
-    println("Done with 3_gene.divergent with params:\n\ttopo: ", topo_multiplier, "\n\tis_plasmid: ", is_plasmid,
+    println("Done with 3_gene.convergent with params:\n\ttopo: ", topo_multiplier, "\n\tis_plasmid: ", is_plasmid,
         "\n\tsc_dependent: ", sc_dependent, "\n\t induction: ", induction)
     
     println("Ran entire round in ", time() - start_time, " seconds")
