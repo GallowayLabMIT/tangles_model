@@ -704,16 +704,19 @@ function postprocess_to_h5(filename::String, solution, comment::String, genes::A
         rnap_loc::Matrix{Float64} = -ones(len, convert(Int,width / 3))
         ϕ::Matrix{Float64} = -ones(len, convert(Int,width / 3))
         z::Matrix{Float64} = -ones(len, convert(Int,width / 3))
+        mRNA::Matrix{Int32} = zeros(len, length(solution.u[1].u.mRNA))
         for (index, val) in enumerate(solution.u)
             x = val.u.x[1:end-1]
             n_polymerases = convert(Int, length(x) / 3)
             rnap_loc[index,1:n_polymerases] = x[1:3:end]
             ϕ[index,1:n_polymerases] = x[2:3:end]
             z[index,1:n_polymerases] = x[3:3:end]
+            mRNA[index,:] = val.u.mRNA
         end
         g["rnap_location"] = rnap_loc
         g["phi"] = ϕ
         g["mRNA_length"] = z
+        g["mRNA"] = mRNA
         write_h5_attributes(g, comment, genes, sim_params, bcs)
     end
 end
@@ -729,11 +732,11 @@ function simulate_full_examples(
     t_end::Float64)
     solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
     for _ in 1:n_simulations
-        try
+        #try
             postprocess_to_h5(filename, solver(), comment, genes, sim_params, bcs)
-        catch err
-            @warn "Solver failed!"
-        end
+        #catch err
+        #    @warn "Solver failed!"
+        #end
     end
 end
 
