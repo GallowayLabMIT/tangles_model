@@ -4,6 +4,7 @@ output/dataframes*
 output/stdout/*
 output/flow/2021.03.29
 output/julia*
+output/flow/*
 
 # Output images/files
 *.svg
