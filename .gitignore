@@ -5,6 +5,7 @@ output/stdout/*
 output/flow/2021.03.29
 output/julia*
 output/flow/*
+output/*.mp4
 ouput/julia_summaries/*
 
 # Output images/files
