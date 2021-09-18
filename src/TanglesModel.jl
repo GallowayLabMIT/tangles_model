@@ -76,10 +76,11 @@ struct SimulationParameters
     topoisomerase_rate::Float64     # (1 / sec) The base rate of topoisomerase activity.
     mRNA_degradation_rate::Float64  # (1 / sec) The base rate of mRNA degradation.
     sc_dependent::Bool              # If supercoiling-dependent initiation is used
+    σ2_coeff::Float64               # The leading coefficent on the σ^2 term
 end
 DEFAULT_SIM_PARAMS = SimulationParameters(
     DEFAULT_mRNA_PARAMS, DEFAULT_RNAP_PARAMS, DEFAULT_DNA_PARAMS,
-    298, 1 / 1200, 1 / 1200, false
+    298, 1 / 1200, 1 / 1200, false, 0.0
 )
 
 struct InternalParameters
@@ -105,6 +106,7 @@ struct InternalParameters
     topo_rate::Float64      # (1 / s) base topoisomerase activity rate
     mRNA_deg_rate::Float64  # (1 / s) base mRNA degradation rate
     sc_dependent::Bool      # If supercoiling dependent initiation is used
+    σ2_coeff::Float64       # The leading coefficent on the σ^2 term
 end
 
 abstract type BoundaryParameters end
@@ -178,7 +180,8 @@ function InternalParameters(sim_params::SimulationParameters)
         σ_p,
         sim_params.topoisomerase_rate,
         sim_params.mRNA_degradation_rate,
-        sim_params.sc_dependent
+        sim_params.sc_dependent,
+        sim_params.σ2_coeff
 )
 end
 
@@ -449,8 +452,8 @@ function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promot
         return 0.0
     end
 
-    energy::Float64 = torque_response(supercoiling_density(
-        u, get_sc_region(promoter.position, u), p.bc_params, p.sim_params.ω_0), p) * 1.2 * 2.0 * π
+    σ::Float64 = supercoiling_density(u, get_sc_region(promoter.position, u), p.bc_params, p.sim_params.ω_0)
+    energy::Float64 = (torque_response(σ, p) + p.sim_params.σ2_coeff * (σ / p.sim_params.σ_s)^2 * p.sim_params.τ_0) * 1.2 * 2.0 * π
     sc_rate_factor::Float64 = min(50.0,exp(-energy / (p.sim_params.k_b * p.sim_params.T)))
     
     return promoter.base_rate * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
@@ -687,6 +690,7 @@ function write_h5_attributes(group::HDF5.Group, comment::String, genes::Array{Ge
     attributes(group)["rates.topo"] = sim_params.topoisomerase_rate
     attributes(group)["rates.mRNA_degradation"] = sim_params.mRNA_degradation_rate
     attributes(group)["rates.sc_dependent"] = sim_params.sc_dependent ? 1.0 : 0.0
+    attributes(group)["coeff.sigma_squared"] = sim_params.σ2_coeff
     attributes(group)["comment"] = comment
     write_bcs(group, bcs)
 end
@@ -732,11 +736,11 @@ function simulate_full_examples(
     t_end::Float64)
     solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
     for _ in 1:n_simulations
-        #try
+        try
             postprocess_to_h5(filename, solver(), comment, genes, sim_params, bcs)
-        #catch err
-        #    @warn "Solver failed!"
-        #end
+        catch err
+            @warn "Solver failed!"
+        end
     end
 end
 

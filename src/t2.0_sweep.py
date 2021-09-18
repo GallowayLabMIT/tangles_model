@@ -1,5 +1,5 @@
 import itertools
-import stochastic_sc_model as ssc
+from modules import stochastic_sc_model as ssc
 from pathos.pools import ProcessPool
 
 params = {
@@ -82,7 +82,7 @@ def run_sweep(topo_multiplier, induction, n_runs, orientation, rTTa_present, pty
     result_pd['EGFP_induction'] = induction
     result_pd['topo_rate'] = topo_multiplier
     result_pd['sc_dependent'] = ptype == ssc.PromoterType.SC_DEPENDENT
-    out_file = f'output/dataframes/t2.0_rTTa-{rTTa_present}_orientation-{orientation}_topo-{topo_multiplier}_id-{id}_sc={ptype!=ssc.PromoterType.STATIC}.feather'
+    out_file = f'../output/dataframes/t2.0_rTTa-{rTTa_present}_orientation-{orientation}_topo-{topo_multiplier}_id-{id}_sc={ptype!=ssc.PromoterType.STATIC}.feather'
     print(f'Finished run orientation={orientation}/rTTa={rTTa_present}/induction={induction}/topo={topo_multiplier}/ptype={ptype}/id={id}, saving to file{out_file}')
     result_pd.to_feather(out_file)
 
