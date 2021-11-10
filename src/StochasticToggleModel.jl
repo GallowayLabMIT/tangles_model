@@ -4,9 +4,9 @@ n(p) = p[1]
 K(p) = p[2]
 α(p) = p[3]
 β(p) = p[4]
-rate_A_creation(u,p,_) = α(p) / (K(p) + u[2]^n(p))
+rate_A_creation(u,p,_) = α(p) * K(p) / (K(p) + u[2]^n(p))
 rate_A_degradation(u,p,_) = β(p) * u[1]
-rate_B_creation(u,p,_) = α(p) / (K(p) + u[1]^n(p))
+rate_B_creation(u,p,_) = α(p) * K(p) / (K(p) + u[1]^n(p))
 rate_B_degradation(u,p,_) = β(p) * u[2]
 
 function A_creation_affect!(integrator)
