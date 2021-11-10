@@ -27,9 +27,9 @@ for topo_multiplier in [0.1, 0.3, 0.5, 1.0],
     start_time = time()
 
     bcs_2_gene = is_plasmid ? CircularBoundaryParameters(9616.0 * 0.34) : LinearBoundaryParameters(9616.0 * 0.34, false, false)
-    genes_tandem_2 = [Gene(base_rate * induction, 1, 2329.0 * 0.34, 3372.0 * 0.34), Gene(base_rate, 2, 5067.0 * 0.34, 5810.0 * 0.34)]
-    genes_convergent_2 = [Gene(base_rate * induction, 1, 2329.0 * 0.34, 3372.0 * 0.34), Gene(base_rate, 2, 4758.0 * 0.34, 4050.0 * 0.34)]
-    genes_divergent_2 = [Gene(base_rate * induction, 1, 3614.0 * 0.34, 2555.0 * 0.34), Gene(base_rate, 2, 5067.0 * 0.34, 5810.0 * 0.34)]
+    genes_tandem_2 = [UncoupledGene(base_rate * induction, 1, 2329.0 * 0.34, 3372.0 * 0.34), UncoupledGene(base_rate, 2, 5067.0 * 0.34, 5810.0 * 0.34)]
+    genes_convergent_2 = [UncoupledGene(base_rate * induction, 1, 2329.0 * 0.34, 3372.0 * 0.34), UncoupledGene(base_rate, 2, 4758.0 * 0.34, 4050.0 * 0.34)]
+    genes_divergent_2 = [UncoupledGene(base_rate * induction, 1, 3614.0 * 0.34, 2555.0 * 0.34), UncoupledGene(base_rate, 2, 5067.0 * 0.34, 5810.0 * 0.34)]
 
     simulate_full_examples("output/julia_s2_example_sims.h5", n_examples, "2_gene.tandem",
             gen_sim_params(topo_rate_factor=topo_multiplier,sc_dependent=sc_dependent, σ2_coeff=σ2), bcs_2_gene,
@@ -48,9 +48,9 @@ for topo_multiplier in [0.1, 0.3, 0.5, 1.0],
         "\n\tsc_dependent: ", sc_dependent, "\n\t induction: ", induction, "\n\t σ2: ", σ2)
 
     bcs_3_gene = is_plasmid ? CircularBoundaryParameters(11238.0 * 0.34) : LinearBoundaryParameters(11238.0 * 0.34, false, false)
-    genes_tandem_3 = [Gene(base_rate, 3, 2620.0 * 0.34, 3723.0 * 0.34), Gene(base_rate * induction, 1, 4225.0 * 0.34, 5003.0 * 0.34), Gene(base_rate, 2, 6682.0 * 0.34, 7443.0 * 0.34)]
-    genes_convergent_3 = [Gene(base_rate, 3, 2620.0 * 0.34, 3723.0 * 0.34), Gene(base_rate * induction, 1, 4225.0 * 0.34, 5003.0 * 0.34), Gene(base_rate, 2, 6387.0 * 0.34, 5669.0 * 0.34)]
-    genes_divergent_3 = [Gene(base_rate, 3, 3398.0 * 0.34, 2487.0 * 0.34), Gene(base_rate * induction, 1, 4917.0 * 0.34, 4151.0 * 0.34), Gene(base_rate, 2, 6682.0 * 0.34, 7443.0 * 0.34)]
+    genes_tandem_3 = [UncoupledGene(base_rate, 3, 2620.0 * 0.34, 3723.0 * 0.34), UncoupledGene(base_rate * induction, 1, 4225.0 * 0.34, 5003.0 * 0.34), UncoupledGene(base_rate, 2, 6682.0 * 0.34, 7443.0 * 0.34)]
+    genes_convergent_3 = [UncoupledGene(base_rate, 3, 2620.0 * 0.34, 3723.0 * 0.34), UncoupledGene(base_rate * induction, 1, 4225.0 * 0.34, 5003.0 * 0.34), UncoupledGene(base_rate, 2, 6387.0 * 0.34, 5669.0 * 0.34)]
+    genes_divergent_3 = [UncoupledGene(base_rate, 3, 3398.0 * 0.34, 2487.0 * 0.34), UncoupledGene(base_rate * induction, 1, 4917.0 * 0.34, 4151.0 * 0.34), UncoupledGene(base_rate, 2, 6682.0 * 0.34, 7443.0 * 0.34)]
     simulate_full_examples("output/julia_s2_example_sims.h5", n_examples, "3_gene.tandem",
             gen_sim_params(topo_rate_factor=topo_multiplier,sc_dependent=sc_dependent, σ2_coeff=σ2), bcs_3_gene,
             genes_tandem_3, 3, 15000.0)

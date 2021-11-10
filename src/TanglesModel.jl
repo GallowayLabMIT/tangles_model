@@ -18,7 +18,7 @@ end
 export mRNA_Parameters, DEFAULT_mRNA_PARAMS
 export RNAP_Parameters, DEFAULT_RNAP_PARAMS, DNA_Parameters, DEFAULT_DNA_PARAMS
 export SimulationParameters, DEFAULT_SIM_PARAMS
-export LinearBoundaryParameters, CircularBoundaryParameters, Gene
+export LinearBoundaryParameters, CircularBoundaryParameters, UncoupledGene, CoupledGene
 export simulate_full_examples, simulate_summarized_runs
 
 function check_nonnegative(x, name)
@@ -133,11 +133,21 @@ struct Promoter
     supercoiling_dependent::Bool
 end
 
-struct Gene
+abstract type Gene end
+
+struct UncoupledGene <: Gene
     base_rate::Float64
     idx::UInt32
     start::Float64
     terminate::Float64
+end
+
+struct CoupledGene <: Gene
+    base_rate::Float64
+    idx::UInt32
+    start::Float64
+    terminate::Float64
+    coupling_function
 end
 
 function InternalParameters(sim_params::SimulationParameters)
@@ -443,12 +453,12 @@ function mRNA_degradation_rate(u::TanglesArray, p::TanglesParams, t, idx::UInt32
     return p.sim_params.mRNA_deg_rate * u.mRNA[idx]
 end
 
-function polymerase_initiation_rate(u::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, p::TanglesParams, t, promoter::Promoter)::Float64
-    return polymerase_initiation_rate(u.u, p, t, promoter)
+function polymerase_initiation_rate(u::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, p::TanglesParams, t, promoter::Promoter, coupling_func)::Float64
+    return polymerase_initiation_rate(u.u, p, t, promoter, coupling_func)
 end
 
 
-function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promoter::Promoter)::Float64
+function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promoter::Promoter, coupling_func)::Float64
     # Initiation rate is zero if initiation site is occupied
     if length(u.x) == 1
         return promoter.base_rate
@@ -462,12 +472,22 @@ function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promot
     energy::Float64 = (torque_response(σ, p) + p.sim_params.σ2_coeff * (σ / p.sim_params.σ_s)^2 * p.sim_params.τ_0) * 1.2 * 2.0 * π
     sc_rate_factor::Float64 = min(50.0,exp(-energy / (p.sim_params.k_b * p.sim_params.T)))
     
-    return promoter.base_rate * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
+    return promoter.base_rate * coupling_func(u.mRNA) * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
 end
 
-function generate_jump(gene::Gene, sc_dependent::Bool)::VariableRateJump
+function generate_jump(gene::UncoupledGene, sc_dependent::Bool)::VariableRateJump
     return VariableRateJump(
-                (u,p,t) -> polymerase_initiation_rate(u,p,t,Promoter(gene.start,gene.base_rate,sc_dependent)),
+                (u,p,t) -> polymerase_initiation_rate(
+                    u,p,t,
+                    Promoter(gene.start,gene.base_rate,sc_dependent),(mRNA)->1.0),
+                (int)   -> add_polymerase!(int, gene.start, gene.idx, gene.terminate))
+end
+
+function generate_jump(gene::CoupledGene, sc_dependent::Bool)::VariableRateJump
+    return VariableRateJump(
+                (u,p,t) -> polymerase_initiation_rate(
+                    u,p,t,
+                    Promoter(gene.start,gene.base_rate,sc_dependent),gene.coupling_function),
                 (int)   -> add_polymerase!(int, gene.start, gene.idx, gene.terminate))
 end
 
@@ -650,7 +670,7 @@ function out_of_domain(u, p, t)
     return any(diff(u.u[1:3:end-1]) .< 0)
 end
 
-function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, genes::Array{Gene}, n_genes::Int64, t_end::Float64)
+function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, genes::Array{<:Gene}, n_genes::Int64, t_end::Float64)
     u0 = TanglesArray([0.0], zeros(n_genes), [], [], [])
     problem = ODEProblem(tangles_derivatives!, u0, [0.0, t_end], TanglesParams(
         InternalParameters(sim_params), bcs))
@@ -788,7 +808,7 @@ pc_circular_params = TanglesParams(
     CircularBoundaryParameters(5000))
 ODEProblem(tangles_derivatives!, TanglesArray([0.0], [], [], [], []), [0, 1000.0], pc_linear_params)
 ODEProblem(tangles_derivatives!, TanglesArray([0.0], [], [], [], []), [0, 1000.0], pc_circular_params)
-TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.LinearBoundaryParameters(5000, false, false), [TanglesModel.Gene(1/120.0, 1, 100, 1000), TanglesModel.Gene(1/120.0, 2, 3000, 2000)], 2, 3000.0)()
-TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.CircularBoundaryParameters(5000), [TanglesModel.Gene(1/120.0, 1, 100, 1000), TanglesModel.Gene(1/120.0, 2, 3000, 2000)], 2, 3000.0)()
+TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.LinearBoundaryParameters(5000, false, false), [TanglesModel.UncoupledGene(1/120.0, 1, 100, 1000), TanglesModel.UncoupledGene(1/120.0, 2, 3000, 2000)], 2, 3000.0)()
+TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.CircularBoundaryParameters(5000), [TanglesModel.UncoupledGene(1/120.0, 1, 100, 1000), TanglesModel.UncoupledGene(1/120.0, 2, 3000, 2000)], 2, 3000.0)()
 
 end # module TanglesModel
