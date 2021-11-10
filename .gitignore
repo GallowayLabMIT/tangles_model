@@ -7,6 +7,8 @@ output/julia*
 output/flow/*
 output/*.mp4
 ouput/julia_summaries/*
+output/s2_julia_summaries/*
+output/s2_summaries_revised_range/*
 .vscode
 
 
@@ -14,6 +16,7 @@ ouput/julia_summaries/*
 *.svg
 *.pdf
 *.png
+*.h5
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

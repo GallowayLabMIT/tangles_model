@@ -2,12 +2,18 @@ __precompile__()
 
 module TanglesModel
 
+
 using Base: UInt32
 using MultiScaleArrays: length
 using DifferentialEquations
 using MultiScaleArrays
 using HDF5
 import FiniteDiff
+
+module StochasticToggle
+include("StochasticToggleModel.jl")
+export generate_jump_problem
+end
 
 export mRNA_Parameters, DEFAULT_mRNA_PARAMS
 export RNAP_Parameters, DEFAULT_RNAP_PARAMS, DNA_Parameters, DEFAULT_DNA_PARAMS
