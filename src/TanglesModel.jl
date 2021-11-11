@@ -285,7 +285,7 @@ function supercoiling_density(
     u::TanglesArray,
     i::Int64,
     bcs::CircularBoundaryParameters,
-    ω0::Float64)
+    ω0::Float64)::Float64
     if length(u.x) == 1
         return 0
     end
@@ -304,7 +304,7 @@ function supercoiling_density(
     u::TanglesArray,
     i::Int64,
     bcs::LinearBoundaryParameters,
-    ω0::Float64)
+    ω0::Float64)::Float64
     # Computes supercoiling density in N+1 regions, allowing for free or fixed left/right
     # boundary conditions
     
@@ -461,7 +461,7 @@ end
 function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promoter::Promoter, coupling_func)::Float64
     # Initiation rate is zero if initiation site is occupied
     if length(u.x) == 1
-        return promoter.base_rate
+        return promoter.base_rate * coupling_func(u.mRNA)
     end
 
     if minimum(abs,u.x[1:3:end-1] .- promoter.position) < p.sim_params.r_rnap * 2
@@ -671,7 +671,11 @@ function out_of_domain(u, p, t)
 end
 
 function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, genes::Array{<:Gene}, n_genes::Int64, t_end::Float64)
-    u0 = TanglesArray([0.0], zeros(n_genes), [], [], [])
+    build_problem(sim_params, bcs, genes, n_genes, t_end, zeros(Int32,n_genes))
+end 
+
+function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, genes::Array{<:Gene}, n_genes::Int64, t_end::Float64, ics_mRNA::Array{Int32,1})
+    u0 = TanglesArray([0.0], ics_mRNA, [], [], [])
     problem = ODEProblem(tangles_derivatives!, u0, [0.0, t_end], TanglesParams(
         InternalParameters(sim_params), bcs))
     termination_callback = ContinuousCallback(polymerase_termination_check, terminate_polymerase!,

@@ -17,6 +17,7 @@ output/s2_summaries_revised_range/*
 *.pdf
 *.png
 *.h5
+*.mp4
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
