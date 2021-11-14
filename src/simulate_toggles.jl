@@ -3,7 +3,7 @@ using DifferentialEquations.EnsembleAnalysis
 using TanglesModel
 using TanglesModel.StochasticToggle
 using Plots
-using RandomNumbers
+using Interpolations
 
 #------------Simulation distributed over the input space---------------------------------------------
 function adjust_ics(prob, i, _)
@@ -45,6 +45,9 @@ dot_colors = [(i % 20) <= trunc(Int64, i / 20) ? 1 : 2 for i in 1:400]
 animate_trajectories(sol, 400, [0.0, 10000.0], dot_colors, "output/movies/stochastic_toggle_summary.mp4")
 
 # Simulate starting in one of the basins
+single_basin_prob = EnsembleProblem(generate_jump_problem([8,0], (0.0,100000.0), 5.0, 8.0, 1/160.0, 1/1200.0))
+single_basin_sol = solve(single_basin_prob, SSAStepper(), trajectories=400)
+animate_trajectories(single_basin_sol, 400, [0.0, 10000.0], ones(Int,400), "output/movies/stochastic_toggle_single_basin.mp4")
 basin_curves = []
 for n in 1.0:5.0
     basin_ensemble = EnsembleProblem(generate_jump_problem([8,0], (0.0,300000.0), n, 8.0, 1/160.0, 1/1200.0))
@@ -54,9 +57,10 @@ for n in 1.0:5.0
     append!(basin_curves, vcat([basin_percentage(t) for t in range(0.0, stop=300000.0, length=200)]...))
 end
 basin_curves = convert(Matrix{Float64},reshape(basin_curves, (200,5)))
-plot(basin_curves)
+plot(basin_curves,
+    palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=2)
 
-# Start simulation in one area
+#TODO: add axis labels, and proper x-axis scale
 
 #====================================TANGLES=======================================================
 ==================================================================================================#
@@ -76,16 +80,38 @@ function gen_sim_params(;
     )
 end
 tangles_params = gen_sim_params()
+#-----------------Simulate w/ TANGLES, with large intergenic distance (hopefully uncoupled)--------
 large_bcs = LinearBoundaryParameters(100000, true, true)
 large_gene_spacing = [
     CoupledGene(1 / 160.0, 1, 10000, 10500, (mRNA)->8.0 / (8.0 + mRNA[2]^5.0)),
     CoupledGene(1 / 160.0, 2, 90000, 90500, (mRNA)->8.0 / (8.0 + mRNA[1]^5.0))
 ]
-
-
-#-----------------Simulate w/ TANGLES, with large intergenic distance (hopefully uncoupled)--------
 low_coupling_problem = TanglesModel.build_problem(
     tangles_params, large_bcs, large_gene_spacing, 2, 10000.0, convert(Array{Int32,1},[5,5]))
 tangles_soln = low_coupling_problem()
 mRNA_vals = hcat([tangles_soln.u[i].u.mRNA for i in 1:length(tangles_soln)]...)
 plot(transpose(mRNA_vals))
+
+#-----------------Simulate w/ TANGLES, with small intergenic distance (introducing coupling)-------
+small_bcs = LinearBoundaryParameters(7300.0 * 0.34, false, false)
+n_trajectories = 100
+n_samples = 200
+max_t = 100000.0
+mRNA_results = zeros((5,n_samples,2, n_trajectories))
+for n in 1.0:5.0
+    coupled_tangles = TanglesModel.build_problem(
+        tangles_params, small_bcs, [
+            CoupledGene(1 / 160.0, 1, 2300.0 * 0.34, 3300.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[2]^n)),
+            CoupledGene(1 / 160.0, 2, 5000.0 * 0.34, 4000.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[1]^n))
+        ], 2, max_t, convert(Array{Int32, 1}, [8, 0])
+    )
+    for i = 1:n_trajectories
+        sol = coupled_tangles()
+        timesteps = Interpolations.deduplicate_knots!(sol.t)
+        mRNA = hcat([sol.u[i].u.mRNA for i in 1:length(sol)]...)
+        interp_mRNA = ConstantInterpolation((1:2, timesteps), mRNA)
+        mRNA_results[trunc(Int,n),:,1,i] = interp_mRNA(1,range(0.0, stop=max_t, length=n_samples))
+        mRNA_results[trunc(Int,n),:,2,i] = interp_mRNA(2,range(0.0, stop=max_t, length=n_samples))
+    end
+end
+summary_tangles = dropdims(sum(mRNA_results[:,:,1,:] .> mRNA_results[:,:,2,:],dims=3) / n_trajectories, dims=3)
