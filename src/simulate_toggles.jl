@@ -94,15 +94,15 @@ plot(transpose(mRNA_vals))
 
 #-----------------Simulate w/ TANGLES, with small intergenic distance (introducing coupling)-------
 small_bcs = LinearBoundaryParameters(7300.0 * 0.34, false, false)
-n_trajectories = 100
+n_trajectories = 2000
 n_samples = 200
 max_t = 100000.0
 mRNA_results = zeros((5,n_samples,2, n_trajectories))
 for n in 1.0:5.0
     coupled_tangles = TanglesModel.build_problem(
         tangles_params, small_bcs, [
-            CoupledGene(1 / 160.0, 1, 2300.0 * 0.34, 3300.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[2]^n)),
-            CoupledGene(1 / 160.0, 2, 5000.0 * 0.34, 4000.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[1]^n))
+            CoupledGene(1 / 160.0, 1, 2500.0 * 0.34, 3500.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[2]^n)),
+            CoupledGene(1 / 160.0, 2, 4800.0 * 0.34, 3800.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[1]^n))
         ], 2, max_t, convert(Array{Int32, 1}, [8, 0])
     )
     for i = 1:n_trajectories
@@ -115,3 +115,5 @@ for n in 1.0:5.0
     end
 end
 summary_tangles = dropdims(sum(mRNA_results[:,:,1,:] .> mRNA_results[:,:,2,:],dims=3) / n_trajectories, dims=3)
+plot(transpose(summary_tangles),
+    palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=2)
