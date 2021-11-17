@@ -43,25 +43,21 @@ ensemble_prob = EnsembleProblem(prob, prob_func=adjust_ics)
 sol= solve(ensemble_prob, SSAStepper(), trajectories=400)
 dot_colors = [(i % 20) <= trunc(Int64, i / 20) ? 1 : 2 for i in 1:400]
 
-animate_trajectories(sol, 400, [0.0, 10000.0], dot_colors, "output/movies/stochastic_toggle_summary.mp4")
+animate_trajectories(sol, 400, [0.0, 10000.0], dot_colors, "output/toggle/movies/stochastic_toggle_summary.mp4")
 
 # Simulate starting in one of the basins
 single_basin_prob = EnsembleProblem(generate_jump_problem([8,0], (0.0,100000.0), 5.0, 8.0, 1/160.0, 1/1200.0))
 single_basin_sol = solve(single_basin_prob, SSAStepper(), trajectories=400)
-animate_trajectories(single_basin_sol, 400, [0.0, 10000.0], ones(Int,400), "output/movies/stochastic_toggle_single_basin.mp4")
+animate_trajectories(single_basin_sol, 400, [0.0, 10000.0], ones(Int,400), "output/toggle/movies/stochastic_toggle_single_basin.mp4")
 basin_curves = []
 for n in 1.0:5.0
-    basin_ensemble = EnsembleProblem(generate_jump_problem([8,0], (0.0,300000.0), n, 8.0, 1/160.0, 1/1200.0))
+    basin_ensemble = EnsembleProblem(generate_jump_problem([8,0], (0.0,50000.0), n, 8.0, 1/160.0, 1/1200.0))
     basin_solution = solve(basin_ensemble, SSAStepper(), trajectories=5000)
 
     basin_percentage(t) = sum(componentwise_vectors_timepoint(basin_solution, t)[1] .> componentwise_vectors_timepoint(basin_solution, t)[2]) / 5000
-    append!(basin_curves, vcat([basin_percentage(t) for t in range(0.0, stop=300000.0, length=200)]...))
+    append!(basin_curves, vcat([basin_percentage(t) for t in range(0.0, stop=50000.0, length=200)]...))
 end
 basin_curves = convert(Matrix{Float64},reshape(basin_curves, (200,5)))
-plot(basin_curves,
-    palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=2)
-
-#TODO: add axis labels, and proper x-axis scale
 
 #====================================TANGLES=======================================================
 ==================================================================================================#
@@ -80,7 +76,7 @@ function gen_sim_params(;
         σ2_coeff
     )
 end
-tangles_params = gen_sim_params(;sc_dependent=true)
+tangles_params = gen_sim_params(;sc_dependent=true, σ2_coeff=0.01)
 #-----------------Simulate w/ TANGLES, with large intergenic distance (hopefully uncoupled)--------
 large_bcs = LinearBoundaryParameters(100000, true, true)
 large_gene_spacing = [
@@ -95,9 +91,9 @@ plot(transpose(mRNA_vals))
 
 #-----------------Simulate w/ TANGLES, with small intergenic distance (introducing coupling)-------
 small_bcs = LinearBoundaryParameters(7300.0 * 0.34, false, false)
-n_trajectories = 2000
+n_trajectories = 100
 n_samples = 200
-max_t = 100000.0
+max_t = 50000.0
 convergent_results = zeros((5,n_samples,2, n_trajectories))
 divergent_results = zeros((5,n_samples,2, n_trajectories))
 for n = 1.0:5.0
@@ -114,31 +110,36 @@ for n = 1.0:5.0
         ], 2, max_t, convert(Array{Int32, 1}, [8, 0])
     )
     for i = 1:n_trajectories
-        sol = convergent_setup()
+        done = false
+        sol = false
+        while !done
+            sol = convergent_setup()
+            done = (sol.retcode == :Success)
+        end
         timesteps = Interpolations.deduplicate_knots!(sol.t)
         mRNA = hcat([sol.u[i].u.mRNA for i in 1:length(sol)]...)
         interp_mRNA = ConstantInterpolation((1:2, timesteps), mRNA)
         convergent_results[trunc(Int,n),:,1,i] = interp_mRNA(1,range(0.0, stop=max_t, length=n_samples))
         convergent_results[trunc(Int,n),:,2,i] = interp_mRNA(2,range(0.0, stop=max_t, length=n_samples))
-        if i % 50 == 0
-            print(".")
-        end
+        print(".")
     end
     for i = 1:n_trajectories
-        sol = divergent_setup()
+        done = false
+        sol = false
+        while !done
+            sol = divergent_setup()
+            done = (sol.retcode == :Success)
+        end
         timesteps = Interpolations.deduplicate_knots!(sol.t)
         mRNA = hcat([sol.u[i].u.mRNA for i in 1:length(sol)]...)
         interp_mRNA = ConstantInterpolation((1:2, timesteps), mRNA)
         divergent_results[trunc(Int,n),:,1,i] = interp_mRNA(1,range(0.0, stop=max_t, length=n_samples))
         divergent_results[trunc(Int,n),:,2,i] = interp_mRNA(2,range(0.0, stop=max_t, length=n_samples))
-        if i % 50 == 0
-            print(".")
-        end
+        print(".")
     end
 end
-summary_tangles = dropdims(sum(mRNA_results[:,:,1,:] .> mRNA_results[:,:,2,:],dims=3) / n_trajectories, dims=3)
-plot(transpose(summary_tangles),
-    palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=2)
+convergent_summary = dropdims(sum(convergent_results[:,:,1,:] .> convergent_results[:,:,2,:],dims=3) / n_trajectories, dims=3)
+divergent_summary = dropdims(sum(divergent_results[:,:,1,:] .> divergent_results[:,:,2,:],dims=3) / n_trajectories, dims=3)
 
 #----------------Calculate the eigenvalues for a transition matrix)------------------
 n_vals = 1.0:5.0
@@ -175,4 +176,45 @@ for i =  1:length(n_vals)
     end
 end
 
-plot(0.5 .+ 0.5 .* hcat([c.^(1:100000) for c in convergence_factor]...))
+
+#-------------------Plotting-------------------------
+# Do all combined plotting
+plot_tspan = range(0.0, stop=50000.0, length=200)
+plot(0.45 .+ 0.55 .* hcat([c.^(1:50000) for c in convergence_factor]...),
+    palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=3,
+    xlims=(0,50000.0), ylims=(0.42, 1.0),
+    xlabel="Time", ylabel="Fraction in basin", title="Eigenvalue analysis")
+savefig("output/toggle/images/eigenvalue.pdf")
+plot(plot_tspan,basin_curves,
+    palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=3,
+    xlims=(0,50000.0), ylims=(0.42, 1.0),
+    xlabel="Time", ylabel="Fraction in basin", title="Stochastic")
+savefig("output/toggle/images/stochastic.pdf")
+plot(plot_tspan, transpose(convergent_summary),
+    palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=3,
+    xlims=(0,50000.0), ylims=(0.42, 1.0),
+    xlabel="Time", ylabel="Fraction in basin", title="TANGLES: convergent orientation")
+savefig("output/toggle/images/tangles_convergent.pdf")
+plot(plot_tspan, transpose(divergent_summary),
+    palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=3,
+    xlims=(0,50000.0), ylims=(0.42, 1.0), title="TANGLES: divergent orientation")
+savefig("output/toggle/images/tangles_divergent.pdf")
+plot(0.45 .+ 0.55 .* hcat([c.^(1:50000) for c in convergence_factor]...),
+    color=1, label="", lw=1,
+    xlims=(0,50000.0), ylims=(0.42, 1.0))
+plot!(0.45 .+ 0.55 .* (convergence_factor[1].^(1:50000)), color=1, label="Eigenvalue", lw=1)
+plot!(plot_tspan,basin_curves[:,1], color=2, label="Stochastic", lw=3)
+plot!(plot_tspan,basin_curves,
+    color=2, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
+savefig("output/toggle/images/eigenvalue_stochastic_compare.pdf")
+
+plot(plot_tspan,basin_curves,
+    color=1, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
+plot!(plot_tspan,basin_curves[:,1], color=1, label="Stochastic", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
+plot!(plot_tspan,transpose(convergent_summary)[:,1], color=2, label="Convergent", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
+plot!(plot_tspan,transpose(divergent_summary)[:,1], color=3, label="Divergent", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
+plot!(plot_tspan,transpose(convergent_summary),
+    color=2, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
+plot!(plot_tspan,transpose(divergent_summary),
+    color=3, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
+savefig("output/toggle/images/stochastic_convergent_divergent_compare.pdf")

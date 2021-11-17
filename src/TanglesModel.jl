@@ -699,7 +699,7 @@ function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters
         topo_jumps...,
         [VariableRateJump((u,p,t)->mRNA_degradation_rate(u,p,t,convert(UInt32,i)), (int)->degrade_mRNA!(int, convert(UInt32,i))) for i in 1:n_genes]...
     )
-    return () -> solve(jump_problem, Tsit5(), callback=termination_callback, maxiters=2e5, dtmax=10, isoutofdomain=out_of_domain)
+    return () -> solve(jump_problem, Tsit5(), callback=termination_callback, maxiters=3e5, dtmax=10, isoutofdomain=out_of_domain)
 end
 
 function write_bcs(group::HDF5.Group, bcs::LinearBoundaryParameters)
