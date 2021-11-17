@@ -10,6 +10,8 @@ ouput/julia_summaries/*
 output/s2_julia_summaries/*
 output/s2_summaries_revised_range/*
 .vscode
+*/latex.out
+*.bib
 
 
 # Output images/files
