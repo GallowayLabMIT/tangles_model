@@ -80,7 +80,7 @@ function gen_sim_params(;
         σ2_coeff
     )
 end
-tangles_params = gen_sim_params()
+tangles_params = gen_sim_params(;sc_dependent=true)
 #-----------------Simulate w/ TANGLES, with large intergenic distance (hopefully uncoupled)--------
 large_bcs = LinearBoundaryParameters(100000, true, true)
 large_gene_spacing = [
@@ -95,7 +95,7 @@ plot(transpose(mRNA_vals))
 
 #-----------------Simulate w/ TANGLES, with small intergenic distance (introducing coupling)-------
 small_bcs = LinearBoundaryParameters(7300.0 * 0.34, false, false)
-n_trajectories = 5000
+n_trajectories = 2000
 n_samples = 200
 max_t = 100000.0
 convergent_results = zeros((5,n_samples,2, n_trajectories))
@@ -120,6 +120,9 @@ for n = 1.0:5.0
         interp_mRNA = ConstantInterpolation((1:2, timesteps), mRNA)
         convergent_results[trunc(Int,n),:,1,i] = interp_mRNA(1,range(0.0, stop=max_t, length=n_samples))
         convergent_results[trunc(Int,n),:,2,i] = interp_mRNA(2,range(0.0, stop=max_t, length=n_samples))
+        if i % 50 == 0
+            print(".")
+        end
     end
     for i = 1:n_trajectories
         sol = divergent_setup()
@@ -128,6 +131,9 @@ for n = 1.0:5.0
         interp_mRNA = ConstantInterpolation((1:2, timesteps), mRNA)
         divergent_results[trunc(Int,n),:,1,i] = interp_mRNA(1,range(0.0, stop=max_t, length=n_samples))
         divergent_results[trunc(Int,n),:,2,i] = interp_mRNA(2,range(0.0, stop=max_t, length=n_samples))
+        if i % 50 == 0
+            print(".")
+        end
     end
 end
 summary_tangles = dropdims(sum(mRNA_results[:,:,1,:] .> mRNA_results[:,:,2,:],dims=3) / n_trajectories, dims=3)
