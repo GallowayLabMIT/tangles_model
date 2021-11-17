@@ -4,6 +4,7 @@ using TanglesModel
 using TanglesModel.StochasticToggle
 using Plots
 using Interpolations
+using LinearAlgebra
 
 #------------Simulation distributed over the input space---------------------------------------------
 function adjust_ics(prob, i, _)
@@ -94,26 +95,78 @@ plot(transpose(mRNA_vals))
 
 #-----------------Simulate w/ TANGLES, with small intergenic distance (introducing coupling)-------
 small_bcs = LinearBoundaryParameters(7300.0 * 0.34, false, false)
-n_trajectories = 2000
+n_trajectories = 5000
 n_samples = 200
 max_t = 100000.0
-mRNA_results = zeros((5,n_samples,2, n_trajectories))
-for n in 1.0:5.0
-    coupled_tangles = TanglesModel.build_problem(
+convergent_results = zeros((5,n_samples,2, n_trajectories))
+divergent_results = zeros((5,n_samples,2, n_trajectories))
+for n = 1.0:5.0
+    convergent_setup = TanglesModel.build_problem(
         tangles_params, small_bcs, [
             CoupledGene(1 / 160.0, 1, 2500.0 * 0.34, 3500.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[2]^n)),
             CoupledGene(1 / 160.0, 2, 4800.0 * 0.34, 3800.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[1]^n))
         ], 2, max_t, convert(Array{Int32, 1}, [8, 0])
     )
+    divergent_setup = TanglesModel.build_problem(
+        tangles_params, small_bcs, [
+            CoupledGene(1 / 160.0, 1, 3500.0 * 0.34, 2500.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[2]^n)),
+            CoupledGene(1 / 160.0, 2, 3800.0 * 0.34, 4800.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[1]^n))
+        ], 2, max_t, convert(Array{Int32, 1}, [8, 0])
+    )
     for i = 1:n_trajectories
-        sol = coupled_tangles()
+        sol = convergent_setup()
         timesteps = Interpolations.deduplicate_knots!(sol.t)
         mRNA = hcat([sol.u[i].u.mRNA for i in 1:length(sol)]...)
         interp_mRNA = ConstantInterpolation((1:2, timesteps), mRNA)
-        mRNA_results[trunc(Int,n),:,1,i] = interp_mRNA(1,range(0.0, stop=max_t, length=n_samples))
-        mRNA_results[trunc(Int,n),:,2,i] = interp_mRNA(2,range(0.0, stop=max_t, length=n_samples))
+        convergent_results[trunc(Int,n),:,1,i] = interp_mRNA(1,range(0.0, stop=max_t, length=n_samples))
+        convergent_results[trunc(Int,n),:,2,i] = interp_mRNA(2,range(0.0, stop=max_t, length=n_samples))
+    end
+    for i = 1:n_trajectories
+        sol = divergent_setup()
+        timesteps = Interpolations.deduplicate_knots!(sol.t)
+        mRNA = hcat([sol.u[i].u.mRNA for i in 1:length(sol)]...)
+        interp_mRNA = ConstantInterpolation((1:2, timesteps), mRNA)
+        divergent_results[trunc(Int,n),:,1,i] = interp_mRNA(1,range(0.0, stop=max_t, length=n_samples))
+        divergent_results[trunc(Int,n),:,2,i] = interp_mRNA(2,range(0.0, stop=max_t, length=n_samples))
     end
 end
 summary_tangles = dropdims(sum(mRNA_results[:,:,1,:] .> mRNA_results[:,:,2,:],dims=3) / n_trajectories, dims=3)
 plot(transpose(summary_tangles),
     palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=2)
+
+#----------------Calculate the eigenvalues for a transition matrix)------------------
+n_vals = 1.0:5.0
+convergence_factor = zeros(length(n_vals))
+for i =  1:length(n_vals)
+    n = n_vals[i]
+    for max_val = 10:10
+        transition_matrix = zeros(((max_val + 1)^2, (max_val + 1)^2))
+        ab_to_i(a,b) = 1 + a + (max_val + 1) * b
+        # Fill in the transitions from each state in the stochastic transition matrix
+        for a=0:max_val, b=0:max_val
+            our_state = ab_to_i(a,b)
+            # There are potentially four non-zero transitions.
+            
+            # Degradation terms
+            if a > 0
+                transition_matrix[our_state, ab_to_i(a-1,b)] = 1/1200.0 * a
+            end
+            if b > 0
+                transition_matrix[our_state, ab_to_i(a,b-1)] = 1/1200.0 * b
+            end
+            # Creation terms
+            if a < max_val
+                transition_matrix[our_state, ab_to_i(a+1,b)] = 1/160.0 * 8.0 / (8.0 + b^n)
+            end
+            if b < max_val
+                transition_matrix[our_state, ab_to_i(a,b+1)] = 1/160.0 * 8.0 / (8.0 + a^n)
+            end
+            # Central term
+            transition_matrix[our_state, our_state] = 1 - sum(transition_matrix[our_state, :])
+        end
+        # Save the absolute value of the second highest eigenvalue 
+        convergence_factor[i] = sort(abs.(eigvals(transition_matrix)))[end-1]
+    end
+end
+
+plot(0.5 .+ 0.5 .* hcat([c.^(1:100000) for c in convergence_factor]...))
