@@ -76,37 +76,27 @@ function gen_sim_params(;
         σ2_coeff
     )
 end
-tangles_params = gen_sim_params(;sc_dependent=true, σ2_coeff=0.01)
-#-----------------Simulate w/ TANGLES, with large intergenic distance (hopefully uncoupled)--------
-large_bcs = LinearBoundaryParameters(100000, true, true)
-large_gene_spacing = [
-    CoupledGene(1 / 160.0, 1, 10000, 10500, (mRNA)->8.0 / (8.0 + mRNA[2]^5.0)),
-    CoupledGene(1 / 160.0, 2, 90000, 90500, (mRNA)->8.0 / (8.0 + mRNA[1]^5.0))
-]
-low_coupling_problem = TanglesModel.build_problem(
-    tangles_params, large_bcs, large_gene_spacing, 2, 10000.0, convert(Array{Int32,1},[5,5]))
-tangles_soln = low_coupling_problem()
-mRNA_vals = hcat([tangles_soln.u[i].u.mRNA for i in 1:length(tangles_soln)]...)
-plot(transpose(mRNA_vals))
 
 #-----------------Simulate w/ TANGLES, with small intergenic distance (introducing coupling)-------
-small_bcs = LinearBoundaryParameters(7300.0 * 0.34, false, false)
-n_trajectories = 100
+n_trajectories = 10
 n_samples = 200
 max_t = 50000.0
 convergent_results = zeros((5,n_samples,2, n_trajectories))
 divergent_results = zeros((5,n_samples,2, n_trajectories))
 for n = 1.0:5.0
+    #tangles_params = gen_sim_params(;sc_dependent=false)
+    tangles_params = gen_sim_params(;sc_dependent=true, σ2_coeff=0.1)
+    small_bcs = LinearBoundaryParameters(7300.0 * 0.34, false, false)
     convergent_setup = TanglesModel.build_problem(
         tangles_params, small_bcs, [
-            CoupledGene(1 / 160.0, 1, 2500.0 * 0.34, 3500.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[2]^n)),
-            CoupledGene(1 / 160.0, 2, 4800.0 * 0.34, 3800.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[1]^n))
+            CoupledGene(1 / 160.0, 1, 2500.0 * 0.34, 3500.0 * 0.34, (mRNA)->38.0 / (38.0 + mRNA[2]^n)),
+            CoupledGene(1 / 160.0, 2, 4800.0 * 0.34, 3800.0 * 0.34, (mRNA)->38.0 / (38.0 + mRNA[1]^n))
         ], 2, max_t, convert(Array{Int32, 1}, [8, 0])
     )
     divergent_setup = TanglesModel.build_problem(
         tangles_params, small_bcs, [
-            CoupledGene(1 / 160.0, 1, 3500.0 * 0.34, 2500.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[2]^n)),
-            CoupledGene(1 / 160.0, 2, 3800.0 * 0.34, 4800.0 * 0.34, (mRNA)->8.0 / (8.0 + mRNA[1]^n))
+            CoupledGene(1 / 160.0, 1, 3500.0 * 0.34, 2500.0 * 0.34, (mRNA)->38.0 / (38.0 + mRNA[2]^n)),
+            CoupledGene(1 / 160.0, 2, 3800.0 * 0.34, 4800.0 * 0.34, (mRNA)->38.0 / (38.0 + mRNA[1]^n))
         ], 2, max_t, convert(Array{Int32, 1}, [8, 0])
     )
     for i = 1:n_trajectories
@@ -140,6 +130,8 @@ for n = 1.0:5.0
 end
 convergent_summary = dropdims(sum(convergent_results[:,:,1,:] .> convergent_results[:,:,2,:],dims=3) / n_trajectories, dims=3)
 divergent_summary = dropdims(sum(divergent_results[:,:,1,:] .> divergent_results[:,:,2,:],dims=3) / n_trajectories, dims=3)
+convergent_results[5,:,:,1]
+divergent_results[1,:,:,1]
 
 #----------------Calculate the eigenvalues for a transition matrix)------------------
 n_vals = 1.0:5.0
@@ -205,7 +197,8 @@ plot(0.45 .+ 0.55 .* hcat([c.^(1:50000) for c in convergence_factor]...),
 plot!(0.45 .+ 0.55 .* (convergence_factor[1].^(1:50000)), color=1, label="Eigenvalue", lw=1)
 plot!(plot_tspan,basin_curves[:,1], color=2, label="Stochastic", lw=3)
 plot!(plot_tspan,basin_curves,
-    color=2, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
+    color=2, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0),
+    xlabel="Time", ylabel="Fraction in basin")
 savefig("output/toggle/images/eigenvalue_stochastic_compare.pdf")
 
 plot(plot_tspan,basin_curves,
@@ -216,5 +209,6 @@ plot!(plot_tspan,transpose(divergent_summary)[:,1], color=3, label="Divergent", 
 plot!(plot_tspan,transpose(convergent_summary),
     color=2, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
 plot!(plot_tspan,transpose(divergent_summary),
-    color=3, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
+    color=3, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0),
+    xlabel="Time", ylabel="Fraction in basin")
 savefig("output/toggle/images/stochastic_convergent_divergent_compare.pdf")
