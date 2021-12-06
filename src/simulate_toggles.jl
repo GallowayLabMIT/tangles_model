@@ -78,7 +78,7 @@ function gen_sim_params(;
 end
 
 #-----------------Simulate w/ TANGLES, with small intergenic distance (introducing coupling)-------
-n_trajectories = 10
+n_trajectories = 2500
 n_samples = 200
 max_t = 50000.0
 convergent_results = zeros((5,n_samples,2, n_trajectories))
@@ -180,8 +180,9 @@ savefig("output/toggle/images/eigenvalue.pdf")
 plot(plot_tspan,basin_curves,
     palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=3,
     xlims=(0,50000.0), ylims=(0.42, 1.0),
-    xlabel="Time", ylabel="Fraction in basin", title="Stochastic")
+    xlabel="Time", ylabel="Fraction in basin", title="Stochastic model behavior")
 savefig("output/toggle/images/stochastic.pdf")
+savefig("output/toggle/images/stochastic.svg")
 plot(plot_tspan, transpose(convergent_summary),
     palette=palette(:viridis, 6), label=["n=1" "n=2" "n=3" "n=4" "n=5"], lw=3,
     xlims=(0,50000.0), ylims=(0.42, 1.0),
@@ -200,6 +201,7 @@ plot!(plot_tspan,basin_curves,
     color=2, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0),
     xlabel="Time", ylabel="Fraction in basin")
 savefig("output/toggle/images/eigenvalue_stochastic_compare.pdf")
+savefig("output/toggle/images/eigenvalue_stochastic_compare.svg")
 
 plot(plot_tspan,basin_curves,
     color=1, label="", lw=3, xlims=(0,50000.0), ylims=(0.42, 1.0))
