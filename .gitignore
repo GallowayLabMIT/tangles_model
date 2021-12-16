@@ -1,4 +1,7 @@
 # Output datafiles
+*.log*
+LLSUB*/
+output/*
 output/dataframes/*
 output/dataframes*
 output/stdout/*
