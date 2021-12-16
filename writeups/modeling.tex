@@ -59,24 +59,44 @@ In order to create synthetic circuits capable of utilizing biophysical feedback,
 Here, we present an extension of the model first proposed in \parencite{sevierMechanicalPropertiesDNA2019}. By modeling the joint effect of supercoiling-dependent polymerase initiation and polymerase stalling, we predict a wide range of emergent feedback behaviors, that may be used to both inform novel synthetic circuit designs and explain observed native phenomena.
 \section{Claims}
 
-\subsection{Supercoiling-dependent feedback generates emergent behaviors}
+\subsection{ DNA supercoiling dynamics confer rapid, tunable coupling between adjacent genes in linear and circular contexts }
 \begin{itemize}
-    \item The syntax of compact, simple gene cassettes allow for tunable amounts of negative and positive feedback.
-    \item Supercoiling-dependent initiation, modeled here as an expansion based on assumptions reasonable for real systems, is a key supercoiling-dependent mechanism that is balanced against polymerase stalling.
-    \item Asymmetric polymerase initiation with respect to supercoiling density leads to physically-realistic asymptotic behavior.
-\end{itemize}
+    \item Supercoiling allows for regulation on timescales otherwise unaccessible by synthetic systems. 
+    
+    \item (probably we should say something about noise and controlling for it via syntax)
+     
+    \item Bursting is predicted to be strongly correlated on the timescale of seconds-minutes.
 
-\subsection{Novel regulatory properties}
-\begin{itemize}
-    \item Supercoiling allows for regulation on time scales otherwise unaccessible by synthetic systems. Bursting is predicted to be strongly correlated on the timescale of seconds-minutes.
+    \item Supercoiling-dependent initiation, modeled here as an expansion based on assumptions reasonable for real systems, is a key supercoiling-dependent mechanism that is balanced against polymerase stalling.
+    
     \item Plasmid (circular) and genomically-integrated (linear) systems are \emph{not} equivalent, and are predicted to have different amounts of supercoiling-dependent feedback.
-    \item Supercoiling-dependent feedback can enhance the ultrasensitive response of synthetic regulatory motifs (toggle switch stability). 
+    
     \item Regulatory systems involving supercoiling are capable of sense changes in genomic context, such as changes in adjacent gene expression and accessibility.
 \end{itemize}
 
-\subsection{Sensing, responding, and stabilizing cellular state}
+
+
+\subsection{Supercoiling-dependent intergene coupling supports rapid  transcriptional feedback, generating emergent patterns of expression}
+\begin{itemize}
+    \item The syntax of compact, simple gene cassettes provides a design parameter for specifying and tuning transcriptional feedback.
+
+    \item Asymmetric polymerase initiation with respect to supercoiling density leads to physically-realistic asymptotic behavior.
+\end{itemize}
+
+\subsection{ Optimized circuit syntax supports enhanced toggle switch stability via DNA supercoiling }
+\begin{itemize}
+\item Supercoiling-dependent feedback can enhance the ultrasensitive response of synthetic regulatory motifs (toggle switch stability). 
+\end{itemize}
+
+\subsection{DNA supercoiling provides a mechanism to tightly coordinate expression of proximal segementation genes }
 \begin{itemize}
     \item Supercoiling dependent initiation may underpin the stability of the \textit{her1},\textit{her7} clock circuit.
+  
+\end{itemize}
+
+\subsection{Designing gene circuits to detect topoisomerase activity}
+\begin{itemize}
+
     \item Cells transiting fate transitions show varying cell cycle rates and topoisomerase activity patterns, which are detectable via supercoiling-dependent feedback.
 \end{itemize}
 
@@ -339,7 +359,7 @@ Given the well-defined structure of the RNAP-DNA complex and the fact that under
 However, when we compare the strength of this internal melting energy term to the "exterior" supercoiling term, we see that the external term dominates (\autoref{fig:app:energy_comparison}).
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.5\linewidth]{figures/energy_plot}
+    %\includegraphics[width=.5\linewidth]{figures/energy_plot}
     \caption{Plotted is the binding energy required to bind an RNAP, for different starting values of \(\sigma_0\). In the single-phase regions, differences in \(\Delta E\) are dominated by the external torque term. In the two-phase region, \(\Delta E\) remains mostly constant!}
     \label{fig:app:energy_comparison}
 \end{figure}
@@ -367,7 +387,7 @@ This discrepancy means that we expect our initial supercoiling-initiation model 
     \centering
     \begin{subfigure}{.49\linewidth}
         \centering
-        \includegraphics[width=.99\textwidth]{figures/time_plot}
+%        \includegraphics[width=.99\textwidth]{figures/time_plot}
         \caption{Plot of the inverse RNAP on-rate, as modeled here.}
     \end{subfigure}
     \begin{subfigure}{.49\linewidth}
