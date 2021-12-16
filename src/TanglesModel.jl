@@ -461,7 +461,7 @@ end
 function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promoter::Promoter, coupling_func)::Float64
     # Initiation rate is zero if initiation site is occupied
     if length(u.x) == 1
-        return promoter.base_rate * coupling_func(u.mRNA)
+        return promoter.base_rate * coupling_func(u.mRNA, t)
     end
 
     if minimum(abs,u.x[1:3:end-1] .- promoter.position) < p.sim_params.r_rnap * 2
@@ -472,14 +472,14 @@ function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promot
     energy::Float64 = (torque_response(σ, p) + p.sim_params.σ2_coeff * (σ / p.sim_params.σ_s)^2 * p.sim_params.τ_0) * 1.2 * 2.0 * π
     sc_rate_factor::Float64 = min(50.0,exp(-energy / (p.sim_params.k_b * p.sim_params.T)))
     
-    return promoter.base_rate * coupling_func(u.mRNA) * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
+    return promoter.base_rate * coupling_func(u.mRNA, t) * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
 end
 
 function generate_jump(gene::UncoupledGene, sc_dependent::Bool)::VariableRateJump
     return VariableRateJump(
                 (u,p,t) -> polymerase_initiation_rate(
                     u,p,t,
-                    Promoter(gene.start,gene.base_rate,sc_dependent),(mRNA)->1.0),
+                    Promoter(gene.start,gene.base_rate,sc_dependent),(mRNA, t)->1.0),
                 (int)   -> add_polymerase!(int, gene.start, gene.idx, gene.terminate))
 end
 
@@ -721,6 +721,12 @@ function write_h5_attributes(group::HDF5.Group, comment::String, genes::Array{Ge
     attributes(group)["rates.mRNA_degradation"] = sim_params.mRNA_degradation_rate
     attributes(group)["rates.sc_dependent"] = sim_params.sc_dependent ? 1.0 : 0.0
     attributes(group)["coeff.sigma_squared"] = sim_params.σ2_coeff
+    attributes(group)["coeff.mRNA_drag_exponent"] = sim_params.mRNA_params.drag_exponent
+    attributes(group)["coeff.mRNA_drag_coeff"] = sim_params.mRNA_params.drag_coeff
+    attributes(group)["rnap.max_velocity"] = sim_params.RNAP_params.max_velocity
+    attributes(group)["rnap.stall_torque"] = sim_params.RNAP_params.stall_torque
+    attributes(group)["rnap.stall_width"] = sim_params.RNAP_params.stall_width
+    attributes(group)["git_status"] = try read(`git log -n1 --format=format:"%H"`, String) * (run(ignorestatus(`git diff-index --quiet HEAD --`)).exitcode == 0 ? "" : "-dirty") catch IOError; "unknown" end
     attributes(group)["comment"] = comment
     write_bcs(group, bcs)
 end
