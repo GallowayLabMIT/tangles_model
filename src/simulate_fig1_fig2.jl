@@ -14,7 +14,7 @@ overall_start = time()
 
 base_rate = 1.0 / 120.0
 n_examples_per_node = 100
-n_full_examples_per_node = 10
+n_full_examples_per_node = 100
 n_repeats = 50
 i = 0
 
@@ -148,6 +148,12 @@ end
 for _ in 1:n_repeats,
     induction in exp10.(range(-2,0.5,length=30)),
     σ2 in [0.0, 0.02]
+
+    if i % n_nodes != node_idx
+        global i += 1
+        continue
+    end
+    global i += 1
 
     params = gen_sim_params(sc_dependent=true, σ2_coeff = σ2)
 
