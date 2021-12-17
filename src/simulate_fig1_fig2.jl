@@ -6,13 +6,15 @@ filename = "output/modeling_paper/fig1_fig2_sims-node" * lpad(node_idx, 5, "0") 
 println("""
 ======================================================
 Run summary:
-""", "\tprocess_idx: ", node_idx, "\n\ttotal number of processes: ", n_nodes,
+""", "\tprocess_idx: ", node_idx, "\n\ttotal number of processes: ", n_nodes,"\n",
 """
 ======================================================""")
 
+overall_start = time()
+
 base_rate = 1.0 / 120.0
 n_examples_per_node = 100
-n_full_examples_per_node = 5
+n_full_examples_per_node = 10
 n_repeats = 50
 i = 0
 
@@ -152,10 +154,10 @@ for _ in 1:n_repeats,
     bcs = LinearBoundaryParameters(10000.0 * 0.34, false, false)
 
     coupling_func(_mRNA,t) = (t > 10000.0) ? induction : 0.0
-    tandem_down = [UncoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34), CoupledGene(base_rate, 1, 6000 * 0.34, 7000 * 0.34, coupling_func)]
-    tandem_up =   [CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), UncoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34)]
-    convergent =  [CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), UncoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34)]
-    divergent =   [CoupledGene(base_rate, 1, 4000 * 0.34, 3000 * 0.34, coupling_func), UncoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34)]
+    tandem_down = [CoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34, (_,_)->1.0), CoupledGene(base_rate, 1, 6000 * 0.34, 7000 * 0.34, coupling_func)]
+    tandem_up =   [CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)]
+    convergent =  [CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34, (_,_)->1.0)]
+    divergent =   [CoupledGene(base_rate, 1, 4000 * 0.34, 3000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)]
 
     start_time = time()
     simulate_full_examples(filename, n_full_examples_per_node, "fig2.tandem_down", params, bcs, tandem_down, 2, 20000.0)
@@ -165,3 +167,5 @@ for _ in 1:n_repeats,
     println("Done with fig2 with params:\n\tinduction: ", induction, "\n\t σ2: ", σ2)
     println("Ran round in ", time() - start_time, " seconds")
 end
+
+println("Done with ALL simulations; node shutting down after ", time() - overall_start, " seconds!")

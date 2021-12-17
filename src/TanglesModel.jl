@@ -713,7 +713,7 @@ function write_bcs(group::HDF5.Group, bcs::CircularBoundaryParameters)
     attributes(group)["bcs.length"] = bcs.length
 end
 
-function write_h5_attributes(group::HDF5.Group, comment::String, genes::Array{Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
+function write_h5_attributes(group::HDF5.Group, comment::String, genes::Array{<:Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
     attributes(group)["gene.start"] = [gene.start for gene in genes]
     attributes(group)["gene.end"] = [gene.terminate for gene in genes]
     attributes(group)["gene.base_rate"] = [gene.base_rate for gene in genes]
@@ -730,7 +730,7 @@ function write_h5_attributes(group::HDF5.Group, comment::String, genes::Array{Ge
     attributes(group)["comment"] = comment
     write_bcs(group, bcs)
 end
-function postprocess_to_h5(filename::String, solution, comment::String, genes::Array{Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
+function postprocess_to_h5(filename::String, solution, comment::String, genes::Array{<:Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
     h5open(filename, "cw") do h5
         run_idx = 1
         while haskey(h5, "tangles_full_run." * lpad(run_idx, 6, "0"))
@@ -767,7 +767,7 @@ function simulate_full_examples(
     comment::String,
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
-    genes::Array{Gene},
+    genes::Array{<:Gene},
     n_genes::Int64,
     t_end::Float64)
     solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
@@ -786,7 +786,7 @@ function simulate_summarized_runs(
     comment::String,
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
-    genes::Array{Gene},
+    genes::Array{<:Gene},
     n_genes::Int64,
     t_end::Float64)
     solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
