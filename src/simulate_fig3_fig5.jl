@@ -59,6 +59,8 @@ for _ in 1:n_repeats,
     bcs = is_plasmid ? CircularBoundaryParameters(10000.0 * 0.34) : LinearBoundaryParameters(10000.0 * 0.34, false, false)
     
     k_val = 15.0 * k_factor / mRNA_deg_rate_factor
+    basal_k = round(Int32, 15.0 / mRNA_deg_rate_factor)
+    mRNA_ic = convert(Array{Int32,1}, [basal_k, 0])
     hill_func(inhibitor) = (k_val) / (k_val + inhibitor^hill_coeff)
     extra_attrs = Dict("hill_coeff"=>hill_coeff, "K_val"=>k_val, "K_factor"=>k_factor)
 
@@ -77,9 +79,9 @@ for _ in 1:n_repeats,
 
 
     start_time = time()
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.tandem", params, bcs, tandem, 2, 50000.0, 500, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.convergent", params, bcs, convergent, 2, 50000.0, 500, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.divergent", params, bcs, divergent, 2, 50000.0, 500, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.tandem", params, bcs, tandem, 2, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.convergent", params, bcs, convergent, 2, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.divergent", params, bcs, divergent, 2, 50000.0, 500, mRNA_ic, extra_attrs)
     println("Done with fig 3 with params:\n\tis_plasmid: ", is_plasmid, "\n\tsc_dependent: ", sc_initiation, "\n\thill_coeff: ", hill_coeff, "\n\tK_factor: ", k_factor, "\n\tmRNA_deg_fac: ", mRNA_deg_rate_factor)
     println("Ran round in ", time() - start_time, " seconds")
 end
@@ -105,6 +107,8 @@ for _ in 1:n_repeats,
     
     bcs = LinearBoundaryParameters(10000.0 * 0.34, false, false)
     k_val = 15.0 * k_factor / mRNA_deg_rate_factor
+    basal_k = round(Int32, 15.0 / mRNA_deg_rate_factor)
+    mRNA_ic = convert(Array{Int32,1}, [basal_k, 0])
     hill_func(inhibitor) = (k_val) / (k_val + inhibitor^hill_coeff)
     extra_attrs = Dict("hill_coeff"=>hill_coeff, "K_val"=>k_val, "K_factor"=>k_factor)
 
@@ -123,9 +127,9 @@ for _ in 1:n_repeats,
 
 
     start_time = time()
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.tandem", params, bcs, tandem, 2, 50000.0, 500, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.convergent", params, bcs, convergent, 2, 50000.0, 500, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.divergent", params, bcs, divergent, 2, 50000.0, 500, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.tandem", params, bcs, tandem, 2, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.convergent", params, bcs, convergent, 2, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.divergent", params, bcs, divergent, 2, 50000.0, 500, mRNA_ic, extra_attrs)
     println("Done with fig 5 with params:\n\thill_coeff: ", hill_coeff, "\n\tK_factor: ", k_factor, "\n\tmRNA_deg_fac: ", mRNA_deg_rate_factor, "\n\ttopo factor: ", topo_factor)
     println("Ran round in ", time() - start_time, " seconds")
 end
