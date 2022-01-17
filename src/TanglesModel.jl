@@ -8,6 +8,7 @@ using MultiScaleArrays: length
 using DifferentialEquations
 using MultiScaleArrays
 using HDF5
+using Interpolations
 import FiniteDiff
 
 module StochasticToggle
@@ -19,7 +20,7 @@ export mRNA_Parameters, DEFAULT_mRNA_PARAMS
 export RNAP_Parameters, DEFAULT_RNAP_PARAMS, DNA_Parameters, DEFAULT_DNA_PARAMS
 export SimulationParameters, DEFAULT_SIM_PARAMS
 export LinearBoundaryParameters, CircularBoundaryParameters, UncoupledGene, CoupledGene
-export simulate_full_examples, simulate_summarized_runs
+export simulate_full_examples, simulate_summarized_runs, simulate_mRNA_runs
 
 function check_nonnegative(x, name)
     if x < 0 
@@ -776,6 +777,51 @@ function simulate_full_examples(
             postprocess_to_h5(filename, solver(), comment, genes, sim_params, bcs)
         catch err
             @warn "Solver failed!"
+        end
+    end
+end
+
+# Simulate mRNA concentrations over time, saving just these results
+# instead of the full run results or the final mRNA summary.
+function simulate_mRNA_runs(
+    filename::String,
+    n_simulations::Int64,
+    comment::String,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    genes::Array{<:Gene},
+    n_genes::Int64,
+    t_end::Float64,
+    t_steps::Int64,
+    extra_metadata::Dict{String,Float64})
+
+    solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
+    mRNA_results = zeros(Int32, n_simulations, n_genes, t_steps)
+    for i = 1:n_simulations
+        done = false
+        sol = false
+        while !done
+            sol = solver()
+            done = (sol.retcode == :Success)
+        end
+        timesteps = Interpolations.deduplicate_knots!(sol.t)
+        mRNA = hcat([sol.u[i].u.mRNA for i in 1:length(sol)]...)
+        interp_mRNA = ConstantInterpolation((1:n_genes, timesteps), mRNA)
+        for gene_id = 1:n_genes
+            mRNA_results[i,gene_id,:] = interp_mRNA(gene_id,range(0.0, stop=t_end, length=t_steps))
+        end
+        print(".")
+    end
+    h5open(filename, "cw") do h5
+        run_idx = 1
+        while haskey(h5, "tangles_mRNA_run." * lpad(run_idx, 6, "0"))
+            run_idx += 1
+        end
+        g = create_group(h5, "tangles_mRNA_run." * lpad(run_idx, 6, "0"))
+        g["mRNA"] = mRNA_results
+        write_h5_attributes(g, comment, genes, sim_params, bcs)
+        for (key, val) in extra_metadata
+            attributes(g)[key] = val
         end
     end
 end
