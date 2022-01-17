@@ -204,7 +204,7 @@ end
 
 mutable struct TanglesArray <: DEDataArray{Float64,1}
     x::Array{Float64,1}
-    mRNA::Array{Int32,1}
+    discrete_components::Array{Int32,1}
     polymerase_direction::Array{Int64, 1}
     polymerase_stop::Array{Float64,1}
     polymerase_gene::Array{UInt32,1}
@@ -391,7 +391,7 @@ function terminate!(c::TanglesArray, idx::UInt32)
     if remove_idx[end] > length(c)
         @warn "Data array is too small!"
     else
-        c.mRNA[c.polymerase_gene[idx]] += 1
+        c.discrete_components[c.polymerase_gene[idx]] += 1
         deleteat!(c.x, remove_idx)
         deleteat!(c.polymerase_direction, idx)
         deleteat!(c.polymerase_stop, idx)
@@ -404,7 +404,7 @@ function _destroy_mRNA!(c::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Fl
 end
 
 function _destroy_mRNA!(c::TanglesArray, idx::UInt32)
-    c.mRNA[idx] -= 1
+    c.discrete_components[idx] -= 1
 end
 
 function degrade_mRNA!(integrator, idx::UInt32)
@@ -451,7 +451,7 @@ function mRNA_degradation_rate(u::ExtendedJumpArray{Float64, 1, TanglesArray, Ve
     mRNA_degradation_rate(u.u, p, t, idx)
 end
 function mRNA_degradation_rate(u::TanglesArray, p::TanglesParams, t, idx::UInt32)
-    return p.sim_params.mRNA_deg_rate * u.mRNA[idx]
+    return p.sim_params.mRNA_deg_rate * u.discrete_components[idx]
 end
 
 function polymerase_initiation_rate(u::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, p::TanglesParams, t, promoter::Promoter, coupling_func)::Float64
@@ -462,7 +462,7 @@ end
 function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promoter::Promoter, coupling_func)::Float64
     # Initiation rate is zero if initiation site is occupied
     if length(u.x) == 1
-        return promoter.base_rate * coupling_func(u.mRNA, t)
+        return promoter.base_rate * coupling_func(u.discrete_components, t)
     end
 
     if minimum(abs,u.x[1:3:end-1] .- promoter.position) < p.sim_params.r_rnap * 2
@@ -473,7 +473,7 @@ function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promot
     energy::Float64 = (torque_response(σ, p) + p.sim_params.σ2_coeff * (σ / p.sim_params.σ_s)^2 * p.sim_params.τ_0) * 1.2 * 2.0 * π
     sc_rate_factor::Float64 = min(50.0,exp(-energy / (p.sim_params.k_b * p.sim_params.T)))
     
-    return promoter.base_rate * coupling_func(u.mRNA, t) * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
+    return promoter.base_rate * coupling_func(u.discrete_components, t) * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
 end
 
 function generate_jump(gene::UncoupledGene, sc_dependent::Bool)::VariableRateJump
@@ -675,8 +675,8 @@ function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters
     build_problem(sim_params, bcs, genes, n_genes, t_end, zeros(Int32,n_genes))
 end 
 
-function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, genes::Array{<:Gene}, n_genes::Int64, t_end::Float64, ics_mRNA::Array{Int32,1})
-    u0 = TanglesArray([0.0], ics_mRNA, [], [], [])
+function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, genes::Array{<:Gene}, n_genes::Int64, t_end::Float64, ics_discrete::Array{Int32,1})
+    u0 = TanglesArray([0.0], ics_discrete, [], [], [])
     problem = ODEProblem(tangles_derivatives!, u0, [0.0, t_end], TanglesParams(
         InternalParameters(sim_params), bcs))
     termination_callback = ContinuousCallback(polymerase_termination_check, terminate_polymerase!,
@@ -745,19 +745,19 @@ function postprocess_to_h5(filename::String, solution, comment::String, genes::A
         rnap_loc::Matrix{Float64} = -ones(len, convert(Int,width / 3))
         ϕ::Matrix{Float64} = -ones(len, convert(Int,width / 3))
         z::Matrix{Float64} = -ones(len, convert(Int,width / 3))
-        mRNA::Matrix{Int32} = zeros(len, length(solution.u[1].u.mRNA))
+        discrete_components::Matrix{Int32} = zeros(len, length(solution.u[1].u.discrete_components))
         for (index, val) in enumerate(solution.u)
             x = val.u.x[1:end-1]
             n_polymerases = convert(Int, length(x) / 3)
             rnap_loc[index,1:n_polymerases] = x[1:3:end]
             ϕ[index,1:n_polymerases] = x[2:3:end]
             z[index,1:n_polymerases] = x[3:3:end]
-            mRNA[index,:] = val.u.mRNA
+            discrete_components[index,:] = val.u.discrete_components
         end
         g["rnap_location"] = rnap_loc
         g["phi"] = ϕ
         g["mRNA_length"] = z
-        g["mRNA"] = mRNA
+        g["discrete_components"] = discrete_components
         write_h5_attributes(g, comment, genes, sim_params, bcs)
     end
 end
@@ -793,9 +793,45 @@ function simulate_mRNA_runs(
     n_genes::Int64,
     t_end::Float64,
     t_steps::Int64,
+    ics_discrete::Array{Int32,1},
+    extra_metadata::Dict{String,Float64})
+    solver = build_problem(sim_params, bcs, genes, n_genes, t_end, ics_discrete)
+    simulate_mRNA_runs(
+        solver, filename, n_simulations, comment,
+        sim_params, bcs, genes, n_genes, t_end,
+        t_steps, extra_metadata)
+end
+function simulate_mRNA_runs(
+    filename::String,
+    n_simulations::Int64,
+    comment::String,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    genes::Array{<:Gene},
+    n_genes::Int64,
+    t_end::Float64,
+    t_steps::Int64,
+    extra_metadata::Dict{String,Float64})
+    solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
+    simulate_mRNA_runs(
+        solver, filename, n_simulations, comment,
+        sim_params, bcs, genes, n_genes, t_end,
+        t_steps, extra_metadata)
+end
+
+function simulate_mRNA_runs(
+    solver,
+    filename::String,
+    n_simulations::Int64,
+    comment::String,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    genes::Array{<:Gene},
+    n_genes::Int64,
+    t_end::Float64,
+    t_steps::Int64,
     extra_metadata::Dict{String,Float64})
 
-    solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
     mRNA_results = zeros(Int32, n_simulations, n_genes, t_steps)
     for i = 1:n_simulations
         done = false
@@ -805,7 +841,7 @@ function simulate_mRNA_runs(
             done = (sol.retcode == :Success)
         end
         timesteps = Interpolations.deduplicate_knots!(sol.t)
-        mRNA = hcat([sol.u[i].u.mRNA for i in 1:length(sol)]...)
+        mRNA = hcat([sol.u[i].u.discrete_components for i in 1:length(sol)]...)
         interp_mRNA = ConstantInterpolation((1:n_genes, timesteps), mRNA)
         for gene_id = 1:n_genes
             mRNA_results[i,gene_id,:] = interp_mRNA(gene_id,range(0.0, stop=t_end, length=t_steps))
@@ -839,7 +875,7 @@ function simulate_summarized_runs(
     mRNA_results = zeros(Int32, n_simulations, n_genes)
     for i in 1:n_simulations
         try
-            mRNA_results[i,:] = solver().u[end].u.mRNA
+            mRNA_results[i,:] = solver().u[end].u.discrete_components
         catch err
             @warn "Solver failed!"
         end
