@@ -14,6 +14,7 @@ overall_start = time()
 
 base_rate = 1.0 / 120.0
 n_examples_per_node = 1000
+n_repeats = 10
 i = 0
 
 function gen_sim_params(;

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Launch with LLsub src/run_fig1_fig2_slurm.sh [5,96,1]
+# Launch with LLsub src/run_fig3_fig5_slurm.sh [10,60,1]
 source /etc/profile
 module load julia/1.6.1
 
