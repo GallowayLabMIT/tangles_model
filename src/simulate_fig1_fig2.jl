@@ -62,16 +62,16 @@ for _ in 1:n_repeats,
     params = gen_sim_params(sc_dependent=sc_initiation, σ2_coeff = σ2)
 
     bcs = is_plasmid ? CircularBoundaryParameters(10000.0 * 0.34) : LinearBoundaryParameters(10000.0 * 0.34, false, false)
-    tandem_down = [UncoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate * induction, 1, 6000 * 0.34, 7000 * 0.34)]
-    tandem_up =   [UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34)]
-    convergent =  [UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34)]
-    divergent =   [UncoupledGene(base_rate * induction, 1, 4000 * 0.34, 3000 * 0.34), UncoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34)]
+    tandem_down = DiscreteConfig([UncoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate * induction, 1, 6000 * 0.34, 7000 * 0.34)])
+    tandem_up =   DiscreteConfig([UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34)])
+    convergent =  DiscreteConfig([UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34)])
+    divergent =   DiscreteConfig([UncoupledGene(base_rate * induction, 1, 4000 * 0.34, 3000 * 0.34), UncoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34)])
 
     start_time = time()
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1.tandem_downstream", params, bcs, tandem_down, 2, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1.tandem_upstream", params, bcs, tandem_up, 2, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1.convergent", params, bcs, convergent, 2, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1.divergent", params, bcs, divergent, 2, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig1.tandem_downstream", params, bcs, tandem_down, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig1.tandem_upstream", params, bcs, tandem_up, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig1.convergent", params, bcs, convergent, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig1.divergent", params, bcs, divergent, 15000.0)
     println("Done with fig 1c-d-e with params:\n\tis_plasmid: ", is_plasmid, "\n\tsc_dependent: ", sc_initiation, "\n\tinduction: ", induction, "\n\tσ2: ", σ2)
     println("Ran round in ", time() - start_time, " seconds")
 end
@@ -92,16 +92,16 @@ for _ in 1:n_repeats,
     params = gen_sim_params(sc_dependent=true, σ2_coeff = σ2)
 
     bcs = is_plasmid ? CircularBoundaryParameters((8000.0 + spacing) * 0.34) : LinearBoundaryParameters((8000.0 + spacing) * 0.34, false, false)
-    tandem_down = [UncoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate * induction, 1, (4000 + spacing) * 0.34, (5000 + spacing) * 0.34)]
-    tandem_up =   [UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, (4000 + spacing) * 0.34, (5000 + spacing) * 0.34)]
-    convergent =  [UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, (5000 + spacing) * 0.34, (4000 + spacing) * 0.34)]
-    divergent =   [UncoupledGene(base_rate * induction, 1, 4000 * 0.34, 3000 * 0.34), UncoupledGene(base_rate, 2, (4000 + spacing) * 0.34, (5000 + spacing) * 0.34)]
+    tandem_down = DiscreteConfig([UncoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate * induction, 1, (4000 + spacing) * 0.34, (5000 + spacing) * 0.34)])
+    tandem_up =   DiscreteConfig([UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, (4000 + spacing) * 0.34, (5000 + spacing) * 0.34)])
+    convergent =  DiscreteConfig([UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, (5000 + spacing) * 0.34, (4000 + spacing) * 0.34)])
+    divergent =   DiscreteConfig([UncoupledGene(base_rate * induction, 1, 4000 * 0.34, 3000 * 0.34), UncoupledGene(base_rate, 2, (4000 + spacing) * 0.34, (5000 + spacing) * 0.34)])
 
     start_time = time()
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.tandem_downstream", params, bcs, tandem_down, 2, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.tandem_upstream", params, bcs, tandem_up, 2, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.convergent", params, bcs, convergent, 2, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.divergent", params, bcs, divergent, 2, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.tandem_downstream", params, bcs, tandem_down, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.tandem_upstream", params, bcs, tandem_up, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.convergent", params, bcs, convergent, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.divergent", params, bcs, divergent, 15000.0)
     println("Done with fig 1f with params:\n\tis_plasmid: ", is_plasmid, "\n\tinduction: ", induction, "\n\tσ2: ", σ2)
     println("Ran round in ", time() - start_time, " seconds")
 end
@@ -132,12 +132,12 @@ for _ in 1:n_repeats,
         σ2
     )
     bcs = LinearBoundaryParameters(10000.0 * 0.34, false, false)
-    convergent =  [UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34)]
-    divergent =   [UncoupledGene(base_rate * induction, 1, 4000 * 0.34, 3000 * 0.34), UncoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34)]
+    convergent =  DiscreteConfig([UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34)])
+    divergent =   DiscreteConfig([UncoupledGene(base_rate * induction, 1, 4000 * 0.34, 3000 * 0.34), UncoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34)])
 
     start_time = time()
-    simulate_summarized_runs(filename, n_examples_per_node, "hyperparams.convergent", params, bcs, convergent, 2, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "hyperparams.divergent", params, bcs, divergent, 2, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "hyperparams.convergent", params, bcs, convergent, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "hyperparams.divergent", params, bcs, divergent, 15000.0)
     println("Done with hyperparam sweep with params:\n\tdrag_coeff: ", drag_coeff,
         "\n\tdrag_exp: ", drag_exp, "\n\tstall_torque: ", stall_torque, "\n\tstall_width: ", stall_width,
         "\n\tinduction: ", induction, "\n\tσ2: ", σ2)
@@ -160,16 +160,16 @@ for _ in 1:n_repeats,
     bcs = LinearBoundaryParameters(10000.0 * 0.34, false, false)
 
     coupling_func(_mRNA,t) = (t > 10000.0) ? induction : 0.0
-    tandem_down = [CoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34, (_,_)->1.0), CoupledGene(base_rate, 1, 6000 * 0.34, 7000 * 0.34, coupling_func)]
-    tandem_up =   [CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)]
-    convergent =  [CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34, (_,_)->1.0)]
-    divergent =   [CoupledGene(base_rate, 1, 4000 * 0.34, 3000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)]
+    tandem_down = DiscreteConfig([CoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34, (_,_)->1.0), CoupledGene(base_rate, 1, 6000 * 0.34, 7000 * 0.34, coupling_func)])
+    tandem_up =   DiscreteConfig([CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)])
+    convergent =  DiscreteConfig([CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34, (_,_)->1.0)])
+    divergent =   DiscreteConfig([CoupledGene(base_rate, 1, 4000 * 0.34, 3000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)])
 
     start_time = time()
-    simulate_full_examples(filename, n_full_examples_per_node, "fig2.tandem_down", params, bcs, tandem_down, 2, 20000.0)
-    simulate_full_examples(filename, n_full_examples_per_node, "fig2.tandem_up", params, bcs, tandem_up, 2, 20000.0)
-    simulate_full_examples(filename, n_full_examples_per_node, "fig2.convergent", params, bcs, convergent, 2, 20000.0)
-    simulate_full_examples(filename, n_full_examples_per_node, "fig2.divergent", params, bcs, divergent, 2, 20000.0)
+    simulate_full_examples(filename, n_full_examples_per_node, "fig2.tandem_down", params, bcs, tandem_down, 20000.0)
+    simulate_full_examples(filename, n_full_examples_per_node, "fig2.tandem_up", params, bcs, tandem_up, 20000.0)
+    simulate_full_examples(filename, n_full_examples_per_node, "fig2.convergent", params, bcs, convergent, 20000.0)
+    simulate_full_examples(filename, n_full_examples_per_node, "fig2.divergent", params, bcs, divergent, 20000.0)
     println("Done with fig2 with params:\n\tinduction: ", induction, "\n\t σ2: ", σ2)
     println("Ran round in ", time() - start_time, " seconds")
 end

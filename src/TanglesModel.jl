@@ -19,8 +19,8 @@ end
 export mRNA_Parameters, DEFAULT_mRNA_PARAMS
 export RNAP_Parameters, DEFAULT_RNAP_PARAMS, DNA_Parameters, DEFAULT_DNA_PARAMS
 export SimulationParameters, DEFAULT_SIM_PARAMS
-export LinearBoundaryParameters, CircularBoundaryParameters, UncoupledGene, CoupledGene
-export simulate_full_examples, simulate_summarized_runs, simulate_mRNA_runs
+export LinearBoundaryParameters, CircularBoundaryParameters, UncoupledGene, CoupledGene, DiscreteConfig
+export simulate_full_examples, simulate_summarized_runs, simulate_discrete_runs
 
 function check_nonnegative(x, name)
     if x < 0 
@@ -150,6 +150,28 @@ struct CoupledGene <: Gene
     terminate::Float64
     coupling_function
 end
+
+struct DiscreteConfig
+    genes::Array{<:Gene}
+    n_other_discrete::Int64
+    discrete_reactions::Vector{Pair{Function, Vector{Pair{Int64, Int64}}}} # Pairs of the form (propensity_func(discrete, t) => Array{Pair{Int64, Int64}})
+                                    # where the second array of pairs is the stoichiometry
+    function DiscreteConfig(genes::Array{<:Gene})
+        new(genes, 0, [])
+    end
+    function DiscreteConfig(genes::Array{<:Gene}, n_other_discrete::Int64, discrete_reactions::Vector{Pair{Function, Vector{Pair{Int64,Int64}}}})
+        n_genes = length(genes)
+        for (_, stoich_coeffs) in discrete_reactions
+            for (species_id, stoich_coeff) in stoich_coeffs
+                if species_id < 1 || species_id > (n_genes + n_other_discrete)
+                    error("Invalid reaction passed in discrete_reactions!\n\tid:" + species_id + "\n\tstoich coeff:", stoich_coeff)
+                end
+            end
+        end
+        new(genes, n_other_discrete, discrete_reactions)
+    end
+end
+
 
 function InternalParameters(sim_params::SimulationParameters)
     # Computes intermediate values, initializing a InternalParameters struct
@@ -413,6 +435,22 @@ function degrade_mRNA!(integrator, idx::UInt32)
     end
 end
 
+function _update_discrete!(c::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, updates::Array{Pair{Int64, Int64}})
+    _update_discrete!(c.u, updates)
+end
+
+function _update_discrete!(c::TanglesArray, updates::Array{Pair{Int64, Int64}})
+    for (species_id, update_amount) in updates
+        c.discrete_components[species_id] += update_amount
+    end
+end
+
+function update_discrete!(integrator, updates::Array{Pair{Int64, Int64}})
+    for c in full_cache(integrator)
+        _update_discrete!(c, updates)
+    end
+end
+
 function FiniteDiff.resize!(c::TanglesArray, i::Int64)
     resize!(c.x, i)
 end
@@ -671,11 +709,20 @@ function out_of_domain(u, p, t)
     return any(diff(u.u[1:3:end-1]) .< 0)
 end
 
-function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, genes::Array{<:Gene}, n_genes::Int64, t_end::Float64)
-    build_problem(sim_params, bcs, genes, n_genes, t_end, zeros(Int32,n_genes))
+function build_problem(
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    dconfig::DiscreteConfig,
+    t_end::Float64)
+    build_problem(sim_params, bcs, dconfig, t_end, zeros(Int32,length(dconfig.genes)+ dconfig.n_other_discrete))
 end 
 
-function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters, genes::Array{<:Gene}, n_genes::Int64, t_end::Float64, ics_discrete::Array{Int32,1})
+function build_problem(
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    dconfig::DiscreteConfig,
+    t_end::Float64,
+    ics_discrete::Array{Int32,1})
     u0 = TanglesArray([0.0], ics_discrete, [], [], [])
     problem = ODEProblem(tangles_derivatives!, u0, [0.0, t_end], TanglesParams(
         InternalParameters(sim_params), bcs))
@@ -683,22 +730,29 @@ function build_problem(sim_params::SimulationParameters, bcs::BoundaryParameters
                                 save_positions=(true,true))
 
     # Calculate intergenic regions
-    sorted_genes::Array{Gene} = sort(genes, by=(g::Gene)->min(g.start, g.terminate))
+    sorted_genes::Array{Gene} = sort(dconfig.genes, by=(g::Gene)->min(g.start, g.terminate))
     # Duplicate gene if there is only one
     if length(sorted_genes) == 1
         push!(sorted_genes, sorted_genes[1])
     end
     topo_jumps = [
         ConstantRateJump(
-            (u,p,t)->sim_params.topoisomerase_rate / (n_genes - 1.0),
+            (u,p,t)->sim_params.topoisomerase_rate / (length(dconfig.genes) - 1.0),
             (int)->relax_supercoiling!(int,
                 min(sorted_genes[i].start, sorted_genes[i].terminate),
                 min(sorted_genes[i+1].start, sorted_genes[i+1].terminate)))
             for i in 1:(length(sorted_genes)-1)]
     jump_problem = JumpProblem(problem, Direct(),
-        generate_jump.(genes, sim_params.sc_dependent)...,
+        generate_jump.(dconfig.genes, sim_params.sc_dependent)...,
         topo_jumps...,
-        [VariableRateJump((u,p,t)->mRNA_degradation_rate(u,p,t,convert(UInt32,i)), (int)->degrade_mRNA!(int, convert(UInt32,i))) for i in 1:n_genes]...
+        [VariableRateJump(
+            (u,p,t)->mRNA_degradation_rate(u,p,t,convert(UInt32,i)),
+            (int)->degrade_mRNA!(int, convert(UInt32,i))) for i in 1:length(dconfig.genes)]...,
+        [ConstantRateJump(
+            (u,_,t)-> convert(Float64, propensity(u.u.discrete_components, t)),
+            (int)->update_discrete!(int, updates)
+            )
+        for (propensity, updates) in dconfig.discrete_reactions]...
     )
     return () -> solve(jump_problem, Tsit5(), callback=termination_callback, maxiters=3e5, dtmax=10, isoutofdomain=out_of_domain)
 end
@@ -714,10 +768,15 @@ function write_bcs(group::HDF5.Group, bcs::CircularBoundaryParameters)
     attributes(group)["bcs.length"] = bcs.length
 end
 
-function write_h5_attributes(group::HDF5.Group, comment::String, genes::Array{<:Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
-    attributes(group)["gene.start"] = [gene.start for gene in genes]
-    attributes(group)["gene.end"] = [gene.terminate for gene in genes]
-    attributes(group)["gene.base_rate"] = [gene.base_rate for gene in genes]
+function write_h5_attributes(
+    group::HDF5.Group,
+    comment::String,
+    dconfig::DiscreteConfig,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters)
+    attributes(group)["gene.start"] = [gene.start for gene in dconfig.genes]
+    attributes(group)["gene.end"] = [gene.terminate for gene in dconfig.genes]
+    attributes(group)["gene.base_rate"] = [gene.base_rate for gene in dconfig.genes]
     attributes(group)["rates.topo"] = sim_params.topoisomerase_rate
     attributes(group)["rates.mRNA_degradation"] = sim_params.mRNA_degradation_rate
     attributes(group)["rates.sc_dependent"] = sim_params.sc_dependent ? 1.0 : 0.0
@@ -731,7 +790,14 @@ function write_h5_attributes(group::HDF5.Group, comment::String, genes::Array{<:
     attributes(group)["comment"] = comment
     write_bcs(group, bcs)
 end
-function postprocess_to_h5(filename::String, solution, comment::String, genes::Array{<:Gene}, sim_params::SimulationParameters, bcs::BoundaryParameters)
+function postprocess_to_h5(
+    filename::String,
+    solution,
+    comment::String,
+    dconfig::DiscreteConfig,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters)
+    n_genes = length(dconfig.genes)
     h5open(filename, "cw") do h5
         run_idx = 1
         while haskey(h5, "tangles_full_run." * lpad(run_idx, 6, "0"))
@@ -745,20 +811,23 @@ function postprocess_to_h5(filename::String, solution, comment::String, genes::A
         rnap_loc::Matrix{Float64} = -ones(len, convert(Int,width / 3))
         ϕ::Matrix{Float64} = -ones(len, convert(Int,width / 3))
         z::Matrix{Float64} = -ones(len, convert(Int,width / 3))
-        discrete_components::Matrix{Int32} = zeros(len, length(solution.u[1].u.discrete_components))
+        mRNA::Matrix{Int32} = zeros(len, n_genes)
+        discrete_components::Matrix{Int32} = zeros(len, length(solution.u[1].u.discrete_components - n_genes))
         for (index, val) in enumerate(solution.u)
             x = val.u.x[1:end-1]
             n_polymerases = convert(Int, length(x) / 3)
             rnap_loc[index,1:n_polymerases] = x[1:3:end]
             ϕ[index,1:n_polymerases] = x[2:3:end]
             z[index,1:n_polymerases] = x[3:3:end]
-            discrete_components[index,:] = val.u.discrete_components
+            mRNA[index,:] = val.u.discrete_components[1:n_genes]
+            discrete_components[index,:] = val.u.discrete_components[(n_genes+1):end]
         end
         g["rnap_location"] = rnap_loc
         g["phi"] = ϕ
         g["mRNA_length"] = z
+        g["mRNA"] = mRNA
         g["discrete_components"] = discrete_components
-        write_h5_attributes(g, comment, genes, sim_params, bcs)
+        write_h5_attributes(g, comment, dconfig.genes, sim_params, bcs)
     end
 end
 
@@ -768,13 +837,12 @@ function simulate_full_examples(
     comment::String,
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
-    genes::Array{<:Gene},
-    n_genes::Int64,
+    dconfig::DiscreteConfig,
     t_end::Float64)
-    solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
+    solver = build_problem(sim_params, bcs, dconfig, t_end)
     for _ in 1:n_simulations
         try
-            postprocess_to_h5(filename, solver(), comment, genes, sim_params, bcs)
+            postprocess_to_h5(filename, solver(), comment, dconfig, sim_params, bcs)
         catch err
             @warn "Solver failed!"
         end
@@ -783,79 +851,87 @@ end
 
 # Simulate mRNA concentrations over time, saving just these results
 # instead of the full run results or the final mRNA summary.
-function simulate_mRNA_runs(
+function simulate_discrete_runs(
     filename::String,
     n_simulations::Int64,
     comment::String,
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
-    genes::Array{<:Gene},
-    n_genes::Int64,
+    dconfig::DiscreteConfig,
     t_end::Float64,
     t_steps::Int64,
     ics_discrete::Array{Int32,1},
     extra_metadata::Dict{String,Float64})
-    solver = build_problem(sim_params, bcs, genes, n_genes, t_end, ics_discrete)
-    simulate_mRNA_runs(
+    solver = build_problem(sim_params, bcs, dconfig, t_end, ics_discrete)
+    simulate_discrete_runs(
         solver, filename, n_simulations, comment,
-        sim_params, bcs, genes, n_genes, t_end,
+        sim_params, bcs, dconfig, t_end,
         t_steps, extra_metadata)
 end
-function simulate_mRNA_runs(
+function simulate_discrete_runs(
     filename::String,
     n_simulations::Int64,
     comment::String,
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
-    genes::Array{<:Gene},
-    n_genes::Int64,
+    dconfig::DiscreteConfig,
     t_end::Float64,
     t_steps::Int64,
     extra_metadata::Dict{String,Float64})
-    solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
-    simulate_mRNA_runs(
+    solver = build_problem(sim_params, bcs, dconfig, t_end)
+    simulate_discrete_runs(
         solver, filename, n_simulations, comment,
-        sim_params, bcs, genes, n_genes, t_end,
+        sim_params, bcs, dconfig, t_end,
         t_steps, extra_metadata)
 end
 
-function simulate_mRNA_runs(
+function simulate_discrete_runs(
     solver,
     filename::String,
     n_simulations::Int64,
     comment::String,
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
-    genes::Array{<:Gene},
-    n_genes::Int64,
+    dconfig::DiscreteConfig,
     t_end::Float64,
     t_steps::Int64,
     extra_metadata::Dict{String,Float64})
 
+    n_genes = length(dconfig.genes)
     mRNA_results = zeros(Int32, n_simulations, n_genes, t_steps)
+    discrete_results = zeros(Int32, n_simulations, dconfig.n_other_discrete, t_steps)
     for i = 1:n_simulations
         done = false
+        n_repeats = 0
         sol = false
-        while !done
+        while !done && n_repeats < 5
             sol = solver()
+            n_repeats += 1
             done = (sol.retcode == :Success)
         end
-        timesteps = Interpolations.deduplicate_knots!(sol.t)
-        mRNA = hcat([sol.u[i].u.discrete_components for i in 1:length(sol)]...)
-        interp_mRNA = ConstantInterpolation((1:n_genes, timesteps), mRNA)
-        for gene_id = 1:n_genes
-            mRNA_results[i,gene_id,:] = interp_mRNA(gene_id,range(0.0, stop=t_end, length=t_steps))
+        if n_repeats >= 5
+            continue
         end
-        print(".")
+        timesteps = Interpolations.deduplicate_knots!(sol.t)
+        discrete = hcat([sol.u[i].u.discrete_components for i in 1:length(sol)]...)
+        interp_discrete = ConstantInterpolation((1:(n_genes + dconfig.n_other_discrete), timesteps), discrete)
+        for gene_id = 1:n_genes
+            mRNA_results[i,gene_id,:] = interp_discrete(gene_id,range(0.0, stop=t_end, length=t_steps))
+        end
+        for discrete_id in 1:dconfig.n_other_discrete
+            discrete_results[i,discrete_id,:] = interp_discrete(discete_id + n_genes, range(0.0, stop=t_end, length=t_steps))
+        end
     end
+    print(".")
     h5open(filename, "cw") do h5
         run_idx = 1
-        while haskey(h5, "tangles_mRNA_run." * lpad(run_idx, 6, "0"))
+        while haskey(h5, "tangles_discrete_run." * lpad(run_idx, 6, "0"))
             run_idx += 1
         end
         g = create_group(h5, "tangles_mRNA_run." * lpad(run_idx, 6, "0"))
         g["mRNA"] = mRNA_results
-        write_h5_attributes(g, comment, genes, sim_params, bcs)
+        g["discrete_components"] = discrete_results
+        write_h5_attributes(g, comment, dconfig.genes, sim_params, bcs)
         for (key, val) in extra_metadata
             attributes(g)[key] = val
         end
@@ -868,14 +944,13 @@ function simulate_summarized_runs(
     comment::String,
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
-    genes::Array{<:Gene},
-    n_genes::Int64,
+    dconfig::DiscreteConfig,
     t_end::Float64)
-    solver = build_problem(sim_params, bcs, genes, n_genes, t_end)
-    mRNA_results = zeros(Int32, n_simulations, n_genes)
+    solver = build_problem(sim_params, bcs, dconfig, t_end)
+    discrete_results = zeros(Int32, n_simulations, length(dconfig.genes) + dconfig.n_other_discrete)
     for i in 1:n_simulations
         try
-            mRNA_results[i,:] = solver().u[end].u.discrete_components
+            discrete_results[i,:] = solver().u[end].u.discrete_components
         catch err
             @warn "Solver failed!"
         end
@@ -886,7 +961,8 @@ function simulate_summarized_runs(
             run_idx += 1
         end
         g = create_group(h5, "tangles_summarized_run." * lpad(run_idx, 6, "0"))
-        g["final_mRNA"] = mRNA_results
+        g["final_mRNA"] = discrete_results[:,1:length(dconfig.genes)]
+        g["final_discrete"] = discrete_results[:,(length(dconfig.genes)+1):end]
         write_h5_attributes(g, comment, genes, sim_params, bcs)
     end
 end
@@ -900,7 +976,21 @@ pc_circular_params = TanglesParams(
     CircularBoundaryParameters(5000))
 ODEProblem(tangles_derivatives!, TanglesArray([0.0], [], [], [], []), [0, 1000.0], pc_linear_params)
 ODEProblem(tangles_derivatives!, TanglesArray([0.0], [], [], [], []), [0, 1000.0], pc_circular_params)
-TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.LinearBoundaryParameters(5000, false, false), [TanglesModel.UncoupledGene(1/120.0, 1, 100, 1000), TanglesModel.UncoupledGene(1/120.0, 2, 3000, 2000)], 2, 3000.0)()
-TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.CircularBoundaryParameters(5000), [TanglesModel.UncoupledGene(1/120.0, 1, 100, 1000), TanglesModel.UncoupledGene(1/120.0, 2, 3000, 2000)], 2, 3000.0)()
+# Test uncoupled with multiple BCs
+TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.LinearBoundaryParameters(5000, false, false), DiscreteConfig([TanglesModel.UncoupledGene(1/120.0, 1, 100, 1000), TanglesModel.UncoupledGene(1/120.0, 2, 3000, 2000)]), 1000.0)()
+TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.CircularBoundaryParameters(5000), DiscreteConfig([TanglesModel.UncoupledGene(1/120.0, 1, 100, 1000), TanglesModel.UncoupledGene(1/120.0, 2, 3000, 2000)]), 1000.0)()
+# Test coupled with linear BCs
+TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.LinearBoundaryParameters(5000, false, false), DiscreteConfig([TanglesModel.CoupledGene(1/120.0, 1, 100, 1000, (mRNA,_)->100.0 / (100.0 + mRNA[1])), TanglesModel.CoupledGene(1/120.0, 2, 3000, 2000, (_,t)->1000.0/(1000.0 + t))]), 1000.0)()
+# Test coupled, with extra reactions
+TanglesModel.build_problem(TanglesModel.DEFAULT_SIM_PARAMS, TanglesModel.LinearBoundaryParameters(5000, false, false), DiscreteConfig(
+    [
+        TanglesModel.CoupledGene(1/120.0, 1, 100, 1000, (mRNA,_)->100.0 / (100.0 + mRNA[1])), TanglesModel.CoupledGene(1/120.0, 2, 3000, 2000, (_,t)->1000.0/(1000.0 + t))],
+        2,
+        [
+            ((discrete,t)->10.0 / (10.0 + discrete[4])) => [3 => 1],
+            ((discrete,t)->10.0 / (10.0 + discrete[3])) => [4 => 1],
+            ((discrete,t)->discrete[3]) => [3 => -1],
+            ((discrete,t)->discrete[4]) => [4 => -1],
+        ]), 1000.0)()
 
 end # module TanglesModel

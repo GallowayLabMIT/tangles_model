@@ -64,24 +64,24 @@ for _ in 1:n_repeats,
     hill_func(inhibitor) = (k_val) / (k_val + inhibitor^hill_coeff)
     extra_attrs = Dict("hill_coeff"=>hill_coeff, "K_val"=>k_val, "K_factor"=>k_factor)
 
-    tandem =      [
+    tandem =      DiscreteConfig([
         CoupledGene(base_rate, 1, 3500 * 0.34, 4500 * 0.34, (mRNA,_)->hill_func(mRNA[2])),
         CoupledGene(base_rate, 2, 5500 * 0.34, 6500 * 0.34, (mRNA,_)->hill_func(mRNA[1]))
-    ]
-    convergent =  [
+    ])
+    convergent =  DiscreteConfig([
         CoupledGene(base_rate, 1, 3500 * 0.34, 4500 * 0.34, (mRNA,_)->hill_func(mRNA[2])),
         CoupledGene(base_rate, 2, 6500 * 0.34, 5500 * 0.34, (mRNA,_)->hill_func(mRNA[1]))
-    ]
-    divergent =   [
+    ])
+    divergent =   DiscreteConfig([
         CoupledGene(base_rate, 1, 4500 * 0.34, 3500 * 0.34, (mRNA,_)->hill_func(mRNA[2])),
         CoupledGene(base_rate, 2, 5500 * 0.34, 6500 * 0.34, (mRNA,_)->hill_func(mRNA[1]))
-    ]
+    ])
 
 
     start_time = time()
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.tandem", params, bcs, tandem, 2, 50000.0, 500, mRNA_ic, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.convergent", params, bcs, convergent, 2, 50000.0, 500, mRNA_ic, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.divergent", params, bcs, divergent, 2, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.tandem", params, bcs, tandem, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.convergent", params, bcs, convergent, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.divergent", params, bcs, divergent, 50000.0, 500, mRNA_ic, extra_attrs)
     println("Done with fig 3 with params:\n\tis_plasmid: ", is_plasmid, "\n\tsc_dependent: ", sc_initiation, "\n\thill_coeff: ", hill_coeff, "\n\tK_factor: ", k_factor, "\n\tmRNA_deg_fac: ", mRNA_deg_rate_factor)
     println("Ran round in ", time() - start_time, " seconds")
 end
@@ -112,24 +112,24 @@ for _ in 1:n_repeats,
     hill_func(inhibitor) = (k_val) / (k_val + inhibitor^hill_coeff)
     extra_attrs = Dict("hill_coeff"=>hill_coeff, "K_val"=>k_val, "K_factor"=>k_factor)
 
-    tandem =      [
+    tandem =      DiscreteConfig([
         CoupledGene(base_rate, 1, 3500 * 0.34, 4500 * 0.34, (mRNA,_)->hill_func(mRNA[2])),
         CoupledGene(base_rate, 2, 5500 * 0.34, 6500 * 0.34, (mRNA,_)->hill_func(mRNA[1]))
-    ]
-    convergent =  [
+    ])
+    convergent =  DiscreteConfig([
         CoupledGene(base_rate, 1, 3500 * 0.34, 4500 * 0.34, (mRNA,_)->hill_func(mRNA[2])),
         CoupledGene(base_rate, 2, 6500 * 0.34, 5500 * 0.34, (mRNA,_)->hill_func(mRNA[1]))
-    ]
-    divergent =   [
+    ])
+    divergent =   DiscereteConfig([
         CoupledGene(base_rate, 1, 4500 * 0.34, 3500 * 0.34, (mRNA,_)->hill_func(mRNA[2])),
         CoupledGene(base_rate, 2, 5500 * 0.34, 6500 * 0.34, (mRNA,_)->hill_func(mRNA[1]))
-    ]
+    ])
 
 
     start_time = time()
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.tandem", params, bcs, tandem, 2, 50000.0, 500, mRNA_ic, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.convergent", params, bcs, convergent, 2, 50000.0, 500, mRNA_ic, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.divergent", params, bcs, divergent, 2, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.tandem", params, bcs, tandem, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.convergent", params, bcs, convergent, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.divergent", params, bcs, divergent, 50000.0, 500, mRNA_ic, extra_attrs)
     println("Done with fig 5 with params:\n\thill_coeff: ", hill_coeff, "\n\tK_factor: ", k_factor, "\n\tmRNA_deg_fac: ", mRNA_deg_rate_factor, "\n\ttopo factor: ", topo_factor)
     println("Ran round in ", time() - start_time, " seconds")
 end
