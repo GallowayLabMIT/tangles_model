@@ -79,9 +79,9 @@ for _ in 1:n_repeats,
 
 
     start_time = time()
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.tandem", params, bcs, tandem, 50000.0, 500, mRNA_ic, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.convergent", params, bcs, convergent, 50000.0, 500, mRNA_ic, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig3.divergent", params, bcs, divergent, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_discrete_runs(filename, n_examples_per_node, "fig3.tandem", params, bcs, tandem, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_discrete_runs(filename, n_examples_per_node, "fig3.convergent", params, bcs, convergent, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_discrete_runs(filename, n_examples_per_node, "fig3.divergent", params, bcs, divergent, 50000.0, 500, mRNA_ic, extra_attrs)
     println("Done with fig 3 with params:\n\tis_plasmid: ", is_plasmid, "\n\tsc_dependent: ", sc_initiation, "\n\thill_coeff: ", hill_coeff, "\n\tK_factor: ", k_factor, "\n\tmRNA_deg_fac: ", mRNA_deg_rate_factor)
     println("Ran round in ", time() - start_time, " seconds")
 end
@@ -127,9 +127,9 @@ for _ in 1:n_repeats,
 
 
     start_time = time()
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.tandem", params, bcs, tandem, 50000.0, 500, mRNA_ic, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.convergent", params, bcs, convergent, 50000.0, 500, mRNA_ic, extra_attrs)
-    simulate_mRNA_runs(filename, n_examples_per_node, "fig5.divergent", params, bcs, divergent, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_discrete_runs(filename, n_examples_per_node, "fig5.tandem", params, bcs, tandem, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_discrete_runs(filename, n_examples_per_node, "fig5.convergent", params, bcs, convergent, 50000.0, 500, mRNA_ic, extra_attrs)
+    simulate_discrete_runs(filename, n_examples_per_node, "fig5.divergent", params, bcs, divergent, 50000.0, 500, mRNA_ic, extra_attrs)
     println("Done with fig 5 with params:\n\thill_coeff: ", hill_coeff, "\n\tK_factor: ", k_factor, "\n\tmRNA_deg_fac: ", mRNA_deg_rate_factor, "\n\ttopo factor: ", topo_factor)
     println("Ran round in ", time() - start_time, " seconds")
 end
