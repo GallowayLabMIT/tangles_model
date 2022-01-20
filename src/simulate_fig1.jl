@@ -1,7 +1,7 @@
 using TanglesModel
 node_idx = parse(Int64, ARGS[1])
 n_nodes = parse(Int64, ARGS[2])
-filename = "output/modeling_paper/fig1_fig2_sims-node" * lpad(node_idx, 5, "0") * ".h5"
+filename = "output/modeling_paper/fig1_sims-node" * lpad(node_idx, 5, "0") * ".h5"
 
 println("""
 ======================================================
@@ -141,36 +141,6 @@ for _ in 1:n_repeats,
     println("Done with hyperparam sweep with params:\n\tdrag_coeff: ", drag_coeff,
         "\n\tdrag_exp: ", drag_exp, "\n\tstall_torque: ", stall_torque, "\n\tstall_width: ", stall_width,
         "\n\tinduction: ", induction, "\n\tσ2: ", σ2)
-    println("Ran round in ", time() - start_time, " seconds")
-end
-
-# Fig 2: simulate small number of examples of turning on genes in a single run 
-for _ in 1:n_repeats,
-    induction in exp10.(range(-2,0.5,length=30)),
-    σ2 in [0.0, 0.02]
-
-    if i % n_nodes != node_idx
-        global i += 1
-        continue
-    end
-    global i += 1
-
-    params = gen_sim_params(sc_dependent=true, σ2_coeff = σ2)
-
-    bcs = LinearBoundaryParameters(10000.0 * 0.34, false, false)
-
-    coupling_func(_mRNA,t) = (t > 10000.0) ? induction : 0.0
-    tandem_down = DiscreteConfig([CoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34, (_,_)->1.0), CoupledGene(base_rate, 1, 6000 * 0.34, 7000 * 0.34, coupling_func)])
-    tandem_up =   DiscreteConfig([CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)])
-    convergent =  DiscreteConfig([CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34, (_,_)->1.0)])
-    divergent =   DiscreteConfig([CoupledGene(base_rate, 1, 4000 * 0.34, 3000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)])
-
-    start_time = time()
-    simulate_full_examples(filename, n_full_examples_per_node, "fig2.tandem_down", params, bcs, tandem_down, 20000.0)
-    simulate_full_examples(filename, n_full_examples_per_node, "fig2.tandem_up", params, bcs, tandem_up, 20000.0)
-    simulate_full_examples(filename, n_full_examples_per_node, "fig2.convergent", params, bcs, convergent, 20000.0)
-    simulate_full_examples(filename, n_full_examples_per_node, "fig2.divergent", params, bcs, divergent, 20000.0)
-    println("Done with fig2 with params:\n\tinduction: ", induction, "\n\t σ2: ", σ2)
     println("Ran round in ", time() - start_time, " seconds")
 end
 
