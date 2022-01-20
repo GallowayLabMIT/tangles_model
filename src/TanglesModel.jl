@@ -827,7 +827,7 @@ function postprocess_to_h5(
         g["mRNA_length"] = z
         g["mRNA"] = mRNA
         g["discrete_components"] = discrete_components
-        write_h5_attributes(g, comment, dconfig.genes, sim_params, bcs)
+        write_h5_attributes(g, comment, dconfig, sim_params, bcs)
     end
 end
 
@@ -931,7 +931,7 @@ function simulate_discrete_runs(
         g = create_group(h5, "tangles_mRNA_run." * lpad(run_idx, 6, "0"))
         g["mRNA"] = mRNA_results
         g["discrete_components"] = discrete_results
-        write_h5_attributes(g, comment, dconfig.genes, sim_params, bcs)
+        write_h5_attributes(g, comment, dconfig, sim_params, bcs)
         for (key, val) in extra_metadata
             attributes(g)[key] = val
         end
@@ -963,7 +963,7 @@ function simulate_summarized_runs(
         g = create_group(h5, "tangles_summarized_run." * lpad(run_idx, 6, "0"))
         g["final_mRNA"] = discrete_results[:,1:length(dconfig.genes)]
         g["final_discrete"] = discrete_results[:,(length(dconfig.genes)+1):end]
-        write_h5_attributes(g, comment, genes, sim_params, bcs)
+        write_h5_attributes(g, comment, dconfig, sim_params, bcs)
     end
 end
 
