@@ -928,7 +928,7 @@ function simulate_discrete_runs(
         while haskey(h5, "tangles_discrete_run." * lpad(run_idx, 6, "0"))
             run_idx += 1
         end
-        g = create_group(h5, "tangles_mRNA_run." * lpad(run_idx, 6, "0"))
+        g = create_group(h5, "tangles_discrete_run." * lpad(run_idx, 6, "0"))
         g["mRNA"] = mRNA_results
         g["discrete_components"] = discrete_results
         write_h5_attributes(g, comment, dconfig, sim_params, bcs)
