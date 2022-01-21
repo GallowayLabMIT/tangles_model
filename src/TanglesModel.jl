@@ -919,7 +919,7 @@ function simulate_discrete_runs(
             mRNA_results[i,gene_id,:] = interp_discrete(gene_id,range(0.0, stop=t_end, length=t_steps))
         end
         for discrete_id in 1:dconfig.n_other_discrete
-            discrete_results[i,discrete_id,:] = interp_discrete(discete_id + n_genes, range(0.0, stop=t_end, length=t_steps))
+            discrete_results[i,discrete_id,:] = interp_discrete(discrete_id + n_genes, range(0.0, stop=t_end, length=t_steps))
         end
     end
     print(".")
