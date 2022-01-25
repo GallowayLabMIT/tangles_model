@@ -58,10 +58,10 @@ for _ in 1:n_repeats,
     divergent =   DiscreteConfig([CoupledGene(base_rate, 1, 4000 * 0.34, 3000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)])
 
     start_time = time()
-    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.tandem_down", params, bcs, tandem_down, 20000.0, 1000, Dict("step_time" => step_time, "step_induction" => induction))
-    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.tandem_up", params, bcs, tandem_up, 20000.0, 1000, Dict("step_time" => step_time, "step_induction" => induction))
-    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.convergent", params, bcs, convergent, 20000.0, 1000, Dict("step_time" => step_time, "step_induction" => induction))
-    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.divergent", params, bcs, divergent, 20000.0, 1000, Dict("step_time" => step_time, "step_induction" => induction))
+    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.tandem_down", params, bcs, tandem_down, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
+    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.tandem_up", params, bcs, tandem_up, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
+    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.convergent", params, bcs, convergent, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
+    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.divergent", params, bcs, divergent, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
     println("Done with fig2 with params:\n\tinduction: ", induction, "\n\t σ2: ", σ2)
     println("Ran round in ", time() - start_time, " seconds")
 end
