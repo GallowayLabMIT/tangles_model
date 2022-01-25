@@ -23,7 +23,7 @@ export LinearBoundaryParameters, CircularBoundaryParameters, UncoupledGene, Coup
 export simulate_full_examples, simulate_summarized_runs, simulate_discrete_runs
 
 function check_nonnegative(x, name)
-    if x < 0 
+    if x < 0
         error(name + " must be non-negative!")
     end
 end
@@ -74,7 +74,7 @@ struct DNA_Parameters
     end
 end
 DEFAULT_DNA_PARAMS = DNA_Parameters(1, 10, 50, 95, 24)
-    
+
 struct SimulationParameters
     mRNA_params::mRNA_Parameters
     RNAP_params::RNAP_Parameters
@@ -330,7 +330,7 @@ function supercoiling_density(
     ω0::Float64)::Float64
     # Computes supercoiling density in N+1 regions, allowing for free or fixed left/right
     # boundary conditions
-    
+
     if length(u.x) == 1
         return 0
     end
@@ -395,11 +395,11 @@ function polymerase_termination_check(u::ExtendedJumpArray{Float64, 1, TanglesAr
     return polymerase_termination_check(u.u, t, integrator)
 end
 
-function polymerase_termination_check(u::TanglesArray, t, integrator) 
+function polymerase_termination_check(u::TanglesArray, t, integrator)
     if length(u) > 1
         return min(((u.polymerase_stop - u[1:3:(end-1)]) .* u.polymerase_direction)...)
     end
-    # Never trigger polymerase termination 
+    # Never trigger polymerase termination
     return 1
 end
 
@@ -510,7 +510,7 @@ function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promot
     σ::Float64 = supercoiling_density(u, get_sc_region(promoter.position, u), p.bc_params, p.sim_params.ω_0)
     energy::Float64 = (torque_response(σ, p) + p.sim_params.σ2_coeff * (σ / p.sim_params.σ_s)^2 * p.sim_params.τ_0) * 1.2 * 2.0 * π
     sc_rate_factor::Float64 = min(50.0,exp(-energy / (p.sim_params.k_b * p.sim_params.T)))
-    
+
     return promoter.base_rate * coupling_func(u.discrete_components, t) * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
 end
 
@@ -615,7 +615,7 @@ function internal_relax_supercoiling!(u::TanglesArray, n_rnap::Int64, start_idx:
         end
         return
     end
-    
+
     # Otherwise, interpolate between left and right values
     for i in start_idx:end_idx
         α = (x[end_idx + 1] - x[i]) / (x[end_idx + 1] - x[start_idx - 1])
@@ -715,7 +715,7 @@ function build_problem(
     dconfig::DiscreteConfig,
     t_end::Float64)
     build_problem(sim_params, bcs, dconfig, t_end, zeros(Int32,length(dconfig.genes)+ dconfig.n_other_discrete))
-end 
+end
 
 function build_problem(
     sim_params::SimulationParameters,
@@ -931,6 +931,7 @@ function simulate_discrete_runs(
         g = create_group(h5, "tangles_discrete_run." * lpad(run_idx, 6, "0"))
         g["mRNA"] = mRNA_results
         g["discrete_components"] = discrete_results
+        g["time"] = Vector(range(0.0, stop=t_end, length=t_steps))
         write_h5_attributes(g, comment, dconfig, sim_params, bcs)
         for (key, val) in extra_metadata
             attributes(g)[key] = val
