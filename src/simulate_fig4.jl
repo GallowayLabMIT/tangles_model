@@ -13,8 +13,8 @@ Run summary:
 overall_start = time()
 
 base_rate = 1.0 / 120.0
-n_examples_per_node = 100
-n_repeats = 100
+n_examples_per_node = 1
+n_repeats = 1
 i = 0
 
 function gen_sim_params(;
@@ -104,7 +104,7 @@ for _ in 1:n_repeats,
         sc_dependent = true,
         σ2_coeff = 0.02,
         mRNA_deg_rate = time_rescaled_rates["mRNA_degradation"])
-    
+
     if state == "uncoupled"
         # Free-end BCs, with 10 million basepairs total
         endpoint = 10000000.0 * 0.34
@@ -155,13 +155,13 @@ for _ in 1:n_repeats,
         bcs = LinearBoundaryParameters(endpoint, true, true)
         config = DiscreteConfig([
             # Both genes are active, but only one of the mRNAs makes both proteins
-            CoupledGene(time_rescaled_rates["mRNA_synthesis"], 1, her1_space + her1_len, her1_space,
+            MultiCoupledGene(time_rescaled_rates["mRNA_synthesis"], Array{UInt32,1}([1,2]), her1_space + her1_len, her1_space,
                 (discrete,_)->Float64(discrete[dmap["her1_promoter_empty"]])),
-            CoupledGene(time_rescaled_rates["mRNA_synthesis"], 2, endpoint - (her7_space + her7_len), endpoint - her7_space,
+            MultiCoupledGene(time_rescaled_rates["mRNA_synthesis"], Array{UInt32,1}(), endpoint - (her7_space + her7_len), endpoint - her7_space,
                 (discrete,_)->Float64(discrete[dmap["her7_promoter_empty"]])),
         ], 9, [
             ((discrete,_)->time_rescaled_rates["protein_synthesis"] * discrete[dmap["her1_mRNA"]]) => [dmap["her1_protein"] => 1],
-            ((discrete,_)->time_rescaled_rates["protein_synthesis"] * discrete[dmap["her1_mRNA"]]) => [dmap["her7_protein"] => 1], # <- This line changed to do complete coupling
+            ((discrete,_)->time_rescaled_rates["protein_synthesis"] * discrete[dmap["her7_mRNA"]]) => [dmap["her7_protein"] => 1],
             ((discrete,_)->time_rescaled_rates["protein_degradation"] * discrete[dmap["her1_protein"]]) => [dmap["her1_protein"] => -1],
             ((discrete,_)->time_rescaled_rates["protein_degradation"] * discrete[dmap["her7_protein"]]) => [dmap["her7_protein"] => -1],
             ((discrete,_)->time_rescaled_rates["dimer_association"] * discrete[dmap["her1_promoter_empty"]] * discrete[dmap["her1_protein"]] * (discrete[dmap["her1_protein"]] - 1) / 2) => [
@@ -192,8 +192,8 @@ for _ in 1:n_repeats,
         start_time = time()
         simulate_discrete_runs(filename, n_examples_per_node, "fig4.fully-coupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}())
         println("Done with fig 4 with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
+        println("Ran round in ", time() - start_time, " seconds")
     elseif state == "tangles-coupled"
-        # Free-end BCs, with 10 million basepairs total
         endpoint = her1_space + her1_len + her1_her7_space + her7_len + her7_space
         bcs = LinearBoundaryParameters(endpoint, false, false)
         config = DiscreteConfig([
@@ -235,6 +235,7 @@ for _ in 1:n_repeats,
         start_time = time()
         simulate_discrete_runs(filename, n_examples_per_node, "fig4.tangles-coupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}())
         println("Done with fig 4 with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
+        println("Ran round in ", time() - start_time, " seconds")
     end
 end
 println("Done with ALL simulations; node shutting down after ", time() - overall_start, " seconds!")

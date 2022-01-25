@@ -19,7 +19,7 @@ end
 export mRNA_Parameters, DEFAULT_mRNA_PARAMS
 export RNAP_Parameters, DEFAULT_RNAP_PARAMS, DNA_Parameters, DEFAULT_DNA_PARAMS
 export SimulationParameters, DEFAULT_SIM_PARAMS
-export LinearBoundaryParameters, CircularBoundaryParameters, UncoupledGene, CoupledGene, DiscreteConfig
+export LinearBoundaryParameters, CircularBoundaryParameters, UncoupledGene, MultiUncoupledGene, CoupledGene, MultiCoupledGene, DiscreteConfig
 export simulate_full_examples, simulate_summarized_runs, simulate_discrete_runs
 
 function check_nonnegative(x, name)
@@ -143,9 +143,24 @@ struct UncoupledGene <: Gene
     terminate::Float64
 end
 
+struct MultiUncoupledGene <: Gene
+    base_rate::Float64
+    idxes::Array{UInt32,1}
+    start::Float64
+    terminate::Float64
+end
+
 struct CoupledGene <: Gene
     base_rate::Float64
     idx::UInt32
+    start::Float64
+    terminate::Float64
+    coupling_function
+end
+
+struct MultiCoupledGene <: Gene
+    base_rate::Float64
+    idxes::Array{UInt32,1}
     start::Float64
     terminate::Float64
     coupling_function
@@ -229,7 +244,7 @@ mutable struct TanglesArray <: DEDataArray{Float64,1}
     discrete_components::Array{Int32,1}
     polymerase_direction::Array{Int64, 1}
     polymerase_stop::Array{Float64,1}
-    polymerase_gene::Array{UInt32,1}
+    polymerase_gene::Array{Array{UInt32,1}}
 end
 
 
@@ -413,7 +428,9 @@ function terminate!(c::TanglesArray, idx::UInt32)
     if remove_idx[end] > length(c)
         @warn "Data array is too small!"
     else
-        c.discrete_components[c.polymerase_gene[idx]] += 1
+        for i in c.polymerase_gene[idx]
+            c.discrete_components[i] += 1
+        end
         deleteat!(c.x, remove_idx)
         deleteat!(c.polymerase_direction, idx)
         deleteat!(c.polymerase_stop, idx)
@@ -456,27 +473,27 @@ function FiniteDiff.resize!(c::TanglesArray, i::Int64)
 end
 
 
-function extend_rnap!(c::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, position::Float64, insert_idx::UInt32, twist::Float64, gene::UInt32, terminate_end::Float64)
-    extend_rnap!(c.u, position, insert_idx, twist, gene, terminate_end)
+function extend_rnap!(c::ExtendedJumpArray{Float64, 1, TanglesArray, Vector{Float64}}, position::Float64, insert_idx::UInt32, twist::Float64, genes::Array{UInt32,1}, terminate_end::Float64)
+    extend_rnap!(c.u, position, insert_idx, twist, genes, terminate_end)
 end
 
-function extend_rnap!(c::TanglesArray, position::Float64, insert_idx::UInt32, twist::Float64, gene::UInt32, terminate_end::Float64)
+function extend_rnap!(c::TanglesArray, position::Float64, insert_idx::UInt32, twist::Float64, genes::Array{UInt32,1}, terminate_end::Float64)
     # Insert items in reverse order
     insert!(c.x,1 + 3 * (insert_idx - 1), 0.0)
     insert!(c.x,1 + 3 * (insert_idx - 1), twist)
     insert!(c.x,1 + 3 * (insert_idx - 1), position)
     insert!(c.polymerase_direction, insert_idx, terminate_end > position ? 1 : -1)
     insert!(c.polymerase_stop, insert_idx, terminate_end)
-    insert!(c.polymerase_gene, insert_idx, gene)
+    insert!(c.polymerase_gene, insert_idx, genes)
 end
 
-function add_polymerase!(integrator, position::Float64, gene::UInt32, terminate_end::Float64)
+function add_polymerase!(integrator, position::Float64, genes::Array{UInt32,1}, terminate_end::Float64)
     #print("Attempting to add polymerase. Current u:")
     #println(integrator.u)
     insert_idx::UInt32, twist::Float64 = interp_twist(position, integrator.u, integrator.p.bc_params, integrator.p.sim_params.ω_0)
     #println("Adding to full_cache vars")
     for c in full_cache(integrator)
-        extend_rnap!(c, position, insert_idx, twist,  gene, terminate_end)
+        extend_rnap!(c, position, insert_idx, twist,  genes, terminate_end)
     end
     #println("Printing new cache...")
     #for c in full_cache(integrator)
@@ -519,7 +536,15 @@ function generate_jump(gene::UncoupledGene, sc_dependent::Bool)::VariableRateJum
                 (u,p,t) -> polymerase_initiation_rate(
                     u,p,t,
                     Promoter(gene.start,gene.base_rate,sc_dependent),(mRNA, t)->1.0),
-                (int)   -> add_polymerase!(int, gene.start, gene.idx, gene.terminate))
+                (int)   -> add_polymerase!(int, gene.start, [gene.idx], gene.terminate))
+end
+
+function generate_jump(gene::MultiUncoupledGene, sc_dependent::Bool)::VariableRateJump
+    return VariableRateJump(
+                (u,p,t) -> polymerase_initiation_rate(
+                    u,p,t,
+                    Promoter(gene.start,gene.base_rate,sc_dependent),(mRNA, t)->1.0),
+                (int)   -> add_polymerase!(int, gene.start, gene.idxes, gene.terminate))
 end
 
 function generate_jump(gene::CoupledGene, sc_dependent::Bool)::VariableRateJump
@@ -527,9 +552,16 @@ function generate_jump(gene::CoupledGene, sc_dependent::Bool)::VariableRateJump
                 (u,p,t) -> polymerase_initiation_rate(
                     u,p,t,
                     Promoter(gene.start,gene.base_rate,sc_dependent),gene.coupling_function),
-                (int)   -> add_polymerase!(int, gene.start, gene.idx, gene.terminate))
+                (int)   -> add_polymerase!(int, gene.start, [gene.idx], gene.terminate))
 end
 
+function generate_jump(gene::MultiCoupledGene, sc_dependent::Bool)::VariableRateJump
+    return VariableRateJump(
+                (u,p,t) -> polymerase_initiation_rate(
+                    u,p,t,
+                    Promoter(gene.start,gene.base_rate,sc_dependent),gene.coupling_function),
+                (int)   -> add_polymerase!(int, gene.start, gene.idxes, gene.terminate))
+end
 
 function terminate_polymerase!(integrator)
     # Identify polymerase to be terminated
