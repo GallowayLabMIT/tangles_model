@@ -9,9 +9,6 @@ if __name__ == '__main__':
     for fig in [2,4]:
         with h5py.File(f'../output/modeling_paper/modeling_fig{fig}_combined.h5','w') as outfile:
             for f in pathlib.Path('../output/modeling_paper').glob(f'fig{fig}*.h5'):
-                # Skip HDF files written within the last day
-                if datetime.now() - datetime.fromtimestamp(f.stat().st_mtime) < timedelta(days=1):
-                    continue
                 outgroup = outfile.create_group(f.stem)
                 with h5py.File(f, 'r') as infile:
                     for group in infile.keys():
