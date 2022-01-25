@@ -14,7 +14,7 @@ overall_start = time()
 
 base_rate = 1.0 / 120.0
 n_examples_per_node = 100
-n_full_examples_per_node = 10
+n_full_examples_per_node = 50
 n_repeats = 1
 i = 0
 
@@ -37,7 +37,7 @@ end
 
 # Fig 2: simulate small number of examples of turning on genes in a single run
 for _ in 1:n_repeats,
-    induction in exp10.(range(-2,0.5,length=30)),
+    induction in exp10.(range(-2,0.5,length=31)),
     σ2 in [0.0, 0.02]
 
     if i % n_nodes != node_idx
