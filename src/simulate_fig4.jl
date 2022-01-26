@@ -146,7 +146,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig4.uncoupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}())
+        simulate_discrete_runs(filename, n_examples_per_node, "fig4.uncoupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
         println("Done with fig 4 with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     elseif state == "fully-coupled"
@@ -190,7 +190,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig4.fully-coupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}())
+        simulate_discrete_runs(filename, n_examples_per_node, "fig4.fully-coupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
         println("Done with fig 4 with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     elseif state == "tangles-coupled"
@@ -233,7 +233,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig4.tangles-coupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}())
+        simulate_discrete_runs(filename, n_examples_per_node, "fig4.tangles-coupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
         println("Done with fig 4 with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     end
