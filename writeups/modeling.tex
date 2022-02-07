@@ -32,7 +32,7 @@
 %-------------------end standard preamble-------------------------
 \newcommand{\units}[2]{\frac{\text{#1}}{\text{#2}}\,}
 \newcommand{\unit}[1]{\; \text{#1}\,}
- 
+
 \titlespacing{\section}{0pt}{2ex}{1ex}
 \titlespacing{\subsection}{0pt}{1ex}{0ex}
 
@@ -47,7 +47,7 @@
 
 \section{Introduction}
 Mammalian genomes are enormously complex systems regulated over a vast range of length and time scales; ongoing transcription-linked processes constantly reshape chromatin, cell division and the associated genomic replication regularly disrupt the structure of the genome \parencite{johnstoneUnderstandingEngineeringChromatin2020}. Extensive work in the fields of synthetic and systems biology has demonstrated the wide applicability of concentration-mediated regulation, including native and synthetic DNA-binding proteins (including zinc-finger proteins, dCas9 fusions, and transcription factors), small molecule aptamers, and miRNA regulators.
-A rich modeling framework based on the predictions of ordinary differential equation models and discrete stochastic simulation models well predicts the behavior of these systems. 
+A rich modeling framework based on the predictions of ordinary differential equation models and discrete stochastic simulation models well predicts the behavior of these systems.
 Some recent notable forays into novel regulatory methods include systems that maintain and creates synthetic epigenetic memory \parencite{parkEngineeringEpigeneticRegulation2019} and the mechanical regulation imparted by synthetic liquid-liquid phase condensates \parencite{shinLiquidNuclearCondensates2018}.
 
 Recently, synthetic circuits have been designed to take advantage of the rich transcription-chromatin feedback network underlying native gene regulation. Mimicking the proximity-dependent behavior of native systems, synthetic enhancer-promoter circuits have been designed in \textit{Drosophila} that depend on the presence of a local contact domain \parencite{yokoshiVisualizingRoleBoundary2020}. Deleting one of the contact domain boundaries decreased reporter output without significantly perturbing gene expression in adjacent contact domains \parencite{yokoshiVisualizingRoleBoundary2020}.
@@ -57,25 +57,69 @@ One key regulatory strategy that may be important in native circuits but is hith
 In order to create synthetic circuits capable of utilizing biophysical feedback, the physical mechanisms by which transcription induces feedback must be understood. To understand these biophysical mechanisms, we require a chromatin model that includes the process of transcription. Many constraint-based models have successfully predicted chromatin structures from experimental contact domain information (Hi-C maps) \parencite{distefanoTranscriptionalActivationCell2020,serraRestraintbasedThreedimensionalModeling2015,abbasIntegratingHiCFISH2019}. These models coarse-grain chromatin as a self-interacting 3D polymer, but do not explicitly represent transcription---a key process we want to model. Phenomenological models, which model polymerase binding using a supercoiling-dependent energy term calibrated from experiments but do not simulate polymerase motion, have been successful in modeling the effects of supercoiling for bacterial gene expression  \parencite{elhoudaiguiBacterialGenomeArchitecture2019a,yeungBiophysicalConstraintsArising2017}. An intermediate method for modeling the effects of supercoiling is to abstract details of the helical polymer model into a statistical mechanics model that predicts energy and torque responses arising from perturbations such as transcription. Such a model has been developed by \textcite{markoSupercoiledBraidedDNA1997,markoTorqueDynamicsLinking2007} and \textcite{sevierPropertiesGeneExpression2018}. Such an intermediate model allows us to understand how the physical motion of polymerases leads to feedback, without having to do detailed molecular simulation \parencite{fosadoNonequilibriumDynamicsAction2021}.
 
 Here, we present an extension of the model first proposed in \parencite{sevierMechanicalPropertiesDNA2019}. By modeling the joint effect of supercoiling-dependent polymerase initiation and polymerase stalling, we predict a wide range of emergent feedback behaviors, that may be used to both inform novel synthetic circuit designs and explain observed native phenomena.
+
+\section{Model}
+Simulating the behavior of native and synthetic circuits under the influence of transcription-induced feedback requires an model that integrates explicitly-modeled polymerase motion and RNA- and protein-mediated feedback mechanisms.
+Our method combines three modeling levels: an ordinary differential equation model that simulates the continuous progression of polymerases loaded onto DNA, a core stochastic model that models supercoiling-dependent polymerase initiation, and a user-specified stochastic layer that allows for simulation of other regulatory interactions such as promoter activity dependent on protein production and degradation.
+
+Following previous work, modeled the motion of polymerases using an ODE model where each polymerase is defined by three variables---the (one-dimensional) position of the polymerase along the DNA \(z_i\), the length of the single-stranded nascent RNA \(x_i\), and the excess twist relative to relaxed DNA at the location of the polymerase \(\phi_i\) \parencite{markoTorqueDynamicsLinking2007,sevierPropertiesGeneExpression2018}.
+
+By storing the excess twist of DNA, we can easily calculate. On the rele
+On the relevant length scale of synthetic circuits (O(10-100kb)),
+
+\section{Results}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics{figures/modeling_paper/fig_1.pdf}
+    \caption{}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics{figures/modeling_paper/fig_2.pdf}
+    \caption{}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics{figures/modeling_paper/fig_4.pdf}
+    \caption{}
+\end{figure}
+
+\section{Discussion}
+
+Supercoiling density is defined:
+\begin{equation}
+    \sigma = \frac{\phi_i - \phi_{i - 1}}{\omega_0 | z_{i} - z_{i-1}|}
+    \label{eq:sc_density}
+\end{equation}
+where \(\phi\) defines a \emph{linking number constraint}. While this term is most easily identified with the local DNA excess twist, it is truly a linking number constraint that takes into account both twist and writhe. The asymmetry between these two forms is accounted for in the phase transition in the underlying statistical mechanical model.
+
+Based on a statistical-mechanics model that calculates the torque as a function of supercoiling density:
+\begin{equation}
+    \tau(\sigma) = \begin{dcases} \tau_S \sigma & |\sigma| < |\sigma_s| \\ \tau_0 \text{sgn}(\sigma) & |\sigma_s| \leq |\sigma | \leq |\sigma_p| \\ \tau_P \sigma & |\sigma_p| \leq |\sigma|\end{dcases}
+\end{equation}
+
+
+
 \section{Claims}
 
 \subsection{ DNA supercoiling dynamics confer rapid, tunable coupling between adjacent genes in linear and circular contexts }
 \begin{itemize}
-    \item Supercoiling allows for regulation on timescales otherwise unaccessible by synthetic systems. 
-    
+    \item Supercoiling allows for regulation on timescales otherwise inaccessible by synthetic systems.
+
     \item (probably we should say something about noise and controlling for it via syntax)
-     
-    \item Bursting is predicted to be strongly correlated on the timescale of seconds-minutes.
+
+    \item Divergent gene orientation can lead to strongly correlated bursting on short timescales.
 
     \item Supercoiling-dependent initiation, modeled here as an expansion based on assumptions reasonable for real systems, is a key supercoiling-dependent mechanism that is balanced against polymerase stalling.
-    
-    \item Plasmid (circular) and genomically-integrated (linear) systems are \emph{not} equivalent, and are predicted to have different amounts of supercoiling-dependent feedback.
-    
+
+    \item Expression context provides different boundary conditions, inducing different levels of supercoiling-dependent feedback.
+
     \item Regulatory systems involving supercoiling are capable of sense changes in genomic context, such as changes in adjacent gene expression and accessibility.
 \end{itemize}
 
 
-
+\clearpage
 \subsection{Supercoiling-dependent intergene coupling supports rapid  transcriptional feedback, generating emergent patterns of expression}
 \begin{itemize}
     \item The syntax of compact, simple gene cassettes provides a design parameter for specifying and tuning transcriptional feedback.
@@ -83,15 +127,17 @@ Here, we present an extension of the model first proposed in \parencite{sevierMe
     \item Asymmetric polymerase initiation with respect to supercoiling density leads to physically-realistic asymptotic behavior.
 \end{itemize}
 
+\clearpage
 \subsection{ Optimized circuit syntax supports enhanced toggle switch stability via DNA supercoiling }
 \begin{itemize}
-\item Supercoiling-dependent feedback can enhance the ultrasensitive response of synthetic regulatory motifs (toggle switch stability). 
+\item Supercoiling-dependent feedback can enhance the ultrasensitive response of synthetic regulatory motifs (toggle switch stability).
 \end{itemize}
 
-\subsection{DNA supercoiling provides a mechanism to tightly coordinate expression of proximal segementation genes }
+\clearpage
+\subsection{DNA supercoiling provides a mechanism to tightly coordinate expression of proximal segmentation genes }
 \begin{itemize}
     \item Supercoiling dependent initiation may underpin the stability of the \textit{her1},\textit{her7} clock circuit.
-  
+
 \end{itemize}
 
 \subsection{Designing gene circuits to detect topoisomerase activity}
@@ -101,6 +147,17 @@ Here, we present an extension of the model first proposed in \parencite{sevierMe
 \end{itemize}
 
 Through colocalization, native circuits appear to incorporate transcription-linked feedback mechanisms to both reduce noise and tune cell-state specific output in tightly regulated processes such as development. For example, in zebrafish, proper somite segmentation requires precise coordination of two clock genes, \textit{her1} and \textit{her7}. In addition to an auto-feedback loop, \textit{her1} and \textit{her7} are placed in a divergent syntax, with only 12-kb separating their coding regions. In engineered zebrafish where \textit{her1} and \textit{her7} are expressed from different chromosomes, irregular somites form as a result of reduced coordination of gene expression \parencite{zinaniPairingSegmentationClock2020}. Only through a combination of protein-mediated regulation and biophysical regulation does proper somite segmentation occur. In mammals as well, colocalization of regulatory elements may be necessary for proper development. For example, in mice, the \textit{Pitx1} gene is a regulator of hindlimb development. \textit{Pitx1} is in turn regulated by the \textit{Pen} enhancer, which is actively transcribed in both the forelimbs and hindlimbs. In wild-type mice, a contact domain encloses \textit{Pen} and \textit{Pitx1} only in the hindlimb; if this  \textasciitilde{}100kb genomic region is inverted to mimic the colocalization found in the hindlimbs, \textit{Pitx1} is ectopically expressed in the forelimbs \parencite{kragesteenDynamic3DChromatin2018}.
+
+\section{Methods}
+\subsection{ODE and stochastic simulation}
+The core ordinary differential equations were simulated using a Tsitouras's explicit Runge-Kutte 4-5 order method \parencite{tsitourasRungeKuttaPairs2011}.
+\parencite{rackauckasDifferentialEquationsJlPerformant2017}.
+
+\subsection{Code availability}
+Full simulation and figure-generating code is available at \url{https://github.com/GallowayLabMIT/tangles_model}.
+
+\subsection{Acknowledgements}
+The authors acknowledge the MIT SuperCloud and Lincoln Laboratory Supercomputing Center \parencite{reutherInteractiveSupercomputing402018} for providing HPC resources that have contributed to the research results reported within this paper.
 
 \printbibliography
 
@@ -147,7 +204,7 @@ where the following quantities are defined:
 While the cubic term can also be calculated and accounts for asymmetry between under- and over-winding, \textcite{markoTorqueDynamicsLinking2007} argues that this effect is small for realistic physiological conditions.
 
 
-Summarizing, once we specify \(p, g, c_s, \omega_0\), we have a model for the torque of our system. 
+Summarizing, once we specify \(p, g, c_s, \omega_0\), we have a model for the torque of our system.
 
 In these equations, we rescale
 the bend persistence length \(A\), the twist persistence length of stretched DNA \(C\), and the twist persistence length of the plectonemic
@@ -229,7 +286,7 @@ A naked DNA bead experiment (\textcite{revyakinPromoterUnwindingPromoter2004}) f
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.5\linewidth]{figures/1MSW}
+    %\includegraphics[width=.5\linewidth]{figures/1MSW}
     \caption{Crystal structure (PDB: 1MSW) of T7 RNAP bound to DNA. The protein is shown in brown, with the template DNA strands in green and olive.
              A 13 base pair region that is actively being read is fully melted.}
     \label{fig:rnap_bound}
@@ -246,7 +303,7 @@ Based on the literature observations, some desired properties of a model would b
     \item Plotted as a function of supercoiling density (from \(\sigma = -.1\) to \(\sigma = .1\)), the response is roughly sigmodial, to match phenomenological models (such as \textcite{elhoudaiguiBacterialGenomeArchitecture2019a}).
 \end{itemize}
 
-However, the first and fourth goals are contradictory; if the RNAP on-rate remains constant, then we won't get a sigmodial shape when plotted versus supercoiling density. 
+However, the first and fourth goals are contradictory; if the RNAP on-rate remains constant, then we won't get a sigmodial shape when plotted versus supercoiling density.
 
 \FloatBarrier
 \subsubsection{Dual-LNC model}
@@ -336,7 +393,7 @@ By expanding the definition of \(\Delta \sigma\) for an arbitrary region bounded
 \[\Delta E = (z_2 - z_1) \tau \omega_0 \frac{\Delta\phi_2 - \Delta\phi_1}{\omega_0 (z_2 - z_1)} = \tau (\Delta \phi_2 - \Delta\phi_1)\]
 Note that this implies that the energy cost of LNC rotation is independent of the region width; under a locally linear assumption, the energy cost depends only on the local instantaneous torque and the rotation angle.
 
-Looking at the free energy surface as a function of supercoiling in \autoref{fig:marko_energy_surface}, we see that a locally linear approximation should be relatively valid in the "exterior" regions, but will be very incorrect if we apply this approximation for the RNAP-bound interior region where complete melting occurs.
+Looking at the free energy surface as a function of supercoiling in \autoref{fig:marko_energy_surface}, we see that a locally linear approximation should be relatively valid in the  ``exterior'' regions, but will be very incorrect if we apply this approximation for the RNAP-bound interior region where complete melting occurs.
 
 \begin{figure}[h]
     \centering
@@ -356,7 +413,7 @@ Given the well-defined structure of the RNAP-DNA complex and the fact that under
 \end{equation}
 
 
-However, when we compare the strength of this internal melting energy term to the "exterior" supercoiling term, we see that the external term dominates (\autoref{fig:app:energy_comparison}).
+However, when we compare the strength of this internal melting energy term to the ``exterior'' supercoiling term, we see that the external term dominates (\autoref{fig:app:energy_comparison}).
 \begin{figure}[h]
     \centering
     %\includegraphics[width=.5\linewidth]{figures/energy_plot}
@@ -379,7 +436,7 @@ for \(\sigma_2 = \sigma_1 + \Delta \sigma\). Then,
 
 This means that we do not have a strictly constant binding energy in the constant-torque region. However, if we plot the value of \(\Delta E\) across various supercoiling values, for the mean value of constants given in \autoref{tab:constants}, we see that the unwinding energy does remain relatively constant in the constant torque regime!
 
-The values for \(\Delta E\) are much larger than initially expected; Literature results show that the RNAP on-rate decreases roughly four-fold in the first single-phase region, which occurs for \(\Delta E \sim 4 \text{pN nm}\). 
+The values for \(\Delta E\) are much larger than initially expected; Literature results show that the RNAP on-rate decreases roughly four-fold in the first single-phase region, which occurs for \(\Delta E \sim 4 \text{pN nm}\).
 
 This discrepancy means that we expect our initial supercoiling-initiation model to be a useful way to upper-bound the effects of this behavior on the system. Realistically, secondary chromatin effects such as nucleosome displacement may allow for the high energy cost of adding polymerases to already supercoiled regions to be diminished.
 
@@ -392,7 +449,7 @@ This discrepancy means that we expect our initial supercoiling-initiation model 
     \end{subfigure}
     \begin{subfigure}{.49\linewidth}
         \centering
-        \includegraphics[width=.8\textwidth]{figures/revyakin_plot}
+        %\includegraphics[width=.8\textwidth]{figures/revyakin_plot}
         \caption{Reproduced Figure 3c from \textcite{revyakinPromoterUnwindingPromoter2004}.}
     \end{subfigure}
     \caption{Our model predictions appear to replicate literature results. Even though \(\Delta E\) is not strictly constant in the two-phase/constant-torque region, its numerical value is nearly constant in that region.}
