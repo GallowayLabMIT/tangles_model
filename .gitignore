@@ -1,3 +1,4 @@
+datadir.txt
 # Output datafiles
 *.log*
 LLSUB*/
