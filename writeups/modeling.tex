@@ -22,6 +22,9 @@
 \usepackage[margin=1in]{geometry} % 1in margins
 \usepackage[version=4]{mhchem}
 
+\DeclareCaptionLabelFormat{withincaption}{#2)}
+\captionsetup{subrefformat=withincaption}
+
 % -- Use the Charter fonts as base fonts, fixup math-mode display
 \usepackage[charter]{mathdesign}
 \usepackage[scaled=.96,osf]{XCharter}
@@ -34,10 +37,11 @@
 \newcommand{\unit}[1]{\; \text{#1}\,}
 
 \titlespacing{\section}{0pt}{2ex}{1ex}
-\titlespacing{\subsection}{0pt}{1ex}{0ex}
+\titleformat{\subsection}[display]{\bfseries}{}{0em}{}
+\titlespacing{\subsection}{0pt}{0.1em}{0.1em}
 
 \title{TANGLES: modeling supercoiling-dependent feedback}
-\author{Christopher Johnstone}
+\author{Christopher P. Johnstone, Kate E. Galloway}
 \date{}
 
 \addbibresource{main_library.bib}
@@ -46,64 +50,114 @@
 \maketitle
 
 \section{Introduction}
-Mammalian genomes are enormously complex systems regulated over a vast range of length and time scales; ongoing transcription-linked processes constantly reshape chromatin, cell division and the associated genomic replication regularly disrupt the structure of the genome \parencite{johnstoneUnderstandingEngineeringChromatin2020}. Extensive work in the fields of synthetic and systems biology has demonstrated the wide applicability of concentration-mediated regulation, including native and synthetic DNA-binding proteins (including zinc-finger proteins, dCas9 fusions, and transcription factors), small molecule aptamers, and miRNA regulators.
-A rich modeling framework based on the predictions of ordinary differential equation models and discrete stochastic simulation models well predicts the behavior of these systems.
-Some recent notable forays into novel regulatory methods include systems that maintain and creates synthetic epigenetic memory \parencite{parkEngineeringEpigeneticRegulation2019} and the mechanical regulation imparted by synthetic liquid-liquid phase condensates \parencite{shinLiquidNuclearCondensates2018}.
+Cells coordinate complex behaviors through precise spatiotemporal control of gene expression. To rapidly advance the power of gene- and cell-based therapies, synthetic biology aims to harness the power of native biology by constructing synthetic gene regulatory networks capable of dynamically prescribing cellular processes, states, and identities.\parencite{chenSyntheticBiologyAdvancing2012,beitzSyntheticGeneCircuits2022,purnickSecondWaveSynthetic2009,elowitzBuildLifeUnderstand2010}
+Synthetic networks process diverse inputs into complex logical and temporal responses.\parencite{weinbergLargescaleDesignRobust2017,xieMultiInputRNAiBasedLogic2011,taborSyntheticGeneticEdge2009}
+From oscillators to pulse generators, synthetic circuits can  precisely coordinate dynamic patterns of gene expression across populations of cells to control cell fate.\parencite{gardnerConstructionGeneticToggle2000,elowitzSyntheticOscillatoryNetwork2000,strickerFastRobustTunable2008,daninoSynchronizedQuorumGenetic2010,maSyntheticMammalianSignaling2020a,parkEngineeringEpigeneticRegulation2019,bashorUsingEngineeredScaffold2008,gallowayDynamicallyReshapingSignaling2013}
+However, rational de novo design of synthetic circuits remains challenging. Despite extensive biomolecular modeling, integration of single genetic elements into systems often leads to emergent behaviors, requiring iterative design-build-test cycles to achieve the desired performance.\parencite{jonesEndoribonucleasebasedFeedforwardController2020,freiCharacterizationMitigationGene2020,qianResourceCompetitionShapes2017}
+Compounding the challenge, transcription exhibits significant extrinsic and intrinsic noise.\parencite{toNoiseCanInduce2010,zopfCellCycleDependenceTranscription2013,desaiDNArepairPathwayCan2021}
+In particular, the stochastic nature of transcription makes coordinating expression across multiple genetic elements challenging.\parencite{rodriguezIntrinsicDynamicsHuman2019,rodriguezTranscriptionLivingCells2020,quartonUncouplingGeneExpression2020}
+Spatial variation in the nucleus and biochemical dynamics in condensates may contribute to bursting but provide limited parameters for tuning transcriptional noise.\parencite{henningerRNAMediatedFeedbackControl2020,guoPolIIPhosphorylation2019}
+Alternatively, mechanical sources of gene regulation offer one potential mechanism by which to understand and harness transcriptional noise to improve the predictable design of gene circuits.\parencite{johnstoneEngineeringCellularSymphonies2021,anconaTranscriptionalBurstsNonequilibrium2019a,kimLongDistanceCooperativeAntagonistic2019,elhoudaiguiBacterialGenomeArchitecture2019a,meyerTorsionMediatedInteractionAdjacent2014}.
 
-Recently, synthetic circuits have been designed to take advantage of the rich transcription-chromatin feedback network underlying native gene regulation. Mimicking the proximity-dependent behavior of native systems, synthetic enhancer-promoter circuits have been designed in \textit{Drosophila} that depend on the presence of a local contact domain \parencite{yokoshiVisualizingRoleBoundary2020}. Deleting one of the contact domain boundaries decreased reporter output without significantly perturbing gene expression in adjacent contact domains \parencite{yokoshiVisualizingRoleBoundary2020}.
-In mammalian cells, insertion and deletion of CTCF-binding sites changes the activity of nearby promoters by modifying intra-domain enhancer-promoter contacts \parencite{jiaTandemCTCFSites2020}. Combining this work with recent programmable recombinases and flipases may allow for live-cell controllable contact domain engineering \parencite{guoCRISPRInversionCTCF2015,weinbergHighperformanceChemicalLightinducible2019}.
+The mechanical forces of DNA supercoiling powerfully shape transcriptional variance.\parencite{desaiDNArepairPathwayCan2021,chongMechanismTranscriptionalBursting2014}
+Chromatin, the DNA polymer wrapped around nucleosomes and decorated with regulatory proteins, regulates diverse processes from transcription to differentiation. With enhanced resolution in the layers and dynamics of chromatin structure, the manifold functions of chromatin-mediated gene regulation are emerging.\parencite{hsiehResolving3DLandscape2020,krietensteinUltrastructuralDetailsMammalian2020}
+In the process of transcription, RNA polymerases induce a leading wave of positive DNA supercoiling\parencite{wuTranscriptionGeneratesPositively1988,liuSupercoilingDNATemplate1987}, reshaping the local structure of chromatin.\parencite{acharNegativeSupercoilGene2020,tevesTranscriptiongeneratedTorsionalStress2014a,naughtonTranscriptionFormsRemodels2013,guoHighresolutionGenomewideMapping2021a}
+At the kilobase scale, chromatin structure correlates with gene regulation.\parencite{hsiehResolving3DLandscape2020,rowleyEvolutionarilyConservedPrinciples2017}
+In yeast and human cells, transcriptionally-induced supercoiling demarks bounds of gene activity.\parencite{acharNegativeSupercoilGene2020,naughtonTranscriptionFormsRemodels2013}
+In particular, transcriptional activity dictates the strength of contact domains such as gene-to-gene interactions, indicating a role for transcription in forming and maintaining interactions at the kilobase scale.\parencite{xieMultiInputRNAiBasedLogic2011} \footnote{why is this reference 6? This seems like an unlinked reference in the Word doc}
+Together these data suggest that the process of transcription drives formation of supercoiling-linked, kilobase-scale structures that feedback into transcriptional regulation of gene expression. Biophysical models of gene expression predict that changes in DNA supercoiling in turn change transcriptional activity.\parencite{sevierPropertiesGeneExpression2018}
+As supercoiling rapidly diffuses across long distances \parencite{loenhoutDynamicsDNASupercoils2012}, transcriptional activity at one site may impact the overall activity and dynamics of transcription of proximal genes.\parencite{sevierCollectivePolymeraseDynamics2022,tripathiDNASupercoilingmediatedCollective2021}
+By understanding how supercoiling induces coupling between neighboring genes provides the opportunity to improve the predictable design of transgenic systems from simple reporters to sophisticated dynamic circuits.
 
-One key regulatory strategy that may be important in native circuits but is hitherto underutilized in synthetic circuits is supercoiling-mediated feedback---a mechanism dependent on the under- and over-winding of DNA caused by the activity of RNA polymerases and other enzymes. Such a feedback mechanism would be affected by changes in chromatin syntax, including the placement, orientation, and composition of circuit elements.
-In order to create synthetic circuits capable of utilizing biophysical feedback, the physical mechanisms by which transcription induces feedback must be understood. To understand these biophysical mechanisms, we require a chromatin model that includes the process of transcription. Many constraint-based models have successfully predicted chromatin structures from experimental contact domain information (Hi-C maps) \parencite{distefanoTranscriptionalActivationCell2020,serraRestraintbasedThreedimensionalModeling2015,abbasIntegratingHiCFISH2019}. These models coarse-grain chromatin as a self-interacting 3D polymer, but do not explicitly represent transcription---a key process we want to model. Phenomenological models, which model polymerase binding using a supercoiling-dependent energy term calibrated from experiments but do not simulate polymerase motion, have been successful in modeling the effects of supercoiling for bacterial gene expression  \parencite{elhoudaiguiBacterialGenomeArchitecture2019a,yeungBiophysicalConstraintsArising2017}. An intermediate method for modeling the effects of supercoiling is to abstract details of the helical polymer model into a statistical mechanics model that predicts energy and torque responses arising from perturbations such as transcription. Such a model has been developed by \textcite{markoSupercoiledBraidedDNA1997,markoTorqueDynamicsLinking2007} and \textcite{sevierPropertiesGeneExpression2018}. Such an intermediate model allows us to understand how the physical motion of polymerases leads to feedback, without having to do detailed molecular simulation \parencite{fosadoNonequilibriumDynamicsAction2021}.
+Here we develop a model of transcriptional regulation that integrates DNA supercoiling to examine how the activity of neighboring genes in differing orientations affects expression of both genes.
+(We need to define what models that exist already…what they found for context of what is currently predicted and highlight gaps (that our model will fill). Their models focus on RNA polymerase speed which seems to be a difficult to measure experimental feature. I will be looking at these models more closely to highlight differences. Please feel free to add here as well.)
+(1-3 sentences of our model description; this can be integrated with above to juxtapose choices).
+We find….(summary of figure 1 and 2)
+We extend this model to examine a synthetic toggle switch composed in different orientations to predict the effect of DNA supercoiling on the stability of states, examine transition dynamics, and define the critical parameters for designs in different orientations. We find…(summary of figure 3)
+Further, we adapt our model to investigate the explanatory power of DNA supercoiling as a mechanism for coordinating expression between divergently expressed genes in the drosophila segmentation network. We find …(summary of figure 4)
+Finally, to examine how our toggle switch behavior will vary across cells with varying topoisomerase expression, we investigate the sensitivity of the toggle switch to varying topoisomerase activity. We find……(summary of figure 5; we might want to switch the order of fig 4 and 5)
 
-Here, we present an extension of the model first proposed in \parencite{sevierMechanicalPropertiesDNA2019}. By modeling the joint effect of supercoiling-dependent polymerase initiation and polymerase stalling, we predict a wide range of emergent feedback behaviors, that may be used to both inform novel synthetic circuit designs and explain observed native phenomena.
+\begin{figure}[h]
+    \centering
+    \caption{Graphical abstract} \label{fig:graphical_abstract}
+\end{figure}
 
-\section{Model}
+\section{Model and methods}
 Simulating the behavior of native and synthetic circuits under the influence of transcription-induced feedback requires an model that integrates explicitly-modeled polymerase motion and RNA- and protein-mediated feedback mechanisms.
-Our method combines three modeling levels: an ordinary differential equation model that simulates the continuous progression of polymerases loaded onto DNA, a core stochastic model that models supercoiling-dependent polymerase initiation, and a user-specified stochastic layer that allows for simulation of other regulatory interactions such as promoter activity dependent on protein production and degradation.
+Our method combines three modeling levels: an ordinary differential equation model that simulates the continuous progression of polymerases loaded onto DNA, a core stochastic model that models supercoiling-dependent polymerase initiation, and a user-specified stochastic layer that allows for modeling of other regulatory interactions such as the promoter-repressive and -activating interactions used in synthetic circuits.
 
-Following previous work, modeled the motion of polymerases using an ODE model where each polymerase is defined by three variables---the (one-dimensional) position of the polymerase along the DNA \(z_i\), the length of the single-stranded nascent RNA \(x_i\), and the excess twist relative to relaxed DNA at the location of the polymerase \(\phi_i\) \parencite{markoTorqueDynamicsLinking2007,sevierPropertiesGeneExpression2018}.
+\subsection{Continuous model of supercoiling-dependent transcription}
+Here, supercoiling is defined as the amount of excess twist \(\phi\) relative to relaxed DNA (with relaxed DNA having twist \(\omega_0 = 1.85\) radians/nm, or 1 full revolution per \(\approx10\) basepairs). While the supercoiling density could more generally be defined as a varying function of genomic location \(\sigma(z)\), in a region of constant supercoiling density, we can use the excess twist at the endpoints \(z_1, z_2\) to define the supercoiling density as:
+\begin{equation}
+    \sigma = \frac{\phi(z_1) - \phi(z_2)}{\omega_0 (z_2 - z_1)}
+\label{eq:supercoiling_density}
+\end{equation}
+Note that \cref{eq:supercoiling_density} is defined such that a positive value of \(\phi\) at an intermediate point between two endpoints with \(\phi=0\) (relaxed DNA) means that the supercoiling density is \emph{positive} in front of the intermediate point and \emph{negative} behind the intermediate point. Following on the work of \textcite{sevierPropertiesGeneExpression2018}, we assume that on the length scales of synthetic and native circuits of interest (\(O(\approx10kb)\)), the supercoiling density is constant in all regions between polymerases and other barriers. Because supercoiling diffusion and plectoneme hopping \parencite{loenhoutDynamicsDNASupercoils2012} occur at a faster rate (diffusion constant of \(\mathcal{D} \approx O(0.5 \units{kb$^2$}{s})\)) than transcription (\(v_0 \approx 50 \units{bp}{s}\)) \parencite{munizRNAPolymeraseII2021}, the assumption of supercoiling relaxation on the timescale of transcription simplifies the resulting model.
 
-By storing the excess twist of DNA, we can easily calculate. On the rele
-On the relevant length scale of synthetic circuits (O(10-100kb)),
+How does transcription both drive the process of supercoiling generation and react to changes in local supercoiling? Under the assumption of supercoiling relaxation, each polymerase is defined by four variables--the (one-dimensional) genomic location of the polymerase \(z_i\), the length of the nascent RNA \(x_i\), the excess twist at the location of the polymerase \(\phi_i\), and the rotation angle of the polymerase \(\theta_i\). Then, two governing equations define the motion of all polymerases. The first equates the linear motion of the polymerase with the rotational motion (either of the RNAP or of the DNA) required for the polymerase to track the DNA groove,
+\begin{equation}
+    \underbrace{\omega_0 \frac{dz_i}{dt}}_{\mathclap{\text{RNAP velocity}}} = \overbrace{\frac{d\theta_i}{dt}}^{\mathclap{\text{RNAP rotation}}} + \underbrace{\frac{d\phi_i}{dt}}_{\mathclap{\text{supercoiling generation}}}
+\label{eq:linear_rotational_balance}
+\end{equation}
+whereas the second is a torque balance between the DNA-mediated torques and
+\begin{equation}
+    \underbrace{\tau(\sigma(z_i, \phi_{i-1}, \phi_{i+1}))}_{\mathclap{\text{torque acting on RNAP}}} + \overbrace{\chi \frac{d\phi_i}{dt}}^{\mathclap{\text{supercoiling restoring force}}}= \underbrace{\eta x_i^n \frac{d\theta_i}{dt}}_{\mathclap{\text{nascent RNA drag}}}
+\label{eq:torque_balance}
+\end{equation}
+\Cref{eq:linear_rotational_balance,eq:torque_balance} can be solved as in \textcite{sevierPropertiesGeneExpression2018} to give a set of ordinary differential equations as long as we define equations for the torque response \(\tau(\sigma)\) as a function of the local supercoiling density and the RNAP velocity as a function of local torque \(\frac{dz}{dt} = v(\tau)\). Here, we use Marko's torque-response model to supercoiling which accounts for the thermodynamic behavior of both non-buckled, twisted DNA and buckled, plectonemic DNA \parencite{markoTorqueDynamicsLinking2007}. The resulting \(\tau(\sigma)\) functions exhibits a phase transition, where the torque response is nearly constant at intermediate values of \(\sigma\) where the DNA is transitioning from a locally-twisted phase to a plectonemic-phase.
+
+For the velocity response of a polymerase experiencing a torque \(\tau_f\) in front and \(\tau_b\) behind, we chose to model polymerase stalling as:
+\begin{equation}
+    v(\tau_f, \tau_b) = \frac{v_0}{(1 + e^{(|\tau_f| - \tau_s)/\tau_w})(1 + e^{(|\tau_b| - \tau_s)/\tau_w})}
+\label{eq:velocity_response}
+\end{equation}
+where the stall torque \(\tau_s = 12 \unit{pN nm}\) and stall-width \(\tau_w = 3 \unit{pN nm}\) define a sigmoidal stall-response curve.
+As shown in \cref{fig:supp_tau_hyperparameter_sweep}, our results are only weakly dependent on the specific choice of \(\tau_s\) and \(\tau_w\).
+Importantly, our selected phenomenological term will stall polymerase motion if \emph{either} the torque upstream or downstream exceeds the stall torque \(\tau_s\), in contrast to models such as \textcite{tripathiDNASupercoilingmediatedCollective2021}. We chose this form of the velocity equation because ???\footnote{In any case, our choice is conservative in the sense that it would predict \textbf{more} stalling than Tripathi, yet we see very robust expression/lots of loaded polymerases later. How do I say this nicely here?}
+
+
+Taking the above equations together, we can simulate the coupled motion of an arbitrary number of polymerases as a single coupled ODE system. We further implemented different boundary conditions, allowing us to simulate both circular topologies, applicable to experimental plasmid systems, and linear topologies, applicable to native or genomically-integrated circuits.
+
+\subsection{Supercoiling-dependent initiation}
+With the ability to simulate arbitrary numbers of polymerases, we need a way to model the addition of polymerases to simulated genes. A simple strategy is to assume a supercoiling-independent initiation rate and use a stochastic simulation method to randomly add polymerases to transcriptional start sites at a certain fixed rate. However, this may miss important dynamics. Modeling polymerase initiation as a single-step reaction that proceeds with a certain rate, there is a corresponding energy barrier for polymerase addition. By adding additional supercoiling-dependent energy terms, we can model the extra energy cost for polymerase binding under different local supercoiling conditions. Under the approximation that the direct energetic cost of locally melting the DNA to fit in the RNAP groove dwarfs the relative change in unwinding energy caused by supercoiling, the majority of the energetic cost comes from inserting supercoiling ahead and behind the inserted polymerase. Under this assumption, the first-order supercoiling energetic correction can be written as:
+\begin{equation}
+    E_\text{sc} = 1.2  \cdot 2\pi \cdot \tau(\sigma)
+\label{eq:first_order_sc_initation}
+\end{equation}
+A full derivation of this result is given in \cref{sec:sc_initation_derivation}. As seen in \cref{fig:including_melting_rnap}, if the approximation that leads to \cref{eq:first_order_sc_initation} is not made, then only minor energetic changes occur.
+
+While this first-order energetic term introduces much-needed behavior to the modeled system, where locally high positive supercoiling decreases the RNAP initiation rate and locally negative supercoiling increases the RNAP initiation rate, at extreme values of \(\sigma\), this energetic term gives unphysical predictions. In particular, under highly negative supercoiling densities, the energetics of polymerase loading becomes increasingly favorable, with loading sometimes occurring more than two orders of magnitude faster when compared to relaxed DNA. To correct for behavior, we added a second-order term of the form that disfavors polymerase loading at highly positive or negative local supercoiling:
+\begin{equation}
+    E_\text{sc} = 1.2  \cdot 2\pi \cdot \tau(\sigma) + \alpha \cdot \tau_0 \cdot \sigma^2
+\label{eq:second_order_sc_initation}
+\end{equation}
+for \(\tau_0\), the relevant scale factor in the \(\tau(\sigma)\) equation \parencite{markoTorqueDynamicsLinking2007} and \(\alpha\) a positive tunable parameter. As the \(\tau(\sigma)\) equation is linear in \(\sigma\) outside of the phase-transition region, this added \(\sigma^2\) term can be contextualized as an additional term in the Taylor expansion of the physically-realistic \(E_\text{sc}(\sigma)\) equation.
+
+When simulating the ODE model, the rate of stochastic polymerase initiation then varies continuously based on the local supercoiling density \(\sigma\) at the transcription start site as:
+\begin{equation}
+    r_\text{initation} = r_\text{base rate} e^{- E_\text{sc} / (k_B T)}
+\label{eq:intermediate_init_rate}
+\end{equation}
+
+
+\subsection{Modeling additional stochastic, discrete reactions}
+Many of the native and synthetic systems of interest include other regulatory species. In order to analyze these types of systems using our supercoiling model, we extended our model to simultaneously simulate arbitrary discrete stochastic equations---such as those commonly used in the literature to model protein production, degradation, dimerization, and more.
+In addition, we allowed the base initiation rate of genes to vary as an arbitrary function of all species concentrations (\(\vec s\)) in the model, such that \cref{eq:intermediate_init_rate} becomes:
+\begin{equation}
+    r_\text{initation} = r(\vec s) e^{- E_\text{sc} / (k_B T)}
+\label{eq:final_init_rate}
+\end{equation}
+For example, a cooperative repressive interaction between some protein species \(s_1\) and a promoter could be modeled using a repressive Hill function:
+\[
+    r(\vec s) = \frac{r_\text{base}}{1 + \left(\frac{s_1}{K}\right)^n}
+\]
+
 
 \section{Results}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics{figures/modeling_paper/fig_1.pdf}
-    \caption{}
-\end{figure}
-\begin{figure}[h]
-    \centering
-    \includegraphics{figures/modeling_paper/fig_2.pdf}
-    \caption{}
-\end{figure}
-\begin{figure}[h]
-    \centering
-    \includegraphics{figures/modeling_paper/fig_4.pdf}
-    \caption{}
-\end{figure}
-
-\section{Discussion}
-
-Supercoiling density is defined:
-\begin{equation}
-    \sigma = \frac{\phi_i - \phi_{i - 1}}{\omega_0 | z_{i} - z_{i-1}|}
-    \label{eq:sc_density}
-\end{equation}
-where \(\phi\) defines a \emph{linking number constraint}. While this term is most easily identified with the local DNA excess twist, it is truly a linking number constraint that takes into account both twist and writhe. The asymmetry between these two forms is accounted for in the phase transition in the underlying statistical mechanical model.
-
-Based on a statistical-mechanics model that calculates the torque as a function of supercoiling density:
-\begin{equation}
-    \tau(\sigma) = \begin{dcases} \tau_S \sigma & |\sigma| < |\sigma_s| \\ \tau_0 \text{sgn}(\sigma) & |\sigma_s| \leq |\sigma | \leq |\sigma_p| \\ \tau_P \sigma & |\sigma_p| \leq |\sigma|\end{dcases}
-\end{equation}
-
-
-
-\section{Claims}
-
-\subsection{ DNA supercoiling dynamics confer rapid, tunable coupling between adjacent genes in linear and circular contexts }
+\subsection{ DNA supercoiling dynamics confer rapid, tunable coupling between adjacent genes in varied contexts}
+In order to simulate,
+In order to investigate the behavior of our model in
 \begin{itemize}
     \item Supercoiling allows for regulation on timescales otherwise inaccessible by synthetic systems.
 
@@ -119,34 +173,114 @@ Based on a statistical-mechanics model that calculates the torque as a function 
 \end{itemize}
 
 
-\clearpage
-\subsection{Supercoiling-dependent intergene coupling supports rapid  transcriptional feedback, generating emergent patterns of expression}
-\begin{itemize}
-    \item The syntax of compact, simple gene cassettes provides a design parameter for specifying and tuning transcriptional feedback.
+\begin{figure}[h]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_1.pdf}
+    \phantomsubcaption\label{fig:supercoiling_with_energy_cartoon}
+    \phantomsubcaption\label{fig:reporter_output_by_init_type}
+    \phantomsubcaption\label{fig:reporter_output_by_bc}
+    \phantomsubcaption\label{fig:output_distribution_by_orientation}
+    \phantomsubcaption\label{fig:intergene_spacing_cartoon}
+    \phantomsubcaption\label{fig:reporter_output_by_intergene_spacing}
+    \phantomsubcaption\label{fig:reporter_output_by_spacing_fold_induction}}
+    \caption{Supercoiling-dependent polymerase motion and polymerase initiation predict context-dependent circuit behavior.
+        \subref{fig:supercoiling_with_energy_cartoon}  Polymerases generate positive and negative supercoiling ahead and behind as they move. Polymerase initiation can be modeled as independent or dependent of the local supercoiling density. A supercoiling-dependent polymerase initiation model can be further enhanced with a term harmonic with respect to the supercoiling density.
+        \subref{fig:reporter_output_by_init_type} Normalized reporter output is shown as a function of the fold induction of the inducible gene, relative to the reporter gene, for three different polymerase initiation models.
+        \subref{fig:reporter_output_by_bc} Circular (plasmid) boundary conditions predict dissimilar supercoiling-dependent behavior than linear boundary conditions (fixed ends).
+        \subref{fig:output_distribution_by_orientation} Density plots of the reporter gene and inducible gene outputs are shown in the linear boundary-condition, equally-induced (1-fold) case. Supercoiling-dependence causes circuit syntax to change the relative noise between the inducible gene and reporter gene.
+        \subref{fig:intergene_spacing_cartoon} Modifying the inter-gene spacing tunes circuit behavior by changing the amount of accumulated supercoils needed to affect polymerase stalling and supercoiling-dependent initiation.
+        \subref{fig:reporter_output_by_intergene_spacing} Deviations in reporter output relative to the maximum inter-gene spacing (10kb) are shown across three syntaxes.
+        \subref{fig:reporter_output_by_spacing_fold_induction} Deviations in reporter output relative to the maximum intergene-spacing is shown as a function of intergene-spacing.
+    } \label{fig:top:orientation_bc_behavior}
+\end{figure}
 
-    \item Asymmetric polymerase initiation with respect to supercoiling density leads to physically-realistic asymptotic behavior.
-\end{itemize}
+\subsection{Two-gene constructs show supercoiling-driven correlated behavior at the single cell level}
+\begin{figure}[h]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_2.pdf}
+    \phantomsubcaption\label{fig:orientation_examples}
+    \phantomsubcaption\label{fig:noise_by_orientation}
+    \phantomsubcaption\label{fig:cross_correlation_cartoon}
+    \phantomsubcaption\label{fig:orientation_cross_correlation}}
+    \caption{Our supercoiling model predicts emergent coupling and noise behavior at a single-cell level.
+        \subref{fig:orientation_examples} Example simulation runs in each of the three syntaxes is shown, where transcription of the secondary gene (gray) is enabled after ten thousand seconds (shaded background).
+        \subref{fig:noise_by_orientation} Ensemble noise behavior for the four simulation conditions is shown as a function of time. Induction of the secondary gene leads to an increase in reporter noise in the tandem-upstream and convergent syntaxes and a decrease in reporter noise in the tandem-downstream and divergent syntaxes.
+        \subref{fig:cross_correlation_cartoon} The cross-correlation of two signals \(f(t), g(t)\) at a time offset \(\tau\) can be calculated by `sliding' one mean-centered signal relative to the other mean-centered and integrating the product of the resulting signals.
+        \subref{fig:orientation_cross_correlation} The cross-correlation between the two genes is shown as a function of circuit syntax for three induction conditions, 0.4-fold induction (purple), 1.0-fold induction (blue), and 2.6-fold (green) induction relative to the reporter.
+    } \label{fig:top:single_cell_noise_correlation}
+\end{figure}
 
-\clearpage
-\subsection{ Optimized circuit syntax supports enhanced toggle switch stability via DNA supercoiling }
+\subsection{Optimizing circuit syntax can support context-dependent toggle switch behavior and stability}
 \begin{itemize}
 \item Supercoiling-dependent feedback can enhance the ultrasensitive response of synthetic regulatory motifs (toggle switch stability).
 \end{itemize}
 
-\clearpage
-\subsection{DNA supercoiling provides a mechanism to tightly coordinate expression of proximal segmentation genes }
-\begin{itemize}
-    \item Supercoiling dependent initiation may underpin the stability of the \textit{her1},\textit{her7} clock circuit.
+\begin{figure}[h]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_3.pdf}
+    \phantomsubcaption\label{fig:toggle_orientation_examples}
+    \phantomsubcaption\label{fig:toggle_basin_stability}
+    \phantomsubcaption\label{fig:toggle_basin_stability_over_time}
+    \phantomsubcaption\label{fig:toggle_stable_frac_n_2.5}
+    \phantomsubcaption\label{fig:toggle_half_life_vs_hill}
+    \phantomsubcaption\label{fig:toggle_half_life_vs_mRNA_deg}
+    \phantomsubcaption\label{fig:toggle_vs_topo_rate}
+    }
+\end{figure}
+\begin{figure}[h]
+    \ContinuedFloat
+    \caption{Toggle switches implemented as a mutually-inhibitory pair of genes show context-dependent stability.
+        \subref{fig:toggle_orientation_examples} Example simulation runs show syntax-dependent stability in toggle switches with a Hill coefficient of \(n = 2.0\). Each toggle simulation is started with only one of the genes (colored) active. After 10000 seconds, the second gene is activated.
+        \subref{fig:toggle_basin_stability} The fraction of simulation runs that remain in the initial stable basin is plotted as a function of both the Hill coefficient in the mutually-inhibitory Hill function and circuit syntax. The tandem toggle switch shows asymmetric state stability, where the state with the upstream gene active is more stable than the opposite state.
+        \subref{fig:toggle_basin_stability_over_time} For the divergent syntax and a Hill coefficient of \(n = 2.0\), a density plot of the instantaneous mRNA counts of each simulation is shown at four selected time points. Initially after the second gene is enabled, most of the simulations remain in the starting basin. As time progresses, the ensemble reaches and fluctuates around an equilibrium where half of the population is in each toggle state basin.
+        \subref{fig:toggle_stable_frac_n_2.5} For a selected Hill coefficient of \(n = 2.5\), the stability of the four starting states of the system are plotted as a function of time.
+        \subref{fig:toggle_half_life_vs_hill} The half-life, defined as the time it takes half of the simulations in the ensemble to reach the other stability basin, is shown as a function of circuit syntax and Hill coefficent.
+        \subref{fig:toggle_half_life_vs_mRNA_deg} The half life at different values of the mRNA degradation rate are shown. As the mRNA degradation rate principally sets the average number of mRNA molecules, high degradation rates lead to systems with low overall mRNA concentration and concordant stochastic instability.
+        \subref{fig:toggle_vs_topo_rate} The stability of the four starting states of the toggle systems are plotted as a function of topoisomerase relaxation rate.
+    } \label{fig:top:toggle_switch}
+\end{figure}
 
-\end{itemize}
+\subsection{DNA supercoiling provides a mechanism to tightly coordinate expression of proximal segmentation genes}
+Through colocalization, native circuits appear to incorporate transcription-linked feedback mechanisms to both reduce noise and tune cell-state specific output in tightly regulated processes such as development. For example, in zebrafish, proper somite segmentation requires precise coordination of two clock genes, \textit{her1} and \textit{her7}. In addition to a inhibitory feedback loop, \textit{her1} and \textit{her7} are placed in a divergent syntax, with only 12-kb separating their coding regions as seen in \cref{fig:her1_her7_cartoon}. \Textcite{zinaniPairingSegmentationClock2021} created engineered zebrafish embryos where \emph{her1} and \emph{her7} were only expressed from separate alleles (allele-unpaired), breaking any chromatin-mediated coupling while the dimer-mediated inhibitory feedback loop continued to function. In the allele-unpaired embryos, proper somite segmentation was disrupted (\cref{fig:zinani_summary_cartoon}).
 
-\subsection{Designing gene circuits to detect topoisomerase activity}
-\begin{itemize}
+Previous computational work used stochastic simulation to examine the implications of alelle-paired coupling.\parencite{zinaniPairingSegmentationClock2021} This work modeled the allele-paired (native) case as a single discrete reaction that created both \textit{her1} and \textit{her7} transcripts, as if they were expressed from the same nascent mRNA. In contrast, the alelle-unpaired case was modeled using two separate discrete reactions that, other than mediated through dimer binding, had \textit{her1} and \textit{her7} transcription uncoupled.
+While this model was able to recapitulate the experimental results observed, it does not mechanistically explain how such tight coupling is achieved in the allele-paired case.
 
-    \item Cells transiting fate transitions show varying cell cycle rates and topoisomerase activity patterns, which are detectable via supercoiling-dependent feedback.
-\end{itemize}
+Using our full computational model, we replicated the previously developed stochastic reaction network and simulated three cases: an \emph{uncoupled} case where the simulated genes were separated by a large distance (1Mb) to prevent supercoiling interactions, a \emph{transcript coupled} case where only one gene was active but created both transcripts simultaneously, and a \emph{biophysically coupled} case where \textit{her1} and \textit{her7} were spaced at their genomically-active locations. In the biophysically coupled case, linear boundary conditions were used, with boundaries chosen at the nearest adjacent genes on each side. Instead of introducing a time delay for mRNA transcription as in \parencite{zinaniPairingSegmentationClock2021}, our explicit simulation of polymerase motion implicitly causes a time delay.
 
-Through colocalization, native circuits appear to incorporate transcription-linked feedback mechanisms to both reduce noise and tune cell-state specific output in tightly regulated processes such as development. For example, in zebrafish, proper somite segmentation requires precise coordination of two clock genes, \textit{her1} and \textit{her7}. In addition to an auto-feedback loop, \textit{her1} and \textit{her7} are placed in a divergent syntax, with only 12-kb separating their coding regions. In engineered zebrafish where \textit{her1} and \textit{her7} are expressed from different chromosomes, irregular somites form as a result of reduced coordination of gene expression \parencite{zinaniPairingSegmentationClock2020}. Only through a combination of protein-mediated regulation and biophysical regulation does proper somite segmentation occur. In mammals as well, colocalization of regulatory elements may be necessary for proper development. For example, in mice, the \textit{Pitx1} gene is a regulator of hindlimb development. \textit{Pitx1} is in turn regulated by the \textit{Pen} enhancer, which is actively transcribed in both the forelimbs and hindlimbs. In wild-type mice, a contact domain encloses \textit{Pen} and \textit{Pitx1} only in the hindlimb; if this  \textasciitilde{}100kb genomic region is inverted to mimic the colocalization found in the hindlimbs, \textit{Pitx1} is ectopically expressed in the forelimbs \parencite{kragesteenDynamic3DChromatin2018}.
+For three example runs, traces of \textit{her1} and \textit{her7} mRNA and protein levels are shown in \cref{fig:zinani_mRNA_behavior,fig:zinani_protein_behavior}. In all conditions, we started from the same initial condition as previously reported \parencite{zinaniPairingSegmentationClock2021}---all mRNA and protein counts equal to zero except for the co-factor \textit{hes6}, which is initialized to 100. Due to this choice of initial condition, an initial spike in the biophysical coupled case is observed, corresponding to the initial burst of sustained transcription caused by the divergent syntax prior to dimer-mediated repression. The biophysically coupled and transcript coupled cases show similar periodic behavior, with the biophysically coupled case showing around triple the absolute number of counts due to the overall activating effect of the divergent syntax.
+
+Examining the ensemble (10000 simulations per condition) correlation between the \textit{her1} and \textit{her7} mRNA counts in \cref{fig:zinani_correlation_coeff}, we found that while the uncoupled case showed minimal correlation, the transcript-coupled case showed robust correlated expression, replicating the results of \parencite{zinaniPairingSegmentationClock2021}. Interestingly, the biophysically-coupled case showed even \emph{stronger} correlation between the two clock genes. We attribute this increased correlation to enhanced, sustained coordinated bursting afforded by supercoiling-mediated feedback. When compared to the transcript-coupled case, the divergent syntax is able to sustain long bursts of transcription due to the activating effect of the accumulated negative supercoils between the promoters. In addition, dimer binding to either of the genes in the biophysically-coupled case will terminate transcription of that gene, which in turn halts the self-maintaining divergent feedback, likely terminating the burst of the other gene. This lengthening of correlated bursts is capable of increasing coordination more than direct transcript-coupling can achieve.
+
+Examining the time-dependent nature of the \textit{her1}-\textit{her7} system, we plotted the ensemble cross-correlation in each of the three conditions in \cref{fig:zinani_cross_correlation}. Here, we found that in addition to the enhanced positive correlation peak at \(\tau = 0\)sec as also shown in \cref{fig:zinani_correlation_coeff}, the biophysically-coupled case showed the strongest \emph{negative} cross-correlation at nearly symmetric positive and negative time offsets. A correlated signal with these characteristics is the hallmark of a periodic signal; in fact, the cross-correlation of two perfectly periodic signals is itself a cosine function. Thus, both individual examples (\cref{fig:zinani_mRNA_behavior}) and ensemble behavior (\cref{fig:zinani_cross_correlation}) show that supercoiling-mediated feedback is potentially an important mechanistic driver of the functioning of the \textit{her1}-\textit{her7} clock circuit.
+
+
+
+\begin{figure}[h]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_4.pdf}
+    \phantomsubcaption\label{fig:her1_her7_cartoon}
+    \phantomsubcaption\label{fig:zinani_summary_cartoon}
+    \phantomsubcaption\label{fig:zinani_mRNA_behavior}
+    \phantomsubcaption\label{fig:zinani_protein_behavior}
+    \phantomsubcaption\label{fig:zinani_correlation_coeff}
+    \phantomsubcaption\label{fig:zinani_cross_correlation}
+    }
+\end{figure}
+\begin{figure}[h]
+    \ContinuedFloat
+    \caption{The experimental observations of the \textit{her1}-\textit{her7} clock circuit in zebrafish\parencite{zinaniPairingSegmentationClock2021} show good agreement with the predictions of supercoiling-mediated regulation.
+        \subref{fig:her1_her7_cartoon} Schematic drawing of the mutually-inhibitory \textit{her1}-\textit{her7} system. Both a \textit{her1-her1} dimer or a \textit{hes6-her7} dimer can bind to either promoter, preventing transcription.
+        \subref{fig:zinani_summary_cartoon} Coupling between \textit{her1}, \textit{her7} genes on the same allele appears necessary for proper zebrafish somite formation \parencite{zinaniPairingSegmentationClock2021}. Disruption of this intra-allele coupling leads to mutant phenotypes.
+        \subref{fig:zinani_mRNA_behavior} The number of \textit{her1} and \textit{her7} mRNAs is shown in example simulation runs for three different variously-coupled conditions. The uncoupled and transcript coupled states match the simulations performed in \textcite{zinaniPairingSegmentationClock2021}, whereas the biophysical coupling case is implemented using the model presented in this work. The initial spike of mRNA in the biophysically-coupled case is an artifact of starting from an all-zero initial condition.
+        \subref{fig:zinani_protein_behavior} The number of \textit{her1} and \textit{her7} proteins are shown in each example simulation run. The protein dynamics are similar to the mRNA dynamics but show a lower amplitude of oscillations.
+        \subref{fig:zinani_correlation_coeff} The correlation between the \textit{her1} and \textit{her7} mRNA counts is shown for the entire ensemble of the three coupling conditions. The biophysically-coupled case shows a larger correlation between the two clock genes than the transcript-coupled case.
+        \subref{fig:zinani_cross_correlation} The ensemble cross-correlation between the \textit{her1} and \textit{her7} mRNA counts as a function of coupling type shows that the biophysically-coupled model has the largest minima and maxima. A large maxima at \(\tau = 0\) combined with large roughly-symmetric minima can support the strong cyclic behavior observed experimentally in zebrafish.
+    } \label{fig:top:her1_her7}
+\end{figure}
+
+\FloatBarrier
+\section{Discussion}
 
 \section{Methods}
 \subsection{ODE and stochastic simulation}
@@ -164,7 +298,13 @@ The authors acknowledge the MIT SuperCloud and Lincoln Laboratory Supercomputing
 \clearpage
 \appendix
 \renewcommand{\appendixpagename}{Supplemental information}
+% Reset supplemental figures to using S syntax.
+\renewcommand{\thefigure}{S\arabic{figure}}
+\setcounter{figure}{0}
 \appendixpage
+\section{Supercoiling-dependent initiation derivation} \label{sec:sc_initation_derivation}
+
+
 \section{Model design, derivation, and extension}
 \label{sec:appendix:model}
 The original transcription-supercoiling paper, \cite{sevierPropertiesGeneExpression2018}, relies on prior papers for relevant equation definitions needed to actually implement the model. The following work gathers all of these relevant equations and simulation constants together, then discusses my model extensions.
