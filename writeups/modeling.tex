@@ -40,9 +40,9 @@
 \titleformat{\subsection}[display]{\bfseries}{}{0em}{}
 \titlespacing{\subsection}{0pt}{0.1em}{0.1em}
 
-\title{TANGLES: modeling supercoiling-dependent feedback}
+\title{TANGLES: modeling supercoiling-dependent feedback\\DNA supercoiling coordinates transcription via topologically-active networks of genes }
 \author{Christopher P. Johnstone, Kate E. Galloway}
-\date{}
+\date{ }
 
 \addbibresource{main_library.bib}
 
@@ -64,7 +64,7 @@ Chromatin, the DNA polymer wrapped around nucleosomes and decorated with regulat
 In the process of transcription, RNA polymerases induce a leading wave of positive DNA supercoiling\parencite{wuTranscriptionGeneratesPositively1988,liuSupercoilingDNATemplate1987}, reshaping the local structure of chromatin.\parencite{acharNegativeSupercoilGene2020,tevesTranscriptiongeneratedTorsionalStress2014a,naughtonTranscriptionFormsRemodels2013,guoHighresolutionGenomewideMapping2021a}
 At the kilobase scale, chromatin structure correlates with gene regulation.\parencite{hsiehResolving3DLandscape2020,rowleyEvolutionarilyConservedPrinciples2017}
 In yeast and human cells, transcriptionally-induced supercoiling demarks bounds of gene activity.\parencite{acharNegativeSupercoilGene2020,naughtonTranscriptionFormsRemodels2013}
-In particular, transcriptional activity dictates the strength of contact domains such as gene-to-gene interactions, indicating a role for transcription in forming and maintaining interactions at the kilobase scale.\parencite{xieMultiInputRNAiBasedLogic2011} \footnote{why is this reference 6? This seems like an unlinked reference in the Word doc}
+In particular, transcriptional activity dictates the strength of contact domains such as gene-to-gene interactions, indicating a role for transcription in forming and maintaining interactions at the kilobase scale.\parencite{rowleyOrganizationalPrinciples3D2018,rowleyEvolutionarilyConservedPrinciples2017}
 Together these data suggest that the process of transcription drives formation of supercoiling-linked, kilobase-scale structures that feedback into transcriptional regulation of gene expression. Biophysical models of gene expression predict that changes in DNA supercoiling in turn change transcriptional activity.\parencite{sevierPropertiesGeneExpression2018}
 As supercoiling rapidly diffuses across long distances \parencite{loenhoutDynamicsDNASupercoils2012}, transcriptional activity at one site may impact the overall activity and dynamics of transcription of proximal genes.\parencite{sevierCollectivePolymeraseDynamics2022,tripathiDNASupercoilingmediatedCollective2021}
 By understanding how supercoiling induces coupling between neighboring genes provides the opportunity to improve the predictable design of transgenic systems from simple reporters to sophisticated dynamic circuits.
@@ -118,7 +118,7 @@ Importantly, our selected phenomenological term will stall polymerase motion if 
 
 Taking the above equations together, we can simulate the coupled motion of an arbitrary number of polymerases as a single coupled ODE system. We further implemented different boundary conditions, allowing us to simulate both circular topologies, applicable to experimental plasmid systems, and linear topologies, applicable to native or genomically-integrated circuits.
 
-\subsection{Supercoiling-dependent initiation}
+\subsection{Modeling supercoiling-dependent initiation}
 With the ability to simulate arbitrary numbers of polymerases, we need a way to model the addition of polymerases to simulated genes. A simple strategy is to assume a supercoiling-independent initiation rate and use a stochastic simulation method to randomly add polymerases to transcriptional start sites at a certain fixed rate. However, this may miss important dynamics. Modeling polymerase initiation as a single-step reaction that proceeds with a certain rate, there is a corresponding energy barrier for polymerase addition. By adding additional supercoiling-dependent energy terms, we can model the extra energy cost for polymerase binding under different local supercoiling conditions. Under the approximation that the direct energetic cost of locally melting the DNA to fit in the RNAP groove dwarfs the relative change in unwinding energy caused by supercoiling, the majority of the energetic cost comes from inserting supercoiling ahead and behind the inserted polymerase. Under this assumption, the first-order supercoiling energetic correction can be written as:
 \begin{equation}
     E_\text{sc} = 1.2  \cdot 2\pi \cdot \tau(\sigma)
@@ -151,13 +151,14 @@ For example, a cooperative repressive interaction between some protein species \
 \[
     r(\vec s) = \frac{r_\text{base}}{1 + \left(\frac{s_1}{K}\right)^n}
 \]
-
+When combined with discrete stochastic reactions, we can model a wide range of phenomena. Importantly, we simulated the activity of topoisomerases in this way.
 
 \section{Results}
 
-\subsection{ DNA supercoiling dynamics confer rapid, tunable coupling between adjacent genes in varied contexts}
-In order to simulate,
-In order to investigate the behavior of our model in
+\subsection{DNA supercoiling dynamics confer rapid, tunable coupling between adjacent genes in varied contexts}
+In order to characterize the behavior of supercoiling-mediated feedback, we simulated a series of simple two-gene circuits. In addition to being experimentally accessible, two-gene circuits allow us to test and understand the core design considerations---circuit syntax, relevant boundary conditions, and experimentally tunable model parameters---while still retaining interpretability.
+The first major prediction involves the
+
 \begin{itemize}
     \item Supercoiling allows for regulation on timescales otherwise inaccessible by synthetic systems.
 
@@ -194,7 +195,33 @@ In order to investigate the behavior of our model in
     } \label{fig:top:orientation_bc_behavior}
 \end{figure}
 
+% TODO: Need a supplemental figure that shows both the behavior seen in Figure 1 for different values of sigma_2_coeff. Show both the energy landscape and the results of 1b.
+Moving forward, we used linear boundary conditions and supercoiling-dependent initiation, using a harmonic supercoiling-dependent initiation factor of \(\alpha = 0.02\).
+
 \subsection{Two-gene constructs show supercoiling-driven correlated behavior at the single cell level}
+While \cref{fig:top:orientation_bc_behavior} shows that supercoiling-driven feedback affects the mean ensemble behavior, we investigated the time-dependent behavior of individual simulations.
+First, we simulated the turn-on dynamics of the system in order to confirm that the final ensemble state is independent of initial condition.
+As shown in example simulations in \cref{fig:orientation_examples}, we started the system in four different initial states with only one of the genes active as a reporter (colored)---two corresponding to the convergent and divergent syntaxes and two for the tandem syntax where either the upstream or the downstream genes was active---and enabled transcription of the other (gray) gene after ten thousand seconds.
+We found that the system replicated the results of \cref{fig:top:orientation_bc_behavior}, with effectively identical mean ensemble behavior observed in \cref{fig:supp:fig2_ensemble_behavior}.
+
+As the noise behavior of a system is also important, we examined standard deviation in the reporter output as a function of time. Before the second gene is activated, all four initial starting states have a similar standard deviation (\cref{fig:noise_by_orientation}), showing that the syntax differences when only one gene is active minimally affects the spread in reporter output. However, after the second gene is activated, syntax strongly modulates the noise behavior of the reporter. In particular, a downstream reporter in the tandem syntax and the reporter in the convergent syntax show a strong \emph{increase} in noise levels while the upstream reporter in the tandem syntax and the reporter in the divergent syntax show a small but noticeable \emph{decrease} in noise levels. Comparing to \cref{fig:orientation_examples}, this change in noise is likely a result of changes in burst frequency. In the convergent case, the negative feedback caused by the accumulation of positive supercoiling between the promoters tends to favor either-or behavior. In contrast, the negative supercoiling that accumulates between the promoters in the divergent syntax supports additional polymerase loading that lengthens bursting of both genes.
+% TODO: maybe a supp figure of burst time distributions?
+Analyzing the individual runs, we quantified individual promoter bursts as %TODO, some definition?
+As seen in \cref{fig:supp:burst_time_distribution}, the divergent condition showed the largest increase in burst frequency, with the convergent case showing the strongest decrease in burst frequency. %if true...
+
+In order to further understand the correlative behavior between our genes, we computed the cross-correlation between the gene outputs after the initial ten thousand second period (\cref{fig:cross_correlation_cartoon}), normalized by the geometric mean of the auto-correlation of these outputs. For two signals \(f(t)\) and \(g(t)\), the normalized cross-correlation at a certain time offset \(\tau\) is bounded between \(\pm1\) and can be thought of as the correlation coefficient between the unshifted version of one of the signals (\(f(t)\)) and the other signal shifted in the time axis by \(\tau\) (\(g(t + \tau)\)). Mathematically, we use:
+\begin{equation}
+\text{cross-correlation}(\tau) = \frac{(f \star g)(\tau)}{\sqrt{(f \star f)(0) \cdot (g \star g)(0)}}
+\end{equation}
+for
+\begin{equation}
+    (f \star g)(\tau) = \sum_t (f(t) - \langle f(t)\rangle)(g(t+\tau) - \langle g(t)\rangle)
+\end{equation}
+In fact, for \(\tau = 0\), the cross-correlation of the two signals is exactly the Pearson correlation coefficient. The shape of the cross-correlation curve can also reveal periodic and other time-dependent correlative behaviors. For example, strong negative or positive peaks evenly spaced around \(\tau = 0\) is a hallmark of periodic behavior, with the time offset of the peak encoding the phase offset between the signals.
+
+As seen in \cref{fig:orientation_cross_correlation}, the four conditions show starkly different time-dependent correlative behavior. The most striking correlative behavior is examining the convergent-syntax case with balanced induction between the two genes (blue curve). The balanced convergent case shows a very large anti-correlation at time offset zero alongside positive correlation peaks at time offsets around \(\pm5000\) seconds. This combination suggests a periodic but out-of-phase behavior between the two genes with a period of around 5000 seconds. However, as the relative induction between the genes varies, the strong negative correlation at time offset zero remains without strong positive peaks, suggesting either-or behavior in the absence of periodic state-switching. In addition, strong correlative behavior can also be seen in the tandem case where the upstream gene is induced. For small relative upstream induction (purple curve), strong positive correlation is observed, suggesting that weak upstream induction can induce correlated gene output. However, at higher induction levels, this trend vanishes. Finally, the enhanced coordinated bursting in the divergent syntax, appearing as a positive correlation peak at time offset zero, is observed independent of relative induction levels.
+Taken as a whole, circuit syntax is a powerful tool for both introducing desirable and reducing undesirable time-dependent behaviors.
+
 \begin{figure}[h]
     \centering
     {\includegraphics{figures/modeling_paper/fig_2.pdf}
@@ -203,7 +230,7 @@ In order to investigate the behavior of our model in
     \phantomsubcaption\label{fig:cross_correlation_cartoon}
     \phantomsubcaption\label{fig:orientation_cross_correlation}}
     \caption{Our supercoiling model predicts emergent coupling and noise behavior at a single-cell level.
-        \subref{fig:orientation_examples} Example simulation runs in each of the three syntaxes is shown, where transcription of the secondary gene (gray) is enabled after ten thousand seconds (shaded background).
+        \subref{fig:orientation_examples} Example simulation runs in each of the three syntaxes is shown, where transcription of the secondary gene (gray) is enabled after ten thousand seconds (shaded background). Both genes have the same base rate.
         \subref{fig:noise_by_orientation} Ensemble noise behavior for the four simulation conditions is shown as a function of time. Induction of the secondary gene leads to an increase in reporter noise in the tandem-upstream and convergent syntaxes and a decrease in reporter noise in the tandem-downstream and divergent syntaxes.
         \subref{fig:cross_correlation_cartoon} The cross-correlation of two signals \(f(t), g(t)\) at a time offset \(\tau\) can be calculated by `sliding' one mean-centered signal relative to the other mean-centered and integrating the product of the resulting signals.
         \subref{fig:orientation_cross_correlation} The cross-correlation between the two genes is shown as a function of circuit syntax for three induction conditions, 0.4-fold induction (purple), 1.0-fold induction (blue), and 2.6-fold (green) induction relative to the reporter.
@@ -211,13 +238,28 @@ In order to investigate the behavior of our model in
 \end{figure}
 
 \subsection{Optimizing circuit syntax can support context-dependent toggle switch behavior and stability}
+With the supercoiling-feedback mechanisms characterized in \cref{fig:top:single_cell_noise_correlation}, we turned to investigating the behavior of a simple toggle switch under the additional control of supercoiling-mediated feedback.
+Toggle switches and higher-order synthetic circuits built from toggle switches have been well-characterized both theoretically \parencite{gardnerConstructionGeneticToggle2000} and experimentally.\parencite{zhuSyntheticMultistabilityMammalian2021} % TODO: more refs
+A straightforward toggle switch can be constructed with two genes that mutually repress each other; such a switch exhibits two stable basins.\cref{fig:toggle_cartoon} If modeled with a continuous, noise-free equations (e.g. where the number of mRNAs is assumed to be so large such that a continuum approximation holds), such a toggle switch never switches state if the initial condition lies in one of the basins \parencite{gardnerConstructionGeneticToggle2000}. If the mRNA concentration is instead treated discretely with a stochastic simulation, the system can escape the stable basin with a certain probability. How does supercoiling-mediated feedback interact with mutual repression, potentially tuning toggle switch behavior?
+
+To answer this, we used our model to simulate the behavior of a two-gene toggle switch placed in the same syntax as in \cref{fig:top:single_cell_noise_correlation}, where we abstracted the regulatory interaction using a Hill function to define the base promoter initiation rates:
+\begin{equation}
+    r_A = r_0 \frac{K}{K + [B]^n} \qquad r_B = r_0 \frac{K}{K + [A]^n}
+\end{equation}
+for \(r_0 = 1/160 \,\text{s}^{-1}\).
+
+As in the
+
 \begin{itemize}
 \item Supercoiling-dependent feedback can enhance the ultrasensitive response of synthetic regulatory motifs (toggle switch stability).
 \end{itemize}
 
+\subsection{Tuning topoisomerase rate, something something to explain E/F/G, split into their own figure}
+
 \begin{figure}[h]
     \centering
     {\includegraphics{figures/modeling_paper/fig_3.pdf}
+    \phantomsubcaption\label{fig:toggle_cartoon} % TODO: add this cartoon
     \phantomsubcaption\label{fig:toggle_orientation_examples}
     \phantomsubcaption\label{fig:toggle_basin_stability}
     \phantomsubcaption\label{fig:toggle_basin_stability_over_time}
@@ -282,7 +324,11 @@ Examining the time-dependent nature of the \textit{her1}-\textit{her7} system, w
 \FloatBarrier
 \section{Discussion}
 
-\section{Methods}
+\begin{itemize}
+    \item Notably, the prediction that genes in a tandem syntax behave asymmetrically,....<something something Hox genes>.
+    \item Something about nucleosome and how we are currently ignoring them, but they could be included.
+\end{itemize}
+
 \subsection{ODE and stochastic simulation}
 The core ordinary differential equations were simulated using a Tsitouras's explicit Runge-Kutte 4-5 order method \parencite{tsitourasRungeKuttaPairs2011}.
 \parencite{rackauckasDifferentialEquationsJlPerformant2017}.
