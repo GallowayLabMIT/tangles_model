@@ -40,7 +40,7 @@ for _ in 1:n_repeats,
     is_plasmid in [false, true],
     sc_initiation in [false, true],
     induction in exp10.(range(-2,0.5,length=30)),
-    σ2 in vcat([0.0 0.02], exp10.(range(-3.0,-1.0,length=9)))
+    σ2 in vcat([0.0], [0.02], exp10.(range(-3.0,-1.0,length=9)))
 
 
     # If we aren't doing sc-dependent initiation, skip if σ2 is not zero
