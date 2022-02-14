@@ -40,7 +40,7 @@
 \titleformat{\subsection}[display]{\bfseries}{}{0em}{}
 \titlespacing{\subsection}{0pt}{0.1em}{0.1em}
 
-\title{TANGLES: modeling supercoiling-dependent feedback\\DNA supercoiling coordinates transcription via topologically-active networks of genes }
+\title{DNA supercoiling coordinates transcription via topologically-active networks of genes }
 \author{Christopher P. Johnstone, Kate E. Galloway}
 \date{ }
 
@@ -50,7 +50,7 @@
 \maketitle
 
 \section{Introduction}
-Cells coordinate complex behaviors through precise spatiotemporal control of gene expression. To rapidly advance the power of gene- and cell-based therapies, synthetic biology aims to harness the power of native biology by constructing synthetic gene regulatory networks capable of dynamically prescribing cellular processes, states, and identities.\parencite{chenSyntheticBiologyAdvancing2012,beitzSyntheticGeneCircuits2022,purnickSecondWaveSynthetic2009,elowitzBuildLifeUnderstand2010}
+Cells coordinate complex behaviors through precise spatiotemporal control of gene expression. To rapidly advance gene and cell-based therapies, synthetic biology aims to harness the power of native biology by constructing synthetic gene regulatory networks capable of dynamically prescribing cellular processes, states, and identities.\parencite{chenSyntheticBiologyAdvancing2012,beitzSyntheticGeneCircuits2022,purnickSecondWaveSynthetic2009,elowitzBuildLifeUnderstand2010}
 Synthetic networks process diverse inputs into complex logical and temporal responses.\parencite{weinbergLargescaleDesignRobust2017,xieMultiInputRNAiBasedLogic2011,taborSyntheticGeneticEdge2009}
 From oscillators to pulse generators, synthetic circuits can  precisely coordinate dynamic patterns of gene expression across populations of cells to control cell fate.\parencite{gardnerConstructionGeneticToggle2000,elowitzSyntheticOscillatoryNetwork2000,strickerFastRobustTunable2008,daninoSynchronizedQuorumGenetic2010,maSyntheticMammalianSignaling2020a,parkEngineeringEpigeneticRegulation2019,bashorUsingEngineeredScaffold2008,gallowayDynamicallyReshapingSignaling2013}
 However, rational de novo design of synthetic circuits remains challenging. Despite extensive biomolecular modeling, integration of single genetic elements into systems often leads to emergent behaviors, requiring iterative design-build-test cycles to achieve the desired performance.\parencite{jonesEndoribonucleasebasedFeedforwardController2020,freiCharacterizationMitigationGene2020,qianResourceCompetitionShapes2017}
@@ -84,39 +84,39 @@ Finally, to examine how our toggle switch behavior will vary across cells with v
 
 \section{Model and methods}
 Simulating the behavior of native and synthetic circuits under the influence of transcription-induced feedback requires an model that integrates explicitly-modeled polymerase motion and RNA- and protein-mediated feedback mechanisms.
-Our method combines three modeling levels: an ordinary differential equation model that simulates the continuous progression of polymerases loaded onto DNA, a core stochastic model that models supercoiling-dependent polymerase initiation, and a user-specified stochastic layer that allows for modeling of other regulatory interactions such as the promoter-repressive and -activating interactions used in synthetic circuits.
+Our method combines three modeling levels: an ordinary differential equation model that simulates the continuous progression of polymerases loaded onto DNA, a core stochastic model that models supercoiling-dependent polymerase initiation, and a user-specified stochastic layer that allows for modeling other modes of transcriptional regulation such as the promoter-repressive and -activating interactions that are often included in synthetic circuits.
 
 \subsection{Continuous model of supercoiling-dependent transcription}
-Here, supercoiling is defined as the amount of excess twist \(\phi\) relative to relaxed DNA (with relaxed DNA having twist \(\omega_0 = 1.85\) radians/nm, or 1 full revolution per \(\approx10\) basepairs). While the supercoiling density could more generally be defined as a varying function of genomic location \(\sigma(z)\), in a region of constant supercoiling density, we can use the excess twist at the endpoints \(z_1, z_2\) to define the supercoiling density as:
+Here, supercoiling is defined as the amount of excess twist \(\phi\) relative to relaxed DNA. Relaxed DNA rotates  one full revolution per \(\approx10\) basepairs; thus it's relaxed twist is \(\omega_0 = 1.85\) radians/nm. Supercoiling density can generally be defined as a varying function of genomic location \(\sigma(z)\). However, in a region of constant supercoiling density, we can use the excess twist at the endpoints \(z_1, z_2\) to conveniently define the supercoiling density as:
 \begin{equation}
     \sigma = \frac{\phi(z_1) - \phi(z_2)}{\omega_0 (z_2 - z_1)}
 \label{eq:supercoiling_density}
 \end{equation}
-Note that \cref{eq:supercoiling_density} is defined such that a positive value of \(\phi\) at an intermediate point between two endpoints with \(\phi=0\) (relaxed DNA) means that the supercoiling density is \emph{positive} in front of the intermediate point and \emph{negative} behind the intermediate point. Following on the work of \textcite{sevierPropertiesGeneExpression2018}, we assume that on the length scales of synthetic and native circuits of interest (\(O(\approx10kb)\)), the supercoiling density is constant in all regions between polymerases and other barriers. Because supercoiling diffusion and plectoneme hopping \parencite{loenhoutDynamicsDNASupercoils2012} occur at a faster rate (diffusion constant of \(\mathcal{D} \approx O(0.5 \units{kb$^2$}{s})\)) than transcription (\(v_0 \approx 50 \units{bp}{s}\)) \parencite{munizRNAPolymeraseII2021}, the assumption of supercoiling relaxation on the timescale of transcription simplifies the resulting model.
+The relationship in \cref{eq:supercoiling_density} specifies the value of \(\phi\) at any intermediate point \(z_i\) between the two endpoints \(z_1, z_2\). For relaxed DNA where \(\phi=0\), a positive value of \(\phi\) means that the supercoiling density is \emph{positive} in front of the intermediate point and \emph{negative} behind the intermediate point. Following on the work of \textcite{sevierPropertiesGeneExpression2018}, we assume that on the length scales of synthetic and native circuits of interest (\(O(\approx10kb)\)), the supercoiling density is constant in all regions between polymerases and other barriers. Because supercoiling diffusion and plectoneme hopping \parencite{loenhoutDynamicsDNASupercoils2012} occur at rates faster rate (diffusion constant of \(\mathcal{D} \approx O(0.5 \units{kb$^2$}{s})\)) than transcription (\(v_0 \approx 50 \units{bp}{s}\)) \parencite{munizRNAPolymeraseII2021}, the assumption of supercoiling relaxation on the timescale of transcription simplifies the resulting model.
 
-How does transcription both drive the process of supercoiling generation and react to changes in local supercoiling? Under the assumption of supercoiling relaxation, each polymerase is defined by four variables--the (one-dimensional) genomic location of the polymerase \(z_i\), the length of the nascent RNA \(x_i\), the excess twist at the location of the polymerase \(\phi_i\), and the rotation angle of the polymerase \(\theta_i\). Then, two governing equations define the motion of all polymerases. The first equates the linear motion of the polymerase with the rotational motion (either of the RNAP or of the DNA) required for the polymerase to track the DNA groove,
+How does transcription both drive the process of supercoiling generation and react to changes in local supercoiling? Under the assumption of supercoiling relaxation, each polymerase is defined by four variables--the one-dimensional genomic location of the polymerase \(z_i\), the length of the nascent RNA \(x_i\), the excess twist at the location of the polymerase \(\phi_i\), and the rotation angle of the polymerase \(\theta_i\). Then, two governing equations define the motion of all polymerases. The first equates the linear motion of the polymerase with the rotational motion of both the RNAP and the DNA required for the polymerase to track the DNA groove:
 \begin{equation}
     \underbrace{\omega_0 \frac{dz_i}{dt}}_{\mathclap{\text{RNAP velocity}}} = \overbrace{\frac{d\theta_i}{dt}}^{\mathclap{\text{RNAP rotation}}} + \underbrace{\frac{d\phi_i}{dt}}_{\mathclap{\text{supercoiling generation}}}
 \label{eq:linear_rotational_balance}
 \end{equation}
-whereas the second is a torque balance between the DNA-mediated torques and
+The second equation provides a torque balance between the DNA-mediated torques:
 \begin{equation}
     \underbrace{\tau(\sigma(z_i, \phi_{i-1}, \phi_{i+1}))}_{\mathclap{\text{torque acting on RNAP}}} + \overbrace{\chi \frac{d\phi_i}{dt}}^{\mathclap{\text{supercoiling restoring force}}}= \underbrace{\eta x_i^n \frac{d\theta_i}{dt}}_{\mathclap{\text{nascent RNA drag}}}
 \label{eq:torque_balance}
 \end{equation}
-\Cref{eq:linear_rotational_balance,eq:torque_balance} can be solved as in \textcite{sevierPropertiesGeneExpression2018} to give a set of ordinary differential equations as long as we define equations for the torque response \(\tau(\sigma)\) as a function of the local supercoiling density and the RNAP velocity as a function of local torque \(\frac{dz}{dt} = v(\tau)\). Here, we use Marko's torque-response model to supercoiling which accounts for the thermodynamic behavior of both non-buckled, twisted DNA and buckled, plectonemic DNA \parencite{markoTorqueDynamicsLinking2007}. The resulting \(\tau(\sigma)\) functions exhibits a phase transition, where the torque response is nearly constant at intermediate values of \(\sigma\) where the DNA is transitioning from a locally-twisted phase to a plectonemic-phase.
+To develop a final system of ordinary differential equations, we can simplify through introduction of a few definitions. If we define equations for the torque response \(\tau(\sigma)\) as a function of the local supercoiling density and the RNAP velocity as a function of local torque \(\frac{dz}{dt} = v(\tau)\), then \cref{eq:linear_rotational_balance,eq:torque_balance} can be solved as in \textcite{sevierPropertiesGeneExpression2018}. Here, we use Marko's torque-response model to supercoiling which accounts for the thermodynamic behavior of both non-buckled, twisted DNA and buckled, plectonemic DNA \parencite{markoTorqueDynamicsLinking2007}. The resulting \(\tau(\sigma)\) functions exhibits a phase transition, where the torque response is nearly constant at intermediate values of \(\sigma\) where the DNA is transitioning from a locally-twisted phase to a plectonemic-phase.
 
-For the velocity response of a polymerase experiencing a torque \(\tau_f\) in front and \(\tau_b\) behind, we chose to model polymerase stalling as:
+For the velocity response of a polymerase experiencing a torque \(\tau_f\) in front and \(\tau_b\) behind, we model polymerase stalling as:
 \begin{equation}
     v(\tau_f, \tau_b) = \frac{v_0}{(1 + e^{(|\tau_f| - \tau_s)/\tau_w})(1 + e^{(|\tau_b| - \tau_s)/\tau_w})}
 \label{eq:velocity_response}
 \end{equation}
 where the stall torque \(\tau_s = 12 \unit{pN nm}\) and stall-width \(\tau_w = 3 \unit{pN nm}\) define a sigmoidal stall-response curve.
 As shown in \cref{fig:supp_tau_hyperparameter_sweep}, our results are only weakly dependent on the specific choice of \(\tau_s\) and \(\tau_w\).
-Importantly, our selected phenomenological term will stall polymerase motion if \emph{either} the torque upstream or downstream exceeds the stall torque \(\tau_s\), in contrast to models such as \textcite{tripathiDNASupercoilingmediatedCollective2021}. We chose this form of the velocity equation because ???\footnote{In any case, our choice is conservative in the sense that it would predict \textbf{more} stalling than Tripathi, yet we see very robust expression/lots of loaded polymerases later. How do I say this nicely here?}
+Importantly, our selected phenomenological term will stall polymerase motion if \emph{either} the torque upstream or downstream exceeds the stall torque \(\tau_s\). In contrast to models such as \textcite{tripathiDNASupercoilingmediatedCollective2021}. We chose this form of the velocity equation because ???\footnote{In any case, our choice is conservative in the sense that it would predict \textbf{more} stalling than Tripathi, yet we see very robust expression/lots of loaded polymerases later. How do I say this nicely here?}
 
 
-Taking the above equations together, we can simulate the coupled motion of an arbitrary number of polymerases as a single coupled ODE system. We further implemented different boundary conditions, allowing us to simulate both circular topologies, applicable to experimental plasmid systems, and linear topologies, applicable to native or genomically-integrated circuits.
+Taking the above equations together, we can simulate the coupled motion of an arbitrary number of polymerases as a single coupled ODE system. We further examine different experimental systems by implementing different boundary conditions. For instance, boundary conditions for circular topologies enable the simulation of plasmid systems, whereas linear topologies correspond to the condition of endogenous genes and genomically-integrated transgenes and circuits.
 
 \subsection{Modeling supercoiling-dependent initiation}
 With the ability to simulate arbitrary numbers of polymerases, we need a way to model the addition of polymerases to simulated genes. A simple strategy is to assume a supercoiling-independent initiation rate and use a stochastic simulation method to randomly add polymerases to transcriptional start sites at a certain fixed rate. However, this may miss important dynamics. Modeling polymerase initiation as a single-step reaction that proceeds with a certain rate, there is a corresponding energy barrier for polymerase addition. By adding additional supercoiling-dependent energy terms, we can model the extra energy cost for polymerase binding under different local supercoiling conditions. Under the approximation that the direct energetic cost of locally melting the DNA to fit in the RNAP groove dwarfs the relative change in unwinding energy caused by supercoiling, the majority of the energetic cost comes from inserting supercoiling ahead and behind the inserted polymerase. Under this assumption, the first-order supercoiling energetic correction can be written as:
@@ -126,14 +126,14 @@ With the ability to simulate arbitrary numbers of polymerases, we need a way to 
 \end{equation}
 A full derivation of this result is given in \cref{sec:sc_initation_derivation}. As seen in \cref{fig:including_melting_rnap}, if the approximation that leads to \cref{eq:first_order_sc_initation} is not made, then only minor energetic changes occur.
 
-While this first-order energetic term introduces much-needed behavior to the modeled system, where locally high positive supercoiling decreases the RNAP initiation rate and locally negative supercoiling increases the RNAP initiation rate, at extreme values of \(\sigma\), this energetic term gives unphysical predictions. In particular, under highly negative supercoiling densities, the energetics of polymerase loading becomes increasingly favorable, with loading sometimes occurring more than two orders of magnitude faster when compared to relaxed DNA. To correct for behavior, we added a second-order term of the form that disfavors polymerase loading at highly positive or negative local supercoiling:
+While this first-order energetic term introduces much-needed behavior to the modeled system, where locally high positive supercoiling decreases the RNAP initiation rate and locally negative supercoiling increases the RNAP initiation rate, at extreme values of \(\sigma\), this energetic term gives aphysical predictions. In particular, under highly negative supercoiling densities, the energetics of polymerase loading becomes increasingly favorable, with loading sometimes occurring more than two orders of magnitude faster when compared to relaxed DNA. To correct for behavior, we add a second-order term of the form that limits polymerase loading at highly positive or negative local supercoiling:
 \begin{equation}
     E_\text{sc} = 1.2  \cdot 2\pi \cdot \tau(\sigma) + \alpha \cdot \tau_0 \cdot \sigma^2
 \label{eq:second_order_sc_initation}
 \end{equation}
 for \(\tau_0\), the relevant scale factor in the \(\tau(\sigma)\) equation \parencite{markoTorqueDynamicsLinking2007} and \(\alpha\) a positive tunable parameter. As the \(\tau(\sigma)\) equation is linear in \(\sigma\) outside of the phase-transition region, this added \(\sigma^2\) term can be contextualized as an additional term in the Taylor expansion of the physically-realistic \(E_\text{sc}(\sigma)\) equation.
 
-When simulating the ODE model, the rate of stochastic polymerase initiation then varies continuously based on the local supercoiling density \(\sigma\) at the transcription start site as:
+When simulating the ODE model, the rate of stochastic polymerase initiation, \(r_\text{initation}\), then varies continuously based on the local supercoiling density \(\sigma\) at the transcription start site as:
 \begin{equation}
     r_\text{initation} = r_\text{base rate} e^{- E_\text{sc} / (k_B T)}
 \label{eq:intermediate_init_rate}
@@ -141,13 +141,13 @@ When simulating the ODE model, the rate of stochastic polymerase initiation then
 
 
 \subsection{Modeling additional stochastic, discrete reactions}
-Many of the native and synthetic systems of interest include other regulatory species. In order to analyze these types of systems using our supercoiling model, we extended our model to simultaneously simulate arbitrary discrete stochastic equations---such as those commonly used in the literature to model protein production, degradation, dimerization, and more.
+Many of the native and synthetic systems of interest include mechanisms of gene regulation that rely on other regulatory species. In order to analyze these types of systems using our supercoiling model, we extended our model to simultaneously simulate arbitrary discrete stochastic equations---such as those commonly used in the literature to model protein production, degradation, dimerization, and more.
 In addition, we allowed the base initiation rate of genes to vary as an arbitrary function of all species concentrations (\(\vec s\)) in the model, such that \cref{eq:intermediate_init_rate} becomes:
 \begin{equation}
     r_\text{initation} = r(\vec s) e^{- E_\text{sc} / (k_B T)}
 \label{eq:final_init_rate}
 \end{equation}
-For example, a cooperative repressive interaction between some protein species \(s_1\) and a promoter could be modeled using a repressive Hill function:
+For example, a cooperative repressive interaction between some repressor protein \(s_1\) and a promoter could be modeled using a repressive Hill function:
 \[
     r(\vec s) = \frac{r_\text{base}}{1 + \left(\frac{s_1}{K}\right)^n}
 \]
@@ -246,9 +246,13 @@ To answer this, we used our model to simulate the behavior of a two-gene toggle 
 \begin{equation}
     r_A = r_0 \frac{K}{K + [B]^n} \qquad r_B = r_0 \frac{K}{K + [A]^n}
 \end{equation}
-for \(r_0 = 1/160 \,\text{s}^{-1}\).
+for \(r_0 = 1/160 \,\text{s}^{-1}\). The half-max value \(K\), the mRNA count at which the promoter activity is half that of \(r_0\), is chosen here to approximately match the mean steady-state value of either stable state; this means that the toggle switches operate in the regime of maximum sensitivity. In order to compare the behavior of the toggle switches, we initialized each toggle switch with only one of the genes active and allowed the system to reach a steady state over the first ten-thousand seconds of the simulation. Then, the second gene was enabled and the system evolved under simultaneous mutual inhibition and supercoiling-dependent feedback.
 
-As in the
+As seen in example simulation runs in \cref{fig:toggle_orientation_examples}, each syntax showed unique behaviors. The tandem-syntax toggle switch shows asymmetric stability, where the upstream gene state appearing much more stable than the downstream gene. This asymmetry arises from the sign of the supercoiling that accumulates at the promoter. When the upstream tandem gene is active, positive supercoiling accumulates at the downstream promoter, enhancing the negative regulation. However, when the downstream tandem gene is active, negative supercoiling accumulates at the upstream promoter, weakening the negative regulation. In the convergent syntax, activation of either gene causes positive supercoiling to enhance negative regulation. While this does enhance the stability of either state, a convergently-oriented toggle switch quickly switches states when the other gene stochastically activates, as the other gene can quickly generate positive supercoiling that enhances repression. Finally, due to the correlated bursting observed in the divergent syntax, a divergently-oriented toggle switch can quickly escape its initial stable state.
+
+We can visualize the
+We can visualize the relative behavior of.
+
 
 \begin{itemize}
 \item Supercoiling-dependent feedback can enhance the ultrasensitive response of synthetic regulatory motifs (toggle switch stability).
@@ -353,18 +357,18 @@ The authors acknowledge the MIT SuperCloud and Lincoln Laboratory Supercomputing
 
 \section{Model design, derivation, and extension}
 \label{sec:appendix:model}
-The original transcription-supercoiling paper, \cite{sevierPropertiesGeneExpression2018}, relies on prior papers for relevant equation definitions needed to actually implement the model. The following work gathers all of these relevant equations and simulation constants together, then discusses my model extensions.
+Our model builds upon several prior papers and relevant mathematical frameworks. To ensure access and provide definitions needed for implementation of our model, we have aggregated all of these relevant equations and simulation constants together. From this foundation, we discuss how we have extended our model to examine how DNA supercoiling generates coupling between proximal genes.
 
 \subsection{Supercoiling model}
 Why do we care about supercoiling at all? As noted in \textcite{markoTorqueDynamicsLinking2007}, at \(T = 300 \unit{K}\), \(k_b T = 4.1 \unit{pN nm}\), showing that
 important mechanical properties are on the energy scale of \(k_b T\). Many of the later quantities we will solve for will have magnitude around 10-100 pN nm.
 
-Supercoiling density is defined:
+Supercoiling density, \(\sigma\),  is defined:
 \begin{equation}
     \sigma = \frac{\phi_i - \phi_{i - 1}}{\omega_0 | z_{i} - z_{i-1}|}
     \label{eq:sc_density}
 \end{equation}
-where \(\phi\) defines a \emph{linking number constraint}. While this term is most easily identified with the local DNA excess twist, it is truly a linking number constraint that takes into account both twist and writhe. The asymmetry between these two forms is accounted for in the phase transition in the underlying statistical mechanical model.
+where \(\phi\) defines a \emph{linking number constraint}. While this term is most easily identified with the local DNA excess twist, it is truly a linking number constraint that takes into account both twist and writhe. We account for the asymmetry between twist and writhe in the underlying statistical mechanical model which can be observed as a phase transition.
 
 Based on a statistical-mechanics model that calculates the torque as a function of supercoiling density:
 \begin{equation}
@@ -387,14 +391,14 @@ where the following quantities are defined:
 \[g = f - \sqrt{\frac{k_B T f}{A}} \qquad c_s = c \left[1 - \frac{C}{4A} \sqrt{\frac{k_B T}{A f}}\right]\]
 
 
-While the cubic term can also be calculated and accounts for asymmetry between under- and over-winding, \textcite{markoTorqueDynamicsLinking2007} argues that this effect is small for realistic physiological conditions.
+While the cubic term can also be calculated and accounts for asymmetry between under- and over-winding,  this effect is small for realistic physiological conditions \textcite{markoTorqueDynamicsLinking2007}.
 
 
 Summarizing, once we specify \(p, g, c_s, \omega_0\), we have a model for the torque of our system.
 
 In these equations, we rescale
 the bend persistence length \(A\), the twist persistence length of stretched DNA \(C\), and the twist persistence length of the plectonemic
-state \(P\). Because plectonemes reduce twist into writhe, we expect \(P < C\).
+state \(P\). Because plectonemes convert twist into writhe, we expect \(P < C\).
 \[c = k_B T C \omega_0^2 \qquad p = k_B T P \omega_0^2\]
 
 \begin{table}[h]
@@ -417,7 +421,7 @@ state \(P\). Because plectonemes reduce twist into writhe, we expect \(P < C\).
 
 
 \subsection{Dynamic model}
-Following \textcite{sevierPropertiesGeneExpression2018}, we define an identical dynamics model for modeling the motion of polymerases over the DNA.
+Following \textcite{sevierPropertiesGeneExpression2018}, we adopt a dynamics model for modeling the motion of polymerases over the DNA.
 
 Briefly, for each polymerase, this model tracks the position \(z_i\), transcript length \(x_i\), and excess DNA twist \(\phi_i\) of each RNAP. We create a \emph{linking number constraint (LNC)} by specifying \(\phi\) at any genomic location, which means that each RNAP sets an LNC. We use dynamic equations to model the motion of RNAP against either fixed or free boundary conditions.
 
@@ -435,7 +439,7 @@ Solving for \(\frac{d\phi_i}{dt}\), we get a dynamic equation for the differenti
     \frac{d\phi_i}{dt} = \omega_0 \frac{dz_i}{dt} \frac{\eta x_i^n}{\chi + \eta x_i^n} - \frac{\tau(z_i, \phi_{i-1}, \phi_{i+1})}{\chi + \eta x_i^n}
 \end{equation} \label{eq:phi_deriv}
 
-To model polymerase stalling, instead of using Sevier's function, we use a parameterized function that explicitly depends on a stall torque and a torque width \(\Delta \tau\) over which stalling begins to occur:
+To model polymerase stalling, we use a parameterized function that explicitly depends on a stall torque and a torque width \(\Delta \tau\) over which stalling begins to occur:
 \begin{equation}
     \frac{dz_i}{dt} = \frac{v_0}{1 + \exp\left(\frac{|\tau(z_i, \phi_{i-1}, \phi_{i+1}) - \tau_s|}{\Delta \tau_s}\right)}
 \end{equation} \label{eq:velocity}
@@ -465,7 +469,7 @@ Equations \ref{eq:phi_deriv} and \ref{eq:velocity} along with the simple \(\frac
 To model polymerase readthrough, I extended the model implementation to allow for polymerases to move for either a period of time or a certain distance after reaching the simulated PAS site. Readthrough times/distances were pulled from an exponential waiting time distribution.
 
 \subsection{Supercoiling-dependent initiation}
-I extended the Sevier and Marko model to account for supercoiling-dependent initation, starting with developing desired model properties based on literature observations. The rest of this appendix details this process, in addition to the initial model formulation and useful simplifications.
+Reflecting on the desired properties of a model based on literature observations, I extended the models from Sevier and Marko to account for supercoiling-dependent initation. The rest of this appendix details this process, in addition to the initial model formulation and useful simplifications.
 
 \subsubsection{Literature observations}
 A naked DNA bead experiment (\textcite{revyakinPromoterUnwindingPromoter2004}) found that positive and negative supercoiling affected RNAP polymerase binding rates. When a polymerase bound, approximately 1.2 turns of DNA unwound (13 base pairs, or 4.42nm). This level of unwinding agrees with crystal structures of the bacterial T7 RNAP bound to DNA, as in Figure \ref{fig:rnap_bound}.
@@ -478,22 +482,22 @@ A naked DNA bead experiment (\textcite{revyakinPromoterUnwindingPromoter2004}) f
     \label{fig:rnap_bound}
 \end{figure}
 
-This bead study found that for a typical bacterial promoter, RNAP binding occurred reversibly. The mean time between RNAP binding events was measured and related to a kinetic model. The mean time between binding events can be related to a promoter-on rate. Once the DNA torque reached the constant-torque regime, the promoter-on rate became constant.
+For a typical bacterial promoter, RNAP binding occurred reversibly. The mean time between RNAP binding events was measured and related to a kinetic model. The mean time between binding events defines a promoter-on rate. Once the DNA torque reaches the constant-torque regime, the promoter-on rate becomes constant.
 
 \subsubsection{Modeling goals}
 Based on the literature observations, some desired properties of a model would be:
 \begin{itemize}
     \item In the constant-torque supercoiling regime, the RNAP on rate remains constant, as in \textcite{revyakinPromoterUnwindingPromoter2004}.
     \item Negative supercoiling promotes RNAP binding, whereas negative supercoiling inhibits RNAP binding.
-    \item The promoter on rate depends just on the local supercoiling density and the nearest LNCs, not on the position of the promoter relative to the bounding LNCs.
+    \item The promoter intiation rate depends just on the local supercoiling density and the nearest linking number constraint, not on the position of the promoter relative to the bounding linking number constraints.
     \item Plotted as a function of supercoiling density (from \(\sigma = -.1\) to \(\sigma = .1\)), the response is roughly sigmodial, to match phenomenological models (such as \textcite{elhoudaiguiBacterialGenomeArchitecture2019a}).
 \end{itemize}
 
 However, the first and fourth goals are contradictory; if the RNAP on-rate remains constant, then we won't get a sigmodial shape when plotted versus supercoiling density.
 
 \FloatBarrier
-\subsubsection{Dual-LNC model}
-To model this unwinding, we add two new LNCs, spaced 13 base pairs apart. To start, all of these have specific linear locations \(z\) and rotations \(\phi\), but we will show that under some relatively valid assumptions, the specific location of the new LNCs does not matter.
+\subsubsection{Dual linking number constraint model}
+To model the unwinding induced by RNAP binding, we add two new linking number constraints, spaced 13 base pairs apart. To start, all of these have specific linear locations \(z\) and rotations \(\phi\), but we will show that under some relatively valid assumptions, the specific location of the new linking number constraints does not matter.
 
 \begin{figure}[h]
     \centering
@@ -519,7 +523,7 @@ To model this unwinding, we add two new LNCs, spaced 13 base pairs apart. To sta
         \node [above] at (.65, -.04) {$\sigma_f$};
         \node [above] at (-.5, 0) {$\sigma_b$};
     \end{tikzpicture}
-    \caption{Diagram of the addition of two LNCs}
+    \caption{Diagram of the addition of two linking number constraints}
     \label{fig:lnc_diagram}
 \end{figure}
 
@@ -539,7 +543,7 @@ For unwinding of the region bound to the RNAP to occur, we impose two constraint
 \begin{equation}
     \Delta \phi' - \Delta \phi'' = 1.2 \cdot 2\pi
 \end{equation}
-In words, for the middle region, two different ways to unwind it would either to rotate the leading LNC backwards or rotate the trailing LNC forwards. There are also many intermediate solutions where \emph{both} of the bounding LNCs move. The first restriction is there to ensure that we use the solution that minimizes total amount of rotation needed.
+For the middle region, this implies that there are two different ways to unwind the DNA; either to rotate the leading linking number constraint backwards or rotate the trailing linking number constraint forwards. There are also many intermediate solutions where \emph{both} of the bounding linking number constraints move. The first restriction is there to ensure that we use the solution that minimizes total amount of rotation needed.
 
 Given a complete energy model, minimizing the energy cost with respect to \(\Delta \phi'\) or \(\Delta \phi''\) could give a unique solution for any one specific geometry.
 
@@ -551,33 +555,31 @@ Using our definition in \autoref{eq:sc_density}, perturbing the RNAP bound regio
     \Delta \sigma_\text{RNAP} = \frac{\Delta \phi'' - \Delta \phi'}{\omega_0 |13 \text{bp}|} = \frac{-1.2 \cdot 2\pi}{\omega_0 \cdot 4.42 \text{nm}} = -0.92
     \label{eq:delta_sigma_rnap}
 \end{equation}
-This is a very large change in supercoiling density! This is expected, as complete melting/unwinding of the RNAP-bound region is a very large perturbation. In contrast, the change in supercoiling density either behind or forward of the RNAP is much smaller, and depends on the size of the leading or following region:
+This is a very large change in supercoiling density! To appreciate the magnitude of this change consider that changing the supercoiling across a 600 bp region (204 nm) is sufficient to reduce \(\Delta \sigma_b \sim 0.02\), at most where \(\Delta \phi' = 1.2 \cdot 2  \pi, \Delta \phi'' = 0\). This is expected, as complete melting/unwinding of the RNAP-bound region is a very large perturbation. In contrast, the change in supercoiling density either behind or forward of the RNAP is much smaller, and depends on the size of the leading or following region:
 
 \begin{equation}
 \Delta \sigma_b = \frac{1.2 \cdot 2 \pi}{\omega_0 |z' - z_{i-1}|}
 \end{equation}
-A 600 bp region (204 nm) is sufficient to reduce \(\Delta \sigma_b \sim 0.02\), even in the worst case scenario where \(\Delta \phi' = 1.2 \cdot 2  \pi, \Delta \phi'' = 0\).
 
-In practice, this worst case should only happen when \(\phi_{i-1}\) and \(\phi_i\) are separated by around this distance, and the RNAP binds right by one of the edges.
+
+In practice, this extreme scenario should only happen when \(\phi_{i-1}\) and \(\phi_i\) are separated by around this distance, and the RNAP binds right by one of the edges.
 
 \subsubsection{Model formulation: external supercoiling}
-We now need to find the energetic change of RNAP binding as a function of \(\sigma_0\), the initial supercoiling rate.
-
-We could do this in one of two ways; if we knew the torque response at each new LNC, averaged over the unwinding event, we could calculate it directly as
+We now need to find the energetic change of RNAP binding as a function of \(\sigma_0\), the initial supercoiling rate. We could do this in one of two ways. First, if we know the torque response at each new linking number constraint, averaged over the unwinding event, we could calculate it directly as:
 \begin{equation}
     \Delta E = \overline \tau' \Delta \phi' + \overline \tau'' \Delta \phi''
     \label{eq:direct_torque_calc}
 \end{equation}
 
-If we assume that the energy surface is locally linear, then we can relate the instantaneous torque to the change in energy. Marko defines:
+If we assume that the energy surface is locally linear, then we can relate the instantaneous torque to the change in energy:
 \[ \tau = \frac{1}{\omega_0} \frac{\partial S(\sigma)}{\partial \sigma}\]
-for \(S\) the energy per unit length. This means that:
+for \(S\), the energy per unit length. This means that:
 \begin{equation}
     \Delta E = (z_2 - z_1) \tau \omega_0 \Delta \sigma = (z_2 - z_1) \frac{\partial S}{\partial \sigma} \Delta \sigma
 \end{equation}
-By expanding the definition of \(\Delta \sigma\) for an arbitrary region bounded by LNC1 and LNC2 under this locally linear assumption, we can actually recover the normal energy-torque definition:
+By expanding the definition of \(\Delta \sigma\) for an arbitrary region bounded by linking number constraint 1 and linking number constraint 2 under this locally linear assumption, we can actually recover the normal energy-torque definition:
 \[\Delta E = (z_2 - z_1) \tau \omega_0 \frac{\Delta\phi_2 - \Delta\phi_1}{\omega_0 (z_2 - z_1)} = \tau (\Delta \phi_2 - \Delta\phi_1)\]
-Note that this implies that the energy cost of LNC rotation is independent of the region width; under a locally linear assumption, the energy cost depends only on the local instantaneous torque and the rotation angle.
+Note that this implies that the energy cost of linking number constraint rotation is independent of the region width; under a locally linear assumption, the energy cost depends only on the local instantaneous torque and the rotation angle.
 
 Looking at the free energy surface as a function of supercoiling in \autoref{fig:marko_energy_surface}, we see that a locally linear approximation should be relatively valid in the  ``exterior'' regions, but will be very incorrect if we apply this approximation for the RNAP-bound interior region where complete melting occurs.
 
@@ -589,7 +591,7 @@ Looking at the free energy surface as a function of supercoiling in \autoref{fig
 \end{figure}
 \subsubsection{Model formulation: internal melting}
 Our model derives energy differences based on the difference between the (assumed to be locally linear) energy cost of increasing supercoiling in the exterior regions,
-versus the integrated energy difference in the interior region. This means we model:
+versus the integrated energy difference in the interior region. We assume that the energy cost of increasing supercoiling in the exterior regions is locally linear.  This means we model:
 \[\Delta E = \tau(\sigma_0) \cdot 1.2 \cdot 2\pi + \int_{\sigma_0}^{\sigma_0 + \Delta \sigma_\text{RNAP}} \Delta z_\text{RNAP} \frac{\partial S}{\partial \sigma} d\sigma\]
 for \(\Delta z_\text{RNAP} = 13 \text{bp} = 4.42 \text{nm}\) and \(\Delta \sigma_\text{RNAP} = -0.92\) as in \autoref{eq:delta_sigma_rnap}.
 
@@ -622,9 +624,9 @@ for \(\sigma_2 = \sigma_1 + \Delta \sigma\). Then,
 
 This means that we do not have a strictly constant binding energy in the constant-torque region. However, if we plot the value of \(\Delta E\) across various supercoiling values, for the mean value of constants given in \autoref{tab:constants}, we see that the unwinding energy does remain relatively constant in the constant torque regime!
 
-The values for \(\Delta E\) are much larger than initially expected; Literature results show that the RNAP on-rate decreases roughly four-fold in the first single-phase region, which occurs for \(\Delta E \sim 4 \text{pN nm}\).
+The values for \(\Delta E\) are much larger than initially expected; Literature results show that the RNAP initiation rate decreases roughly four-fold in the first single-phase region, which occurs for \(\Delta E \sim 4 \text{pN nm}\).
 
-This discrepancy means that we expect our initial supercoiling-initiation model to be a useful way to upper-bound the effects of this behavior on the system. Realistically, secondary chromatin effects such as nucleosome displacement may allow for the high energy cost of adding polymerases to already supercoiled regions to be diminished.
+This discrepancy means that we expect our initial supercoiling-initiation model to be a useful way to upper-bound the effects of this behavior on the system. Potentially, secondary chromatin effects such as nucleosome displacement may reduce the high energy cost of adding polymerases to supercoiled regions.
 
 \begin{figure}[h]
     \centering
