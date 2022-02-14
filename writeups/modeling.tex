@@ -104,7 +104,7 @@ The second equation provides a torque balance between the DNA-mediated torques:
     \underbrace{\tau(\sigma(z_i, \phi_{i-1}, \phi_{i+1}))}_{\mathclap{\text{torque acting on RNAP}}} + \overbrace{\chi \frac{d\phi_i}{dt}}^{\mathclap{\text{supercoiling restoring force}}}= \underbrace{\eta x_i^n \frac{d\theta_i}{dt}}_{\mathclap{\text{nascent RNA drag}}}
 \label{eq:torque_balance}
 \end{equation}
-To develop a final system of ordinary differential equations, we can simplify through introduction of a few definitions. If we define equations for the torque response \(\tau(\sigma)\) as a function of the local supercoiling density and the RNAP velocity as a function of local torque \(\frac{dz}{dt} = v(\tau)\), then \cref{eq:linear_rotational_balance,eq:torque_balance} can be solved as in \textcite{sevierPropertiesGeneExpression2018}. Here, we use Marko's torque-response model to supercoiling which accounts for the thermodynamic behavior of both non-buckled, twisted DNA and buckled, plectonemic DNA \parencite{markoTorqueDynamicsLinking2007}. The resulting \(\tau(\sigma)\) functions exhibits a phase transition, where the torque response is nearly constant at intermediate values of \(\sigma\) where the DNA is transitioning from a locally-twisted phase to a plectonemic-phase.
+To develop a final system of ordinary differential equations, we can simplify through introduction of a few definitions. If we define equations for the torque response \(\tau(\sigma)\) as a function of the local supercoiling density and the RNAP velocity as a function of local torque \(\frac{dz}{dt} = v(\tau)\), then \Cref{eq:linear_rotational_balance,eq:torque_balance} can be solved as in \textcite{sevierPropertiesGeneExpression2018}. Here, we use Marko's torque-response model to supercoiling which accounts for the thermodynamic behavior of both non-buckled, twisted DNA and buckled, plectonemic DNA \parencite{markoTorqueDynamicsLinking2007}. The resulting \(\tau(\sigma)\) functions exhibits a phase transition, where the torque response is nearly constant at intermediate values of \(\sigma\) where the DNA is transitioning from a locally-twisted phase to a plectonemic-phase.
 
 For the velocity response of a polymerase experiencing a torque \(\tau_f\) in front and \(\tau_b\) behind, we model polymerase stalling as:
 \begin{equation}
@@ -156,8 +156,13 @@ When combined with discrete stochastic reactions, we can model a wide range of p
 \section{Results}
 
 \subsection{DNA supercoiling dynamics confer rapid, tunable coupling between adjacent genes in varied contexts}
-In order to characterize the behavior of supercoiling-mediated feedback, we simulated a series of simple two-gene circuits. In addition to being experimentally accessible, two-gene circuits allow us to test and understand the core design considerations---circuit syntax, relevant boundary conditions, and experimentally tunable model parameters---while still retaining interpretability.
-The first major prediction involves the
+In order to characterize the behavior of supercoiling-mediated feedback, we simulated a series of simple two-gene systems. In addition to being experimentally accessible, two-gene systems allow us to test and understand the core design considerations--- syntax, relevant boundary conditions, and experimentally tunable model parameters---while still retaining interpretability.
+
+We 
+A key variable to test is the 
+(\cref{fig:supercoiling_with_energy_cartoon}).
+
+In order to 
 
 \begin{itemize}
     \item Supercoiling allows for regulation on timescales otherwise inaccessible by synthetic systems.
@@ -198,31 +203,22 @@ The first major prediction involves the
 % TODO: Need a supplemental figure that shows both the behavior seen in Figure 1 for different values of sigma_2_coeff. Show both the energy landscape and the results of 1b.
 Moving forward, we used linear boundary conditions and supercoiling-dependent initiation, using a harmonic supercoiling-dependent initiation factor of \(\alpha = 0.02\).
 
-\subsection{Two-gene constructs show supercoiling-driven correlated behavior at the single cell level}
-While \cref{fig:top:orientation_bc_behavior} shows that supercoiling-driven feedback affects the mean ensemble behavior, we investigated the time-dependent behavior of individual simulations.
-First, we simulated the turn-on dynamics of the system in order to confirm that the final ensemble state is independent of initial condition.
-As shown in example simulations in \cref{fig:orientation_examples}, we started the system in four different initial states with only one of the genes active as a reporter (colored)---two corresponding to the convergent and divergent syntaxes and two for the tandem syntax where either the upstream or the downstream genes was active---and enabled transcription of the other (gray) gene after ten thousand seconds.
-We found that the system replicated the results of \cref{fig:top:orientation_bc_behavior}, with effectively identical mean ensemble behavior observed in \cref{fig:supp:fig2_ensemble_behavior}.
+\subsection{Supercoiling drives correlated behavior at the single cell level}
+To examine the effects of supercoiling-driven feedback beyond the mean ensemble behavior, we investigated the time-dependent behavior of individual simulations. To assess how the induction of transcription of the neighboring gene impacts dynamics between genes with different syntax,
+we initialized systems  with only the reporter gene being active. After a settling period, we induced transcription of the second gene to examine how transcription of a neighboring gene impacts dynamics of both genes. We verified that systems initialized with one active gene recapitulate the mean ensemble behavior at steady state \cref{fig:supp:fig2_ensemble_behavior}, indicating that dynamics converge to the same averages regardless of initial condition. We observe that dynamics vary extensively by syntax (\cref{fig:orientation_examples}). As expected from steady state, only divergent syntax supports the establishment of high expression from both genes. Tandem syntax results in biasing of expression towards the upstream gene with stochastic bursts of expression from the downstream gene. Convergent syntax results in anticorrelated dynamics. 
 
-As the noise behavior of a system is also important, we examined standard deviation in the reporter output as a function of time. Before the second gene is activated, all four initial starting states have a similar standard deviation (\cref{fig:noise_by_orientation}), showing that the syntax differences when only one gene is active minimally affects the spread in reporter output. However, after the second gene is activated, syntax strongly modulates the noise behavior of the reporter. In particular, a downstream reporter in the tandem syntax and the reporter in the convergent syntax show a strong \emph{increase} in noise levels while the upstream reporter in the tandem syntax and the reporter in the divergent syntax show a small but noticeable \emph{decrease} in noise levels. Comparing to \cref{fig:orientation_examples}, this change in noise is likely a result of changes in burst frequency. In the convergent case, the negative feedback caused by the accumulation of positive supercoiling between the promoters tends to favor either-or behavior. In contrast, the negative supercoiling that accumulates between the promoters in the divergent syntax supports additional polymerase loading that lengthens bursting of both genes.
+In order to further understand the correlative behavior between our genes, we computed the cross-correlation between the gene outputs following induction (\cref{fig:cross_correlation_cartoon}), normalized by the geometric mean of the auto-correlation of these outputs (\cref{sec:supp:cross_correlation}).  Strong negative or positive peaks evenly spaced around \(\tau = 0\) is a hallmark of periodic behavior, with the time offset of the peak encoding the phase offset between the signals.
+As seen in \cref{fig:orientation_cross_correlation}, the four conditions show starkly different time-dependent correlative behavior. The convergent syntax system displays the most striking correlative behavior is examining  with balanced induction between the two genes. The balanced convergent case shows a very large anti-correlation at time offset zero alongside positive correlation peaks at time offsets around \(\pm5000\) seconds. This combination suggests a periodic but out-of-phase behavior between the two genes with a period of around 5000 seconds. However, as the relative induction between the genes varies, the strong negative correlation at time offset zero remains without strong positive peaks, suggesting either-or behavior in the absence of periodic state-switching. In addition, strong correlative behavior can also be seen in the tandem case where the upstream gene is induced. For small relative upstream induction (purple curve), strong positive correlation is observed, suggesting that weak upstream induction can induce correlated gene output. However, at higher induction levels, this trend vanishes. Finally, the enhanced coordinated bursting in the divergent syntax, appearing as a positive correlation peak at time offset zero, is observed independent of relative induction levels.
+Taken as a whole, circuit syntax is a powerful tool for both introducing desirable and reducing undesirable time-dependent behaviors.
+
+As the noise impacts the properties of native and synthetic gene networks, we examined standard deviation in the reporter output as a function of time. Prior to induction of the second gene, all four systems display similar standard deviation (\cref{fig:noise_by_orientation}). Syntax differences emerge upon induction of the second gene. Syntax strongly modulates the noise behavior of the reporter. In particular, a downstream reporter in the tandem syntax and the reporter in the convergent syntax show a strong \emph{increase} in noise levels while the upstream reporter in the tandem syntax and the reporter in the divergent syntax show a small but noticeable \emph{decrease} in noise levels. Comparing to \cref{fig:orientation_examples}, this change in noise is likely a result of changes in burst frequency. In the convergent case, the negative feedback caused by the accumulation of positive supercoiling between the promoters tends to favor either-or behavior. In contrast, the negative supercoiling that accumulates between the promoters in the divergent syntax supports additional polymerase loading that lengthens bursting of both genes.
 % TODO: maybe a supp figure of burst time distributions?
 Analyzing the individual runs, we quantified individual promoter bursts as %TODO, some definition?
 As seen in \cref{fig:supp:burst_time_distribution}, the divergent condition showed the largest increase in burst frequency, with the convergent case showing the strongest decrease in burst frequency. %if true...
 
-In order to further understand the correlative behavior between our genes, we computed the cross-correlation between the gene outputs after the initial ten thousand second period (\cref{fig:cross_correlation_cartoon}), normalized by the geometric mean of the auto-correlation of these outputs. For two signals \(f(t)\) and \(g(t)\), the normalized cross-correlation at a certain time offset \(\tau\) is bounded between \(\pm1\) and can be thought of as the correlation coefficient between the unshifted version of one of the signals (\(f(t)\)) and the other signal shifted in the time axis by \(\tau\) (\(g(t + \tau)\)). Mathematically, we use:
-\begin{equation}
-\text{cross-correlation}(\tau) = \frac{(f \star g)(\tau)}{\sqrt{(f \star f)(0) \cdot (g \star g)(0)}}
-\end{equation}
-for
-\begin{equation}
-    (f \star g)(\tau) = \sum_t (f(t) - \langle f(t)\rangle)(g(t+\tau) - \langle g(t)\rangle)
-\end{equation}
-In fact, for \(\tau = 0\), the cross-correlation of the two signals is exactly the Pearson correlation coefficient. The shape of the cross-correlation curve can also reveal periodic and other time-dependent correlative behaviors. For example, strong negative or positive peaks evenly spaced around \(\tau = 0\) is a hallmark of periodic behavior, with the time offset of the peak encoding the phase offset between the signals.
 
-As seen in \cref{fig:orientation_cross_correlation}, the four conditions show starkly different time-dependent correlative behavior. The most striking correlative behavior is examining the convergent-syntax case with balanced induction between the two genes (blue curve). The balanced convergent case shows a very large anti-correlation at time offset zero alongside positive correlation peaks at time offsets around \(\pm5000\) seconds. This combination suggests a periodic but out-of-phase behavior between the two genes with a period of around 5000 seconds. However, as the relative induction between the genes varies, the strong negative correlation at time offset zero remains without strong positive peaks, suggesting either-or behavior in the absence of periodic state-switching. In addition, strong correlative behavior can also be seen in the tandem case where the upstream gene is induced. For small relative upstream induction (purple curve), strong positive correlation is observed, suggesting that weak upstream induction can induce correlated gene output. However, at higher induction levels, this trend vanishes. Finally, the enhanced coordinated bursting in the divergent syntax, appearing as a positive correlation peak at time offset zero, is observed independent of relative induction levels.
-Taken as a whole, circuit syntax is a powerful tool for both introducing desirable and reducing undesirable time-dependent behaviors.
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     {\includegraphics{figures/modeling_paper/fig_2.pdf}
     \phantomsubcaption\label{fig:orientation_examples}
@@ -240,7 +236,7 @@ Taken as a whole, circuit syntax is a powerful tool for both introducing desirab
 \subsection{Optimizing circuit syntax can support context-dependent toggle switch behavior and stability}
 With the supercoiling-feedback mechanisms characterized in \cref{fig:top:single_cell_noise_correlation}, we turned to investigating the behavior of a simple toggle switch under the additional control of supercoiling-mediated feedback.
 Toggle switches and higher-order synthetic circuits built from toggle switches have been well-characterized both theoretically \parencite{gardnerConstructionGeneticToggle2000} and experimentally.\parencite{zhuSyntheticMultistabilityMammalian2021} % TODO: more refs
-A straightforward toggle switch can be constructed with two genes that mutually repress each other; such a switch exhibits two stable basins.\cref{fig:toggle_cartoon} If modeled with a continuous, noise-free equations (e.g. where the number of mRNAs is assumed to be so large such that a continuum approximation holds), such a toggle switch never switches state if the initial condition lies in one of the basins \parencite{gardnerConstructionGeneticToggle2000}. If the mRNA concentration is instead treated discretely with a stochastic simulation, the system can escape the stable basin with a certain probability. How does supercoiling-mediated feedback interact with mutual repression, potentially tuning toggle switch behavior?
+A straightforward toggle switch can be constructed with two genes that mutually repress each other (\cref{fig:toggle_cartoon}); such a switch exhibits two stable basins. If modeled with a continuous, noise-free equations (e.g. where the number of mRNAs is assumed to be so large such that a continuum approximation holds), such a toggle switch never switches state if the initial condition lies in one of the basins \parencite{gardnerConstructionGeneticToggle2000}. If the mRNA concentration is instead treated discretely with a stochastic simulation, the system can escape the stable basin with a certain probability. How does supercoiling-mediated feedback interact with mutual repression, potentially tuning toggle switch behavior?
 
 To answer this, we used our model to simulate the behavior of a two-gene toggle switch placed in the same syntax as in \cref{fig:top:single_cell_noise_correlation}, where we abstracted the regulatory interaction using a Hill function to define the base promoter initiation rates:
 \begin{equation}
@@ -250,40 +246,57 @@ for \(r_0 = 1/160 \,\text{s}^{-1}\). The half-max value \(K\), the mRNA count at
 
 As seen in example simulation runs in \cref{fig:toggle_orientation_examples}, each syntax showed unique behaviors. The tandem-syntax toggle switch shows asymmetric stability, where the upstream gene state appearing much more stable than the downstream gene. This asymmetry arises from the sign of the supercoiling that accumulates at the promoter. When the upstream tandem gene is active, positive supercoiling accumulates at the downstream promoter, enhancing the negative regulation. However, when the downstream tandem gene is active, negative supercoiling accumulates at the upstream promoter, weakening the negative regulation. In the convergent syntax, activation of either gene causes positive supercoiling to enhance negative regulation. While this does enhance the stability of either state, a convergently-oriented toggle switch quickly switches states when the other gene stochastically activates, as the other gene can quickly generate positive supercoiling that enhances repression. Finally, due to the correlated bursting observed in the divergent syntax, a divergently-oriented toggle switch can quickly escape its initial stable state.
 
-We can visualize the
-We can visualize the relative behavior of.
+We can understand how an ensemble of toggle switches evolves over time by visualizing the distribution of mRNA counts over time. In \cref{fig:toggle_basin_stability_over_time}, the evolution of an ensemble of ten-thousand divergently-oriented toggle switches (with hill coefficient \(n = 2.0\)) is shown, from shortly after the second gene is enabled (at 10.2k seconds) to the end of the simulation time (at 25k seconds). Initially, nearly all of the simulations in the ensemble lie along the axis corresponding to the first gene. As simulation time progresses, the ensemble approaches and fluctuates around an equilibrium where half of the toggles are in each of the stable states.
 
+While \cref{fig:toggle_basin_stability_over_time}'s representation is instructive, we can more easily compare trends by computing the \emph{stable fraction} of the ensemble, defined as the fraction of simulations that have never left the initial starting basin (e.g. have never crossed the dotted line in \cref{fig:toggle_basin_stability_over_time}). Even though the equilibrium state of the ensemble has each stable basin occupied, the stable fraction monotonically decreases to zero with time, as simulations that cross into the other stable basin then return are no longer counted as stable. For \(n = 2.0\), the stable fraction for each of the four simulated ensembles is compared in \cref{fig:toggle_stable_frac_n_2.0}. Here, the asymmetry of the tandem toggle switch is evident, with the upstream gene having the highest stability and the downstream gene having the lowest stability. The convergent and divergent syntaxes exhibit intermediate stabilities, due to the influence of the accumulated positive and negative supercoiling at the promoter regions.
 
-\begin{itemize}
-\item Supercoiling-dependent feedback can enhance the ultrasensitive response of synthetic regulatory motifs (toggle switch stability).
-\end{itemize}
-
-\subsection{Tuning topoisomerase rate, something something to explain E/F/G, split into their own figure}
-
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
     {\includegraphics{figures/modeling_paper/fig_3.pdf}
-    \phantomsubcaption\label{fig:toggle_cartoon} % TODO: add this cartoon
+    \phantomsubcaption\label{fig:toggle_cartoon} %TODO: include the actual distance in bp's between the nodes
     \phantomsubcaption\label{fig:toggle_orientation_examples}
-    \phantomsubcaption\label{fig:toggle_basin_stability}
     \phantomsubcaption\label{fig:toggle_basin_stability_over_time}
-    \phantomsubcaption\label{fig:toggle_stable_frac_n_2.5}
+    \phantomsubcaption\label{fig:toggle_stable_frac_n_2.0}
+    }
+    \caption{Toggle switches implemented as a mutually-inhibitory pair of genes show context-dependent stability.
+    \subref{fig:toggle_cartoon} Simulated toggle switches are regulated both by a mutually-inhibitory interaction at the mRNA level and via supercoiling-dependent phenomena. 
+    \subref{fig:toggle_orientation_examples} Example simulation runs show syntax-dependent stability in toggle switches with a Hill coefficient of \(n = 2.0\). Each toggle simulation is started with only one of the genes (colored) active. After 10000 seconds, the second gene is activated.
+    \subref{fig:toggle_basin_stability_over_time} For the divergent syntax and a Hill coefficient of \(n = 2.0\), a density plot of the instantaneous mRNA counts of each simulation is shown at four selected time points. Initially after the second gene is enabled, most of the simulations remain in the starting basin. As time progresses, the ensemble reaches and fluctuates around an equilibrium where half of the population is in each toggle state basin.
+    \subref{fig:toggle_stable_frac_n_2.0} For a selected Hill coefficient of \(n = 2.0\), the stability of the four starting states of the system are plotted as a function of time.
+} \label{fig:top:toggle_switch}
+\end{figure}
+
+\subsection{Supercoiling-dependent feedback provides additional tuning of toggle switch stability and ultrasensitivity}
+While circuit syntax is a powerful tool for tuning toggle switch behavior, we investigated how other key toggle switch variables affected behavior (\cref{fig:toggle_tunability_cartoon}). One key tunable variable is the Hill coefficient that controls the ultrasensitivity of mutual inhibition. One key insight from theoretical models is that toggle switches only exhibit multiple stable states if \(n > 1.0\); for systems exhibiting linear or sub-linear inhibition behavior, two stable states do not exist. Experimental instantiations of toggle circuits often rely on multiple binding sites, inhibitor dimers, or other techniques that introduce ultrasensitivity.
+
+In order to determine if supercoiling-dependent feedback could cause or enhance ultrasensitivity, we simulated ensembles of ten-thousand simulations over a range of different Hill coefficients and circuit syntaxes. As shown in \cref{fig:toggle_basin_stability}, the ensemble of tandem-downstream and divergent syntaxes quickly escaped the starting basin for \(n = 1.0\), as would be predicted by a supercoiling-independent model. However, in the tandem-upstream and convergent syntaxes, a significant fraction of the ensembles remained stable over the 5000 second period after both genes were enabled, suggesting that supercoiling-dependent feedback in these syntaxes could replicate some of the ultrasensitivity required. With the exception of the exceptionally stable tandem-upstream syntax, the remaining syntaxes remained strongly tunable by the value of the Hill coefficient.
+
+We quantified the basin-escape behavior of these ensembles by computing a half life as the time it took to reach a stable fraction of \(0.5\). \Cref{fig:toggle_half_life_vs_hill} summarizes the trends observed in \cref{fig:toggle_basin_stability}. As the Hill coefficient increases from \(n = 1.0\), there is a general increase observed in the half-life, showing the expected outcome that stronger ultrasensitivity increases stability. At low Hill coefficient values, the divergent syntax behaves similarly to the tandem-upstream syntax, but the divergent syntax becomes noticeably more stable for \(n > 2.0\). Additionally, if a stable, symmetric toggle switch is desired, this work suggests that coupling the two genes in a convergent syntax should enhance stability for a system with a reasonable value of \(n\).
+
+For any stochastic simulation, the steady-state number of molecules can determine the stability of the system. As the reservoir of molecules grows larger, the size of fluctuations relative to the total concentration tends to decrease. For the toggle switches, we expect that as the number of steady-state mRNA molecules grows, we should eventually approach the theoretical, continuous solution that predicts that no state-switching occurs. To verify this, we modified the simulated mRNA degradation rate and plotted the resulting half-lives for \(n = 2.0\) in \cref{fig:toggle_half_life_vs_mRNA_deg}. As we simulate the mRNA degradation process as a first-order reaction term, scaling the mRNA degradation rate directly changes the mRNA counts in the system; e.g. while the ensembles in \cref{fig:top:toggle_switch} exhibited a steady-state counts around 20, ensembles with double the mRNA degradation rate have steady-state counts around 10. To properly compare ensembles computed at different mRNA degradation rates, we proportionally scaled \(K\), the half-max value controlling the shape of the repressive Hill function, with the degradation rate so that it matched the steady-state count value. We find in \cref{fig:toggle_half_life_vs_mRNA_deg} that as the mRNA degradation rate goes to zero (increasing the reservoir size), the half life for all syntaxes approaches the simulation upper-limit on the half life, demonstrating that expected result that state switching decreases with mRNA degradation rate. Interestingly, at higher mRNA degradation rates, the asymmetry in half lives between the tandem upstream and tandem downstream syntaxes decreases in size.
+
+We finally examined how the frequency of topoisomerase relaxation affected the stability of the toggles. As topoisomerase-driven relaxation reduces the amount of positive and negative supercoiling, changing the simulated topoisomerase activity rate can tune the amount of supercoiling-dependent feedback. However, we found that the toggle switch systems are relatively insensitive to a relatively large range of topoisomerase rates (\cref{fig:toggle_vs_topo_rate}). We attribute this insensitivity to the multi-timescale regulation that underlies the toggle switch behavior. While topoisomerase relaxation may briefly relieve accumulated supercoils and equalize supercoiling-dependent polymerase loading, the mRNA-mediated mutual repression functions on a longer time-scale and continues to stabilize the current toggle state. This multiscale regulation allows temporary disruptions at one of the timescales to tune circuit response, instead of destabilizing the entire circuit behavior.
+%TODO: do we want to call out any of the plots in {fig:toggle_vs_topo_rate} explicitly?
+
+
+\begin{figure}[htbp]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_4.pdf}
+    \phantomsubcaption\label{fig:toggle_tunability_cartoon}% For here, include a cartoon of how the mRNA pool size is affected by the mRNA degradation rate.
+    \phantomsubcaption\label{fig:toggle_basin_stability}
     \phantomsubcaption\label{fig:toggle_half_life_vs_hill}
     \phantomsubcaption\label{fig:toggle_half_life_vs_mRNA_deg}
     \phantomsubcaption\label{fig:toggle_vs_topo_rate}
     }
-\end{figure}
-\begin{figure}[h]
-    \ContinuedFloat
-    \caption{Toggle switches implemented as a mutually-inhibitory pair of genes show context-dependent stability.
+    \caption{
+        \subref{fig:toggle_tunability_cartoon} Toggle switch behavior can be tuned by changing circuit syntax, mRNA stability, or by modifying topoisomerase activity.
         \subref{fig:toggle_orientation_examples} Example simulation runs show syntax-dependent stability in toggle switches with a Hill coefficient of \(n = 2.0\). Each toggle simulation is started with only one of the genes (colored) active. After 10000 seconds, the second gene is activated.
         \subref{fig:toggle_basin_stability} The fraction of simulation runs that remain in the initial stable basin is plotted as a function of both the Hill coefficient in the mutually-inhibitory Hill function and circuit syntax. The tandem toggle switch shows asymmetric state stability, where the state with the upstream gene active is more stable than the opposite state.
         \subref{fig:toggle_basin_stability_over_time} For the divergent syntax and a Hill coefficient of \(n = 2.0\), a density plot of the instantaneous mRNA counts of each simulation is shown at four selected time points. Initially after the second gene is enabled, most of the simulations remain in the starting basin. As time progresses, the ensemble reaches and fluctuates around an equilibrium where half of the population is in each toggle state basin.
-        \subref{fig:toggle_stable_frac_n_2.5} For a selected Hill coefficient of \(n = 2.5\), the stability of the four starting states of the system are plotted as a function of time.
         \subref{fig:toggle_half_life_vs_hill} The half-life, defined as the time it takes half of the simulations in the ensemble to reach the other stability basin, is shown as a function of circuit syntax and Hill coefficent.
         \subref{fig:toggle_half_life_vs_mRNA_deg} The half life at different values of the mRNA degradation rate are shown. As the mRNA degradation rate principally sets the average number of mRNA molecules, high degradation rates lead to systems with low overall mRNA concentration and concordant stochastic instability.
         \subref{fig:toggle_vs_topo_rate} The stability of the four starting states of the toggle systems are plotted as a function of topoisomerase relaxation rate.
-    } \label{fig:top:toggle_switch}
+    } \label{fig:top:toggle_switch_tuning}
 \end{figure}
 
 \subsection{DNA supercoiling provides a mechanism to tightly coordinate expression of proximal segmentation genes}
@@ -302,9 +315,9 @@ Examining the time-dependent nature of the \textit{her1}-\textit{her7} system, w
 
 
 
-\begin{figure}[h]
+\begin{figure}[htbp]
     \centering
-    {\includegraphics{figures/modeling_paper/fig_4.pdf}
+    {\includegraphics{figures/modeling_paper/fig_5.pdf}
     \phantomsubcaption\label{fig:her1_her7_cartoon}
     \phantomsubcaption\label{fig:zinani_summary_cartoon}
     \phantomsubcaption\label{fig:zinani_mRNA_behavior}
@@ -313,7 +326,7 @@ Examining the time-dependent nature of the \textit{her1}-\textit{her7} system, w
     \phantomsubcaption\label{fig:zinani_cross_correlation}
     }
 \end{figure}
-\begin{figure}[h]
+\begin{figure}[htbp]
     \ContinuedFloat
     \caption{The experimental observations of the \textit{her1}-\textit{her7} clock circuit in zebrafish\parencite{zinaniPairingSegmentationClock2021} show good agreement with the predictions of supercoiling-mediated regulation.
         \subref{fig:her1_her7_cartoon} Schematic drawing of the mutually-inhibitory \textit{her1}-\textit{her7} system. Both a \textit{her1-her1} dimer or a \textit{hes6-her7} dimer can bind to either promoter, preventing transcription.
@@ -329,6 +342,9 @@ Examining the time-dependent nature of the \textit{her1}-\textit{her7} system, w
 \section{Discussion}
 
 \begin{itemize}
+    \item Something about insulators. Most synthetic circuits are currently arranged in a tandem syntax, but will use things like ribosome genes or CHS4 as `insulators'. Perhaps these are actually acting as barriers to supercoiling diffusion.
+    \item Toggle switch idea: supercoiling-dependent feedback gives a way to modulate behavior at a short time-scale. By combining it with higher time-scale regulatory mechanisms (e.g. long lived proteins), you could have a system both resilent to low-frequency and high-frequency noise.
+    \item Degradation rate \emph{is} a tunable function in experiments!
     \item Notably, the prediction that genes in a tandem syntax behave asymmetrically,....<something something Hox genes>.
     \item Something about nucleosome and how we are currently ignoring them, but they could be included.
 \end{itemize}
@@ -357,7 +373,7 @@ The authors acknowledge the MIT SuperCloud and Lincoln Laboratory Supercomputing
 
 \section{Model design, derivation, and extension}
 \label{sec:appendix:model}
-Our model builds upon several prior papers and relevant mathematical frameworks. To ensure access and provide definitions needed for implementation of our model, we have aggregated all of these relevant equations and simulation constants together. From this foundation, we discuss how we have extended our model to examine how DNA supercoiling generates coupling between proximal genes.
+Our model builds upon several prior papers and relevant mathematical frameworks. To ensure access and provide definitions needed for implementation of our model, we have aggregated all of these relevant equations and simulation constants together. From this foundation, we discuss how we have extended our model to examine how DNA supercoiling generates coupling between proximal genes. 
 
 \subsection{Supercoiling model}
 Why do we care about supercoiling at all? As noted in \textcite{markoTorqueDynamicsLinking2007}, at \(T = 300 \unit{K}\), \(k_b T = 4.1 \unit{pN nm}\), showing that
@@ -628,6 +644,9 @@ The values for \(\Delta E\) are much larger than initially expected; Literature 
 
 This discrepancy means that we expect our initial supercoiling-initiation model to be a useful way to upper-bound the effects of this behavior on the system. Potentially, secondary chromatin effects such as nucleosome displacement may reduce the high energy cost of adding polymerases to supercoiled regions.
 
+
+
+
 \begin{figure}[h]
     \centering
     \begin{subfigure}{.49\linewidth}
@@ -642,4 +661,15 @@ This discrepancy means that we expect our initial supercoiling-initiation model 
     \end{subfigure}
     \caption{Our model predictions appear to replicate literature results. Even though \(\Delta E\) is not strictly constant in the two-phase/constant-torque region, its numerical value is nearly constant in that region.}
 \end{figure}
+
+\subsection{Computing cross-correlation} \label{sec:supp:cross_correlation}
+For two signals \(f(t)\) and \(g(t)\), the normalized cross-correlation at a certain time offset \(\tau\) is bounded between \(\pm1\) and can be thought of as the correlation coefficient between the unshifted version of one of the signals (\(f(t)\)) and the other signal shifted in the time axis by \(\tau\) (\(g(t + \tau)\)). Mathematically, we use:
+\begin{equation}
+\text{cross-correlation}(\tau) = \frac{(f \star g)(\tau)}{\sqrt{(f \star f)(0) \cdot (g \star g)(0)}}
+\end{equation}
+for
+\begin{equation}
+    (f \star g)(\tau) = \sum_t (f(t) - \langle f(t)\rangle)(g(t+\tau) - \langle g(t)\rangle)
+\end{equation}
+In fact, for \(\tau = 0\), the cross-correlation of the two signals is exactly the Pearson correlation coefficient. The shape of the cross-correlation curve can also reveal periodic and other time-dependent correlative behaviors.
 \end{document}
