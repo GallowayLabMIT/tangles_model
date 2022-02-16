@@ -754,12 +754,15 @@ function build_problem(
     bcs::BoundaryParameters,
     dconfig::DiscreteConfig,
     t_end::Float64,
-    ics_discrete::Array{Int32,1})
+    ics_discrete::Array{Int32,1};
+    tsteps::Int64=-1)
+    extra_save_positions = (tsteps == -1 ? (true,true) : (false,false))
+    extra_tstops = (tsteps == -1 ? [] : range(0.0, t_end, length=tsteps))
     u0 = TanglesArray([0.0], ics_discrete, [], [], [])
     problem = ODEProblem(tangles_derivatives!, u0, [0.0, t_end], TanglesParams(
         InternalParameters(sim_params), bcs))
     termination_callback = ContinuousCallback(polymerase_termination_check, terminate_polymerase!,
-                                save_positions=(true,true))
+                                save_positions=extra_save_positions)
 
     # Calculate intergenic regions
     sorted_genes::Array{Gene} = sort(dconfig.genes, by=(g::Gene)->min(g.start, g.terminate))
@@ -785,8 +788,9 @@ function build_problem(
             (int)->update_discrete!(int, updates)
             )
         for (propensity, updates) in dconfig.discrete_reactions]...
-    )
-    return () -> solve(jump_problem, Tsit5(), callback=termination_callback, maxiters=3e5, dtmax=10, isoutofdomain=out_of_domain)
+    ,save_positions=extra_save_positions)
+    return () -> solve(jump_problem, Tsit5(), callback=termination_callback, maxiters=1e6, dtmax=10, isoutofdomain=out_of_domain,
+                       saveat=extra_tstops, tstops=extra_tstops)
 end
 
 function write_bcs(group::HDF5.Group, bcs::LinearBoundaryParameters)
@@ -894,7 +898,7 @@ function simulate_discrete_runs(
     t_steps::Int64,
     ics_discrete::Array{Int32,1},
     extra_metadata::Dict{String,Float64})
-    solver = build_problem(sim_params, bcs, dconfig, t_end, ics_discrete)
+    solver = build_problem(sim_params, bcs, dconfig, t_end, ics_discrete, tsteps=t_steps)
     simulate_discrete_runs(
         solver, filename, n_simulations, comment,
         sim_params, bcs, dconfig, t_end,
@@ -910,7 +914,7 @@ function simulate_discrete_runs(
     t_end::Float64,
     t_steps::Int64,
     extra_metadata::Dict{String,Float64})
-    solver = build_problem(sim_params, bcs, dconfig, t_end)
+    solver = build_problem(sim_params, bcs, dconfig, t_end, tsteps=t_steps)
     simulate_discrete_runs(
         solver, filename, n_simulations, comment,
         sim_params, bcs, dconfig, t_end,
