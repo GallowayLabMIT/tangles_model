@@ -3,4 +3,4 @@
 # from WITHIN the source directory
 source /etc/profile
 
-matlab -nodisplay -r 'zinani_unpaired ${LLSUB_RANK}; zinani_paired ${LLSUB_RANK}; exit'
+matlab -nodisplay -r 'zinani_unpaired(${LLSUB_RANK}); zinani_paired(${LLSUB_RANK}); exit'

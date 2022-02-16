@@ -13,8 +13,8 @@ Run summary:
 overall_start = time()
 
 base_rate = 1.0 / 120.0
-n_examples_per_node = 100
-n_repeats = 100
+n_examples_per_node = 10
+n_repeats = 1000
 i = 0
 
 function gen_sim_params(;
@@ -107,7 +107,7 @@ for _ in 1:n_repeats,
 
     if state == "uncoupled"
         # Free-end BCs, with 10 million basepairs total
-        endpoint = 10000000.0 * 0.34
+        endpoint = 1000000000.0 * 0.34
         bcs = LinearBoundaryParameters(endpoint, true, true)
         config = DiscreteConfig([
             # Genes are active when they have an unoccupied promoter site
@@ -146,12 +146,12 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.uncoupled", params, bcs, config, 15000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.uncoupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
         println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     elseif state == "fully-coupled"
         # Free-end BCs, with 10 million basepairs total
-        endpoint = 10000000.0 * 0.34
+        endpoint = 1000000000.0 * 0.34
         bcs = LinearBoundaryParameters(endpoint, true, true)
         config = DiscreteConfig([
             # Both genes are active, but only one of the mRNAs makes both proteins
@@ -190,7 +190,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.fully-coupled", params, bcs, config, 15000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.fully-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
         println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     elseif state == "tangles-coupled"
@@ -233,7 +233,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.tangles-coupled", params, bcs, config, 15000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.tangles-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
         println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     end
