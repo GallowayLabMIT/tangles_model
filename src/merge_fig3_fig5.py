@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 if __name__ == '__main__':
     i = 0
     with h5py.File(f'../output/modeling_paper/modeling_fig3_combined.h5','w') as outfile:
-        for f in pathlib.Path('../output/modeling_paper').glob(f'fig3*_sims*.h5'):
+        for f in pathlib.Path('../output/modeling_paper/to_merge').glob(f'fig3_sims*.h5'):
             outgroup = outfile.create_group(f.stem)
             with h5py.File(f, 'r') as infile:
                 for group in infile.keys():
@@ -16,7 +16,7 @@ if __name__ == '__main__':
                         i += 1
             print(f'Done with {f.stem}')
     with h5py.File(f'../output/modeling_paper/modeling_fig5_combined.h5','w') as outfile:
-        for f in pathlib.Path('../output/modeling_paper').glob(f'fig5*_sims*.h5'):
+        for f in pathlib.Path('../output/modeling_paper/to_merge').glob(f'fig5_sims*.h5'):
             outgroup = outfile.create_group(f.stem)
             with h5py.File(f, 'r') as infile:
                 for group in infile.keys():

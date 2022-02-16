@@ -1,0 +1,58 @@
+diff --git a/genepaired_scenario1.m b/zinani_paired.m
+index 63f818c..bcadc2d 100644
+--- a/genepaired_scenario1.m
++++ b/zinani_paired.m
+@@ -1,9 +1,11 @@
+-nrun=30;
++function zinani_paired(run_idx)
++nrun=1000;
+ RHO1=zeros([nrun,1]); PVAL1=zeros([nrun,1]);
+ RHO2=zeros([nrun,1]); PVAL2=zeros([nrun,1]);
+ RHO3=zeros([nrun,1]); PVAL3=zeros([nrun,1]);
+ 
+-for run=1:nrun 
++for subrun=0:(nrun-1)
++run = (run_idx * 1000) + subrun;
+ maxi=10000000; % Maximum number of iterations to run.
+ tend=240; % Maximum time for simulation.
+ format compact 
+@@ -210,30 +212,13 @@ for i=1:maxi-1 % Run the stochastic simulationm for max number of iterations.
+     mh1v=[mh1v mh1];
+     mh7v=[mh7v mh7];
+ end % for i=1:maxi-1,
+-
++interp_time = linspace(0,240,500);
++knot_dedup = [true (diff(Time) ~= 0)];
++interp_her1 = interp1(Time(knot_dedup), mh1v(knot_dedup), interp_time, 'previous');
++interp_her7 = interp1(Time(knot_dedup), mh7v(knot_dedup), interp_time, 'previous');
+ Data = [Time' mh1v' mh7v'];
+-DataTable=table(Time', mh1v', mh7v','VariableNames', {'Time', 'mh1','mh7'});
+-writetable(DataTable, strcat('GenePaired/GenePaired_Run', num2str(run),'.xlsx'),'WriteVariableNames', true);
+-
+-figure
+-plot(Time, mh1v,'b')
+-hold on
+-plot(Time, mh7v,'r')
+-legend('Her1','Her7')
+-xlabel('Time')
+-ylabel('#mRNA')
+-saveas(gcf,strcat(['GenePaired/GenePaired_Run', num2str(run)]),'jpg');
+-close(gcf);
+-
+-figure
+-histogram(mh1v)
+-saveas(gcf,strcat('GenePaired/GenePaired_Histogram', num2str(run)),'jpg');
+-close(gcf)
+-
+-[RHO1(run),PVAL1(run)] = corr(mh1v',mh7v','Type','Pearson');
+-[RHO2(run),PVAL2(run)] = corr(mh1v',mh7v','Type','Spearman');
+-
+-end
+-Stats=table(RHO1, PVAL1, RHO2, PVAL2,'VariableNames', {'Pearson', 'PearSig','Spearman','SpearSig'});
+-writetable(Stats, strcat('GenePaired/GenePaired_PearsonSpearman.xlsx'),'WriteVariableNames', true);
+-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
++DataTable=table(interp_time', interp_her1', interp_her7','VariableNames', {'Time', 'mh1','mh7'});
++writetable(DataTable, strcat('../output/modeling_paper/zinani/GenePaired_Run', num2str(run),'.csv'),'WriteVariableNames', true);
++
++end
++end
