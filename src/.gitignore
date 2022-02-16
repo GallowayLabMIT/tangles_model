@@ -1,0 +1,3 @@
+# Ignore Zinani derivatives for copyright (but keep diffs)
+zinani_unpaired.m
+zinani_paired.m

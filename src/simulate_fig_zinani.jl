@@ -1,7 +1,7 @@
 using TanglesModel
 node_idx = parse(Int64, ARGS[1])
 n_nodes = parse(Int64, ARGS[2])
-filename = "output/modeling_paper/fig4_sims-node" * lpad(node_idx, 5, "0") * ".h5"
+filename = "output/modeling_paper/fig_zinani_sims-node" * lpad(node_idx, 5, "0") * ".h5"
 
 println("""
 ======================================================
@@ -56,8 +56,8 @@ base_zinani_rates = Dict(
     "mRNA_synthesis" => 5, "protein_synthesis" => 5,
     "mRNA_degradation" => 0.2, "protein_degradation" =>0.3,
     "dimer_association" => 0.01, "dimer_dissociation" => 400)
-# Rescale to a base rate of 1/120.0 sec
-time_rescaled_rates = Dict(key => val / 120.0 / base_zinani_rates["mRNA_synthesis"] for (key, val) in base_zinani_rates)
+# Rescale Zinani rates to per-second instead of per-minute
+time_rescaled_rates = Dict(key => val / 60.0 for (key, val) in base_zinani_rates)
 print("Time rescaled rates:\n\t")
 println(time_rescaled_rates)
 # We have the following discrete components:
@@ -89,7 +89,7 @@ discrete_ic = convert(Array{Int32,1}, [0, 0, 0, 0, 100, 1, 1, 0, 0, 0, 0])
 
 
 for _ in 1:n_repeats,
-    temperature in [273.15 + 21.5, 273.15 + 28.0],
+    temperature in [273.15 + 21.5],
     state in ["uncoupled", "fully-coupled", "tangles-coupled"]
 
     # Distribute work between nodes
@@ -146,8 +146,8 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig4.uncoupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
-        println("Done with fig 4 with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.uncoupled", params, bcs, config, 15000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     elseif state == "fully-coupled"
         # Free-end BCs, with 10 million basepairs total
@@ -190,8 +190,8 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig4.fully-coupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
-        println("Done with fig 4 with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.fully-coupled", params, bcs, config, 15000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     elseif state == "tangles-coupled"
         endpoint = her1_space + her1_len + her1_her7_space + her7_len + her7_space
@@ -233,8 +233,8 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig4.tangles-coupled", params, bcs, config, 30000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
-        println("Done with fig 4 with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.tangles-coupled", params, bcs, config, 15000.0, 10000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     end
 end
