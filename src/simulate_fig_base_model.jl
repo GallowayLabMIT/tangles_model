@@ -1,7 +1,7 @@
 using TanglesModel
 node_idx = parse(Int64, ARGS[1])
 n_nodes = parse(Int64, ARGS[2])
-filename = "output/modeling_paper/fig1_sims-node" * lpad(node_idx, 5, "0") * ".h5"
+filename = "output/modeling_paper/fig_base_model_sims-node" * lpad(node_idx, 5, "0") * ".h5"
 
 println("""
 ======================================================
@@ -35,12 +35,12 @@ function gen_sim_params(;
 end
 
 
-# Fig 1c-e (+ supplemental fig): steady-state response of three constructs with four different boundary conditions.
+# steady-state response of three constructs with four different boundary conditions.
 for _ in 1:n_repeats,
     is_plasmid in [false, true],
     sc_initiation in [false, true],
     induction in exp10.(range(-2,0.5,length=30)),
-    σ2 in vcat([0.0], [0.02], exp10.(range(-3.0,-1.0,length=9)))
+    σ2 in [0.0, 0.01, 0.02, 0.025, 0.029, 0.03, 0.031, 0.0316, 0.035, 0.05, 0.1]
 
 
     # If we aren't doing sc-dependent initiation, skip if σ2 is not zero
@@ -62,16 +62,16 @@ for _ in 1:n_repeats,
     params = gen_sim_params(sc_dependent=sc_initiation, σ2_coeff = σ2)
 
     bcs = is_plasmid ? CircularBoundaryParameters(10000.0 * 0.34) : LinearBoundaryParameters(10000.0 * 0.34, false, false)
-    tandem_down = DiscreteConfig([UncoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate * induction, 1, 6000 * 0.34, 7000 * 0.34)])
+    tandem_down = DiscreteConfig([UncoupledGene(base_rate * induction, 1, 6000 * 0.34, 7000 * 0.34), UncoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34)])
     tandem_up =   DiscreteConfig([UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34)])
     convergent =  DiscreteConfig([UncoupledGene(base_rate * induction, 1, 3000 * 0.34, 4000 * 0.34), UncoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34)])
     divergent =   DiscreteConfig([UncoupledGene(base_rate * induction, 1, 4000 * 0.34, 3000 * 0.34), UncoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34)])
 
     start_time = time()
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1.tandem_downstream", params, bcs, tandem_down, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1.tandem_upstream", params, bcs, tandem_up, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1.convergent", params, bcs, convergent, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1.divergent", params, bcs, divergent, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.tandem_downstream", params, bcs, tandem_down, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.tandem_upstream", params, bcs, tandem_up, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.convergent", params, bcs, convergent, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.divergent", params, bcs, divergent, 15000.0)
     println("Done with fig 1c-d-e with params:\n\tis_plasmid: ", is_plasmid, "\n\tsc_dependent: ", sc_initiation, "\n\tinduction: ", induction, "\n\tσ2: ", σ2)
     println("Ran round in ", time() - start_time, " seconds")
 end
@@ -108,11 +108,11 @@ end
 
 # Simulate changing hyperparameter sensitivity
 for _ in 1:n_repeats,
-    drag_coeff in [1/100, 1/50, 1/20, 1/10, 1/5, 1/2],
-    drag_exp in [0.5, 0.8, 0.9, 1.0, 1.1, 1.2, 1.5, 2.0, 2.5, 3.0],
+    drag_coeff in [1/50, 1/20, 1/10, 1/5],
+    drag_exp in [0.5, 0.9, 1.0, 1.1, 1.5, 2.0, 3.0],
     stall_torque in [8, 10, 12, 14, 16],
     stall_width in [1, 3, 5],
-    σ2 in [0.0, 0.02],
+    σ2 in [0.02, 0.03],
     induction in exp10.(range(-2,0.5,length=10))
 
     if i % n_nodes != node_idx
