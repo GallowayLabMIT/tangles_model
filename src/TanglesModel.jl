@@ -745,8 +745,9 @@ function build_problem(
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
     dconfig::DiscreteConfig,
-    t_end::Float64)
-    build_problem(sim_params, bcs, dconfig, t_end, zeros(Int32,length(dconfig.genes)+ dconfig.n_other_discrete))
+    t_end::Float64;
+    tsteps::Int64=-1)
+    build_problem(sim_params, bcs, dconfig, t_end, zeros(Int32,length(dconfig.genes)+ dconfig.n_other_discrete), tsteps=tsteps)
 end
 
 function build_problem(
@@ -983,7 +984,7 @@ function simulate_summarized_runs(
     bcs::BoundaryParameters,
     dconfig::DiscreteConfig,
     t_end::Float64)
-    solver = build_problem(sim_params, bcs, dconfig, t_end)
+    solver = build_problem(sim_params, bcs, dconfig, t_end, tsteps=100)
     discrete_results = zeros(Int32, n_simulations, length(dconfig.genes) + dconfig.n_other_discrete)
     for i in 1:n_simulations
         try
