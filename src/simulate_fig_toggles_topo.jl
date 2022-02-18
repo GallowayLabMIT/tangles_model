@@ -1,7 +1,7 @@
 using TanglesModel
 node_idx = parse(Int64, ARGS[1])
 n_nodes = parse(Int64, ARGS[2])
-filename = "output/modeling_paper/fig3_sims-node" * lpad(node_idx, 5, "0") * ".h5"
+filename = "output/modeling_paper/fig_toggles_topo_sims-node" * lpad(node_idx, 5, "0") * ".h5"
 
 println("""
 ======================================================
@@ -34,12 +34,14 @@ function gen_sim_params(;
     )
 end
 
-# Figure 3: simulate the toggle switch in the three orientations, while changing
+# Figure 5: simulate the toggle switch in the three orientations, while changing
 # both the input hill coefficient and the size of the reservoir.
 for _ in 1:n_repeats,
-    hill_coeff in 1.0:0.1:5.0,
-    k_factor in exp10.(range(-1.0,1.0,length=5)),
-    mRNA_deg_rate_factor in exp10.(range(0.0,2.0,length=11))
+    hill_coeff in 1.0:0.25:5.0,
+    k_factor in exp10.(range(-1.0,1.0,length=3)),
+    mRNA_deg_rate_factor in exp10.(range(0.0,2.0,length=5)),
+    topo_factor in exp10.(range(-0.5,2.5,length=9)),
+    σ2 in [0.02, 0.025, 0.03]
 
     # Distribute work between nodes
     if i % n_nodes != node_idx
@@ -50,7 +52,8 @@ for _ in 1:n_repeats,
 
     params = gen_sim_params(
         sc_dependent = true,
-        σ2_coeff = 0.02,
+        σ2_coeff = σ2,
+        topo_rate_factor = topo_factor,
         mRNA_deg_rate_factor = mRNA_deg_rate_factor)
 
 
@@ -60,14 +63,14 @@ for _ in 1:n_repeats,
     basal_k = round(Int32, 15.0 / mRNA_deg_rate_factor)
     mRNA_ic = convert(Array{Int32,1}, [basal_k, 0])
     hill_func(inhibitor) = (k_val) / (k_val + inhibitor^hill_coeff)
-    extra_attrs = Dict("hill_coeff"=>hill_coeff, "K_val"=>k_val, "K_factor"=>k_factor, "mRNA_deg_factor"=>mRNA_deg_rate_factor)
+    extra_attrs = Dict("hill_coeff"=>hill_coeff, "K_val"=>k_val, "K_factor"=>k_factor, "mRNA_deg_factor"=>mRNA_deg_rate_factor, "topo_factor"=>topo_factor)
 
     # Generate genes with a 10000-second "burn-in" period
-    tandem =      DiscreteConfig([
+    tandem_reporter_up =      DiscreteConfig([
         CoupledGene(base_rate, 1, 3500 * 0.34, 4500 * 0.34, (mRNA,_)->hill_func(mRNA[2])),
         CoupledGene(base_rate, 2, 5500 * 0.34, 6500 * 0.34, (mRNA,t)->(t > 10000) * hill_func(mRNA[1]))
     ])
-    tandem_up =      DiscreteConfig([
+    tandem_reporter_down =      DiscreteConfig([
         CoupledGene(base_rate, 1, 5500 * 0.34, 6500 * 0.34, (mRNA,_)->hill_func(mRNA[2])),
         CoupledGene(base_rate, 2, 3500 * 0.34, 4500 * 0.34, (mRNA,t)->(t > 10000) * hill_func(mRNA[1]))
     ])
@@ -82,11 +85,12 @@ for _ in 1:n_repeats,
 
 
     start_time = time()
-    simulate_discrete_runs(filename, n_examples_per_node, "fig3.tandem", params, bcs, tandem, 25000.0, 500, mRNA_ic, extra_attrs)
-    simulate_discrete_runs(filename, n_examples_per_node, "fig3.tandem_up", params, bcs, tandem_up, 25000.0, 500, mRNA_ic, extra_attrs)
-    simulate_discrete_runs(filename, n_examples_per_node, "fig3.convergent", params, bcs, convergent, 25000.0, 500, mRNA_ic, extra_attrs)
-    simulate_discrete_runs(filename, n_examples_per_node, "fig3.divergent", params, bcs, divergent, 25000.0, 500, mRNA_ic, extra_attrs)
-    println("Done with fig 3 with params:\n\thill_coeff: ", hill_coeff, "\n\tK_factor: ", k_factor, "\n\tmRNA_deg_fac: ", mRNA_deg_rate_factor)
+    simulate_discrete_runs(filename, n_examples_per_node, "fig.toggles.topo.tandem_reporter_upstream", params, bcs, tandem_reporter_up, 25000.0, 500, mRNA_ic, extra_attrs)
+    simulate_discrete_runs(filename, n_examples_per_node, "fig.toggles.topo.tandem_reporter_downstream", params, bcs, tandem_reporter_down, 25000.0, 500, mRNA_ic, extra_attrs)
+    simulate_discrete_runs(filename, n_examples_per_node, "fig5.convergent", params, bcs, convergent, 25000.0, 500, mRNA_ic, extra_attrs)
+    simulate_discrete_runs(filename, n_examples_per_node, "fig5.divergent", params, bcs, divergent, 25000.0, 500, mRNA_ic, extra_attrs)
+    println("Done with toggles w/ topo with params:\n\thill_coeff: ", hill_coeff, "\n\tK_factor: ", k_factor, "\n\tmRNA_deg_fac: ", mRNA_deg_rate_factor, "\n\ttopo_fac: ", topo_factor)
     println("Ran round in ", time() - start_time, " seconds")
 end
-println("Done with ALL fig3 simulations; node shutting down after ", time() - overall_start, " seconds!")
+
+println("Done with ALL toggle topo simulations; node shutting down after ", time() - overall_start, " seconds!")
