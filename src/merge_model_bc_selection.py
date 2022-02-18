@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 if __name__ == '__main__':
     i = 0
     with h5py.File('../output/modeling_paper/modeling_model_bc_topo_selection_summaries.h5','w') as outfile:
-        for f in pathlib.Path('../output/modeling_paper').glob('fig1_sims*.h5'):
+        for f in pathlib.Path('../output/modeling_paper').glob('fig_base_model_sims*.h5'):
             outgroup = outfile.create_group(f.stem)
             with h5py.File(f, 'r') as infile:
                 for group in infile.keys():
