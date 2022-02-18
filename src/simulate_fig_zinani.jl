@@ -90,6 +90,7 @@ discrete_ic = convert(Array{Int32,1}, [0, 0, 0, 0, 100, 1, 1, 0, 0, 0, 0])
 
 for _ in 1:n_repeats,
     temperature in [273.15 + 21.5],
+    σ2 in [0.02, 0.025, 0.03],
     state in ["uncoupled", "fully-coupled", "tangles-coupled"]
 
     # Distribute work between nodes
@@ -102,7 +103,7 @@ for _ in 1:n_repeats,
     params = gen_sim_params(
         temperature = temperature,
         sc_dependent = true,
-        σ2_coeff = 0.02,
+        σ2_coeff = σ2,
         mRNA_deg_rate = time_rescaled_rates["mRNA_degradation"])
 
     if state == "uncoupled"
