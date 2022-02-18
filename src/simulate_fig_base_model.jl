@@ -72,7 +72,7 @@ for _ in 1:n_repeats,
     simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.tandem_reporter_downstream", params, bcs, tandem_reporter_down, 15000.0)
     simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.convergent", params, bcs, convergent, 15000.0)
     simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.divergent", params, bcs, divergent, 15000.0)
-    println("Done with fig 1c-d-e with params:\n\tis_plasmid: ", is_plasmid, "\n\tsc_dependent: ", sc_initiation, "\n\tinduction: ", induction, "\n\tσ2: ", σ2)
+    println("Done with base model sims with params:\n\tis_plasmid: ", is_plasmid, "\n\tsc_dependent: ", sc_initiation, "\n\tinduction: ", induction, "\n\tσ2: ", σ2)
     println("Ran round in ", time() - start_time, " seconds")
 end
 
@@ -98,11 +98,11 @@ for _ in 1:n_repeats,
     divergent =   DiscreteConfig([UncoupledGene(base_rate * induction, 1, 4000 * 0.34, 3000 * 0.34), UncoupledGene(base_rate, 2, (4000 + spacing) * 0.34, (5000 + spacing) * 0.34)])
 
     start_time = time()
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.tandem_reporter_upstream", params, bcs, tandem_reporter_up, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.tandem_reporter_downstream", params, bcs, tandem_reporter_down, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.convergent", params, bcs, convergent, 15000.0)
-    simulate_summarized_runs(filename, n_examples_per_node, "fig1f.spacing.divergent", params, bcs, divergent, 15000.0)
-    println("Done with fig 1f with params:\n\tis_plasmid: ", is_plasmid, "\n\tinduction: ", induction, "\n\tσ2: ", σ2)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.spacing.tandem_reporter_upstream", params, bcs, tandem_reporter_up, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.spacing.tandem_reporter_downstream", params, bcs, tandem_reporter_down, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.spacing.convergent", params, bcs, convergent, 15000.0)
+    simulate_summarized_runs(filename, n_examples_per_node, "fig.bm.spacing.divergent", params, bcs, divergent, 15000.0)
+    println("Done with base-model spacing sweep with params:\n\tis_plasmid: ", is_plasmid, "\n\tinduction: ", induction, "\n\tσ2: ", σ2)
     println("Ran round in ", time() - start_time, " seconds")
 end
 
