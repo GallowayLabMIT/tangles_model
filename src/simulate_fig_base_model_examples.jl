@@ -1,7 +1,7 @@
 using TanglesModel
 node_idx = parse(Int64, ARGS[1])
 n_nodes = parse(Int64, ARGS[2])
-filename = "output/modeling_paper/fig2_sims-node" * lpad(node_idx, 5, "0") * ".h5"
+filename = "output/modeling_paper/fig_bm_examples_sims-node" * lpad(node_idx, 5, "0") * ".h5"
 
 println("""
 ======================================================
@@ -13,9 +13,8 @@ Run summary:
 overall_start = time()
 
 base_rate = 1.0 / 120.0
-n_examples_per_node = 100
 n_full_examples_per_node = 50
-n_repeats = 1
+n_repeats = 5
 i = 0
 
 function gen_sim_params(;
@@ -35,10 +34,10 @@ function gen_sim_params(;
 end
 
 
-# Fig 2: simulate small number of examples of turning on genes in a single run
+# simulate small number of examples of turning on genes in a single run
 for _ in 1:n_repeats,
     induction in exp10.(range(-2,0.5,length=31)),
-    σ2 in [0.0, 0.02]
+    σ2 in [0.02, 0.025, 0.03]
 
     if i % n_nodes != node_idx
         global i += 1
@@ -52,17 +51,17 @@ for _ in 1:n_repeats,
 
     step_time = 10000.0
     coupling_func(_mRNA,t) = (t > step_time) ? induction : 0.0
-    tandem_down = DiscreteConfig([CoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34, (_,_)->1.0), CoupledGene(base_rate, 1, 6000 * 0.34, 7000 * 0.34, coupling_func)])
-    tandem_up =   DiscreteConfig([CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)])
+    tandem_reporter_up = DiscreteConfig([CoupledGene(base_rate, 2, 3000 * 0.34, 4000 * 0.34, (_,_)->1.0), CoupledGene(base_rate, 1, 6000 * 0.34, 7000 * 0.34, coupling_func)])
+    tandem_reporter_down =   DiscreteConfig([CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)])
     convergent =  DiscreteConfig([CoupledGene(base_rate, 1, 3000 * 0.34, 4000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 7000 * 0.34, 6000 * 0.34, (_,_)->1.0)])
     divergent =   DiscreteConfig([CoupledGene(base_rate, 1, 4000 * 0.34, 3000 * 0.34, coupling_func), CoupledGene(base_rate, 2, 6000 * 0.34, 7000 * 0.34, (_,_)->1.0)])
 
     start_time = time()
-    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.tandem_down", params, bcs, tandem_down, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
-    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.tandem_up", params, bcs, tandem_up, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
-    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.convergent", params, bcs, convergent, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
-    simulate_discrete_runs(filename, n_full_examples_per_node, "fig2.divergent", params, bcs, divergent, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
-    println("Done with fig2 with params:\n\tinduction: ", induction, "\n\t σ2: ", σ2)
+    simulate_discrete_runs(filename, n_full_examples_per_node, "fig.bm_examples.tandem_reporter_upstream", params, bcs, tandem_reporter_up, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
+    simulate_discrete_runs(filename, n_full_examples_per_node, "fig.bm_examples.tandem_reporter_downstream", params, bcs, tandem_reporter_down, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
+    simulate_discrete_runs(filename, n_full_examples_per_node, "fig.bm_examples.convergent", params, bcs, convergent, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
+    simulate_discrete_runs(filename, n_full_examples_per_node, "fig.bm_examples.divergent", params, bcs, divergent, 40000.0, 4000, Dict("step_time" => step_time, "step_induction" => induction))
+    println("Done with base-model examples with params:\n\tinduction: ", induction, "\n\t σ2: ", σ2)
     println("Ran round in ", time() - start_time, " seconds")
 end
 
