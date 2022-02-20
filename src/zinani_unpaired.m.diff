@@ -21,7 +21,7 @@ index 5bd2c1b..13147d9 100644
      mh7v=[mh7v mh7];
  end % for i=1:maxi-1,
 -
-+interp_time = linspace(0,240,500);
++interp_time = linspace(0,240,1000);
 +knot_dedup = [true (diff(Time) ~= 0)];
 +interp_her1 = interp1(Time(knot_dedup), mh1v(knot_dedup), interp_time, 'previous');
 +interp_her7 = interp1(Time(knot_dedup), mh7v(knot_dedup), interp_time, 'previous');
