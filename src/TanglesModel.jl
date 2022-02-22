@@ -20,7 +20,7 @@ export mRNA_Parameters, DEFAULT_mRNA_PARAMS
 export RNAP_Parameters, DEFAULT_RNAP_PARAMS, DNA_Parameters, DEFAULT_DNA_PARAMS
 export SimulationParameters, DEFAULT_SIM_PARAMS
 export LinearBoundaryParameters, CircularBoundaryParameters, UncoupledGene, MultiUncoupledGene, CoupledGene, MultiCoupledGene, DiscreteConfig
-export simulate_full_examples, simulate_summarized_runs, simulate_discrete_runs
+export simulate_full_examples, simulate_summarized_runs, simulate_discrete_runs, simulate_sc_rnap_dynamics
 
 function check_nonnegative(x, name)
     if x < 0
@@ -880,6 +880,226 @@ function simulate_full_examples(
     for _ in 1:n_simulations
         try
             postprocess_to_h5(filename, solver(), comment, dconfig, sim_params, bcs)
+        catch err
+            @warn "Solver failed!"
+        end
+    end
+end
+
+function interp_prev(x::AbstractVector{T}, xs::AbstractVector{T}, ys::AbstractVector{T}) where T<:Real
+    result = zeros(length(x))
+    for (i, x_val) = enumerate(x)
+        j = 1
+        while j <= length(xs) && xs[j] < x_val
+            j += 1
+        end
+        if j == 1
+            result[i] = ys[1]
+        else
+            result[i] = ys[j - 1]
+        end
+    end
+    return result
+end
+
+function interp_prev(x::AbstractVector{T}, xs::AbstractVector{T}, ys::AbstractMatrix{T}) where T<:Real
+    result = zeros(length(x), size(ys)[2])
+    for (i, x_val) = enumerate(x)
+        j = 1
+        while j <= length(xs) && xs[j] < x_val
+            j += 1
+        end
+        if j == 1
+            result[i,:] = ys[1,:]
+        else
+            result[i,:] = ys[j - 1,:]
+        end
+    end
+    return result
+end
+
+function calculate_σ_density(
+    u::TanglesArray,
+    bcs::LinearBoundaryParameters,
+    n_sc_steps::Int64,
+    params::InternalParameters
+)
+    if length(u.x) == 1
+        return zeros(n_sc_steps)
+    end
+
+    x = @view u.x[1:end-1]
+    n_polymerases = convert(Int, length(x) / 3)
+    rnap_loc = @view x[1:3:end]
+
+    return interp_prev(range(0, bcs.length, length=n_sc_steps),
+                       [0.0, rnap_loc...],
+                       [supercoiling_density(u,i,bcs,params.ω_0) for i in 1:(n_polymerases+1)])
+end
+function calculate_σ_density(
+    u::TanglesArray,
+    bcs::CircularBoundaryParameters,
+    n_sc_steps::Int64,
+    params::InternalParameters
+)
+    if length(u.u.x) == 1
+        return zeros(n_sc_steps)
+    end
+
+    x = @view val.u.x[1:end-1]
+    n_polymerases = convert(Int, length(x) / 3)
+    rnap_loc[index,1:n_polymerases] = @view x[1:3:end]
+    ϕ[index,1:n_polymerases] = @view x[2:3:end]
+
+    return interp_prev(range(0, bcs.length, length=n_sc_steps),
+                       [0.0, rnap_loc...],
+                       [supercoiling_density(val.u,i,bcs,params.ω_0) for i in 1:n_polymerases])
+end
+
+function findfirst_mismatched(x::AbstractArray{T}, y::AbstractArray{T}) where T<:Real
+    for i = 1:min(length(x), length(y))
+        if x[i] != y[i]
+            return i
+        end
+    end
+    return -1
+end
+
+function postprocess_sc_rnap_to_h5(
+    filename::String,
+    comment::String,
+    solution,
+    dconfig::DiscreteConfig,
+    n_sc_steps::Int64,
+    t_max::Float64,
+    n_time_steps::Int64,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    extra_metadata::Dict{String,Float64}
+)
+    params = InternalParameters(sim_params)
+    full_length = length(solution.t)
+    timesteps = copy(solution.t)
+    Interpolations.deduplicate_knots!(timesteps)
+    σ_density::Matrix{Float64} = zeros(full_length, n_sc_steps)
+    for (index, val) in enumerate(solution.u)
+        σ_density[index,:] = calculate_σ_density(val.u, bcs, n_sc_steps, params)
+    end
+    σ_interp = interp_prev(range(0.0, t_max, length=n_time_steps), timesteps, σ_density)
+    
+    event_times = zeros(0)
+    event_genes = zeros(UInt32, 0)
+    event_type  = zeros(Int32, 0)
+
+    last_t = solution.t[1]
+    last_u = solution.u[1]
+    for (t, u) = zip(solution.t[2:end], solution.u[2:end])
+        if t == last_t && length(last_u.u.x) != length(u.u.x)
+            prev = last_u.u.x[1:3:end]
+            curr = u.u.x[1:3:end]
+            rnap_idx = findfirst_mismatched(prev, curr)
+            # We detected a discrete event! Check if it is an addition or removal
+            if length(u.u.x) > length(last_u.u.x)
+                # Addition!
+                for gene in u.u.polymerase_gene[rnap_idx]
+                    push!(event_times, t)
+                    push!(event_genes, gene)
+                    push!(event_type, 1)
+                end
+            else
+                # Removal
+                for gene in last_u.u.polymerase_gene[rnap_idx]
+                    push!(event_times, t)
+                    push!(event_genes, gene)
+                    push!(event_type, -1)
+                end
+            end
+        end
+        last_t = t
+        last_u = u
+    end
+    # Record!
+    h5open(filename, "cw") do h5
+        run_idx = 1
+        while haskey(h5, "tangles_sc_event_run." * lpad(run_idx, 6, "0"))
+            run_idx += 1
+        end
+        g = create_group(h5, "tangles_sc_event_run." * lpad(run_idx, 6, "0"))
+        g["sc_times"] = Vector(range(0.0, t_max, length=n_time_steps))
+        g["sc_density"] = permutedims(σ_interp)
+        g["event_times"] = event_times
+        g["event_genes"] = event_genes
+        g["event_type"] = event_type
+        write_h5_attributes(g, comment, dconfig, sim_params, bcs)
+        for (key, val) in extra_metadata
+            attributes(g)[key] = val
+        end
+    end
+end
+
+# Simulate several runs, saving SC density across time alongside the discrete polymerase
+# addition/removal events
+function simulate_sc_rnap_dynamics(
+    filename::String,
+    n_simulations::Int64,
+    comment::String,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    dconfig::DiscreteConfig,
+    n_sc_steps::Int64,
+    t_end::Float64,
+    t_steps::Int64,
+    extra_metadata::Dict{String,Float64}
+)
+    simulate_sc_rnap_dynamics(
+        build_problem(sim_params, bcs, dconfig, t_end),
+        filename, n_simulations, comment, sim_params, bcs, dconfig,
+        n_sc_steps, t_end, t_steps, extra_metadata)
+end
+function simulate_sc_rnap_dynamics(
+    filename::String,
+    n_simulations::Int64,
+    comment::String,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    dconfig::DiscreteConfig,
+    n_sc_steps::Int64,
+    t_end::Float64,
+    t_steps::Int64,
+    ics_discrete::Array{Int32,1},
+    extra_metadata::Dict{String,Float64}
+)
+    simulate_sc_rnap_dynamics(
+        build_problem(sim_params, bcs, dconfig, t_end, ics_discrete),
+        filename, n_simulations, comment, sim_params, bcs, dconfig,
+        n_sc_steps, t_end, t_steps, extra_metadata)
+end
+function simulate_sc_rnap_dynamics(
+    solver,
+    filename::String,
+    n_simulations::Int64,
+    comment::String,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    dconfig::DiscreteConfig,
+    n_sc_steps::Int64,
+    t_end::Float64,
+    t_steps::Int64,
+    extra_metadata::Dict{String,Float64}
+)
+    for _ in 1:n_simulations
+        try
+            postprocess_sc_rnap_to_h5(
+                filename,
+                comment,
+                solver(),
+                dconfig,
+                n_sc_steps,
+                t_end,
+                t_steps,
+                sim_params,
+                bcs,
+                extra_metadata)
         catch err
             @warn "Solver failed!"
         end
