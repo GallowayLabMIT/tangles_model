@@ -1,0 +1,1461 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     63537,       1453]
+NotebookOptionsPosition[     62718,       1433]
+NotebookOutlinePosition[     63059,       1448]
+CellTagsIndexPosition[     63016,       1445]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"T", " ", "=", " ", 
+   RowBox[{"Quantity", "[", 
+    RowBox[{"300", ",", " ", "\"\<Kelvins\>\""}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"kb", " ", "=", " ", 
+   RowBox[{"Quantity", "[", "\"\<BoltzmannConstant\>\"", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"A", " ", "=", " ", 
+   RowBox[{"Quantity", "[", 
+    RowBox[{"50", ",", " ", "\"\<Nanometers\>\""}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"cUp", " ", "=", " ", 
+   RowBox[{"Quantity", "[", 
+    RowBox[{"95", ",", " ", "\"\<Nanometers\>\""}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"P", " ", "=", " ", 
+   RowBox[{"Quantity", "[", 
+    RowBox[{"24", ",", " ", "\"\<Nanometers\>\""}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"omega0", " ", "=", " ", 
+   RowBox[{"Quantity", "[", 
+    RowBox[{"1.85", ",", " ", 
+     RowBox[{"1", " ", "/", " ", "\"\<Nanometers\>\""}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"c", "=", " ", 
+   RowBox[{"UnitConvert", "[", 
+    RowBox[{
+     RowBox[{"kb", " ", "*", " ", "T", " ", "*", " ", "cUp", " ", "*", " ", 
+      RowBox[{"omega0", "^", "2"}]}], ",", " ", "\"\<Piconewtons\>\""}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"p", " ", "=", " ", 
+   RowBox[{"UnitConvert", "[", 
+    RowBox[{
+     RowBox[{"kb", " ", "*", " ", "T", " ", "*", " ", "P", " ", "*", " ", 
+      RowBox[{"omega0", "^", "2"}]}], ",", " ", "\"\<Piconewtons\>\""}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"f", " ", "=", " ", 
+   RowBox[{"Quantity", "[", 
+    RowBox[{"1", ",", " ", "\"\<Piconewtons\>\""}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"g", " ", "=", " ", 
+   RowBox[{"UnitConvert", "[", 
+    RowBox[{
+     RowBox[{"f", " ", "-", " ", 
+      RowBox[{"Sqrt", "[", 
+       RowBox[{"kb", " ", "*", " ", "T", " ", "*", " ", 
+        RowBox[{"f", " ", "/", " ", "A"}]}], "]"}]}], ",", " ", 
+     "\"\<Piconewtons\>\""}], "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"cs", " ", "=", " ", 
+   RowBox[{"UnitConvert", "[", 
+    RowBox[{
+     RowBox[{"c", " ", 
+      RowBox[{"(", 
+       RowBox[{"1", " ", "-", " ", 
+        RowBox[{
+         RowBox[{"cUp", " ", "/", " ", 
+          RowBox[{"(", 
+           RowBox[{"4", "A"}], ")"}]}], " ", "*", " ", 
+         RowBox[{"Sqrt", "[", 
+          RowBox[{"kb", " ", "*", " ", 
+           RowBox[{"T", " ", "/", " ", 
+            RowBox[{"(", 
+             RowBox[{"A", " ", "*", " ", "f"}], ")"}]}]}], "]"}]}]}], ")"}]}],
+      ",", " ", "\"\<Piconewtons\>\""}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"tau0", " ", "=", " ", 
+   RowBox[{"UnitConvert", "[", 
+    RowBox[{
+     RowBox[{"Sqrt", "[", 
+      RowBox[{"2", " ", "*", " ", "p", " ", "*", " ", 
+       RowBox[{"g", " ", "/", " ", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"omega0", "^", "2"}], " ", "*", " ", 
+          RowBox[{"(", 
+           RowBox[{"1", " ", "-", " ", 
+            RowBox[{"p", " ", "/", " ", "cs"}]}], ")"}]}], ")"}]}]}], "]"}], 
+     ",", " ", 
+     RowBox[{"\"\<Piconewtons\>\"", " ", "*", " ", "\"\<Nanometers\>\""}]}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"tauS", " ", "=", "  ", 
+   RowBox[{"UnitConvert", "[", 
+    RowBox[{
+     RowBox[{"cs", " ", "/", " ", "omega0"}], ",", " ", 
+     RowBox[{"\"\<Piconewtons\>\"", " ", "*", " ", "\"\<Nanometers\>\""}]}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"tauP", " ", "=", "  ", 
+   RowBox[{"UnitConvert", "[", 
+    RowBox[{
+     RowBox[{"p", " ", "/", " ", "omega0"}], ",", " ", 
+     RowBox[{"\"\<Piconewtons\>\"", " ", "*", " ", "\"\<Nanometers\>\""}]}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"sigmaS", " ", "=", " ", 
+   RowBox[{
+    RowBox[{"1", " ", "/", " ", "cs"}], " ", "*", " ", 
+    RowBox[{"Sqrt", "[", 
+     RowBox[{"2", " ", "*", " ", "p", " ", "*", " ", 
+      RowBox[{"g", " ", "/", " ", 
+       RowBox[{"(", 
+        RowBox[{"1", " ", "-", " ", 
+         RowBox[{"p", " ", "/", " ", "cs"}]}], ")"}]}]}], "]"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"sigmaP", " ", "=", " ", 
+   RowBox[{
+    RowBox[{"1", " ", "/", " ", "p"}], " ", "*", " ", 
+    RowBox[{"Sqrt", "[", 
+     RowBox[{"2", " ", "*", " ", "p", " ", "*", " ", 
+      RowBox[{"g", " ", "/", " ", 
+       RowBox[{"(", 
+        RowBox[{"1", " ", "-", " ", 
+         RowBox[{"p", "/", "cs"}]}], ")"}]}]}], "]"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"zRNAP", "=", 
+   RowBox[{"Quantity", "[", 
+    RowBox[{"4.42", ",", " ", "\"\<Nanometers\>\""}], "]"}]}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.8044457042533736`*^9, 3.8044457520316114`*^9}, {
+   3.8044458070800123`*^9, 3.8044459223526*^9}, 3.804446338206108*^9, {
+   3.8044465090129137`*^9, 3.8044465233122487`*^9}, {3.804446801268367*^9, 
+   3.8044468232739973`*^9}, {3.8044469102458196`*^9, 
+   3.8044469182648973`*^9}, {3.8044470063414555`*^9, 
+   3.8044470688095417`*^9}, {3.804447213216194*^9, 3.8044472197194433`*^9}},
+ CellLabel->"In[21]:=",ExpressionUUID->"1d786fb1-70b1-4a6a-a7f7-d750d14f07ae"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"torque", "[", "sigma_", "]"}], ":=", 
+  RowBox[{"Piecewise", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"tauS", "*", "sigma"}], ",", 
+       RowBox[{
+        RowBox[{"Abs", "[", "sigma", "]"}], " ", "<", " ", 
+        RowBox[{"Abs", "[", "sigmaS", "]"}]}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"tau0", " ", "*", " ", 
+        RowBox[{"Sign", "[", "sigma", "]"}]}], " ", ",", " ", 
+       RowBox[{
+        RowBox[{"Abs", "[", "sigmaS", "]"}], " ", "\[LessEqual]", " ", 
+        RowBox[{"Abs", "[", "sigma", "]"}], " ", "\[LessEqual]", " ", 
+        RowBox[{"Abs", "[", "sigmaP", "]"}]}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"tauP", "*", "sigma"}], ",", 
+       RowBox[{
+        RowBox[{"Abs", "[", "sigmaP", "]"}], "\[LessEqual]", " ", 
+        RowBox[{"Abs", "[", "sigma", "]"}]}]}], "}"}]}], "}"}], 
+   "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"S", "[", "sigma_", "]"}], ":=", 
+  RowBox[{"Piecewise", "[", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"-", "g"}], "+", 
+        RowBox[{
+         RowBox[{"cs", "/", "2"}], "*", 
+         RowBox[{"sigma", "^", "2"}]}]}], ",", 
+       RowBox[{
+        RowBox[{"Abs", "[", "sigma", "]"}], " ", "<", " ", 
+        RowBox[{"Abs", "[", "sigmaS", "]"}]}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "g"}], "/", 
+         RowBox[{"(", 
+          RowBox[{"1", "-", 
+           RowBox[{"p", "/", "cs"}]}], ")"}]}], "+", 
+        RowBox[{
+         RowBox[{"Sqrt", "[", 
+          RowBox[{"2", "p", "*", 
+           RowBox[{"g", "/", 
+            RowBox[{"(", 
+             RowBox[{"1", "-", 
+              RowBox[{"p", "/", "cs"}]}], ")"}]}]}], "]"}], "*", 
+         RowBox[{"Abs", "[", "sigma", "]"}]}]}], " ", ",", " ", 
+       RowBox[{
+        RowBox[{"Abs", "[", "sigmaS", "]"}], " ", "\[LessEqual]", " ", 
+        RowBox[{"Abs", "[", "sigma", "]"}], " ", "\[LessEqual]", " ", 
+        RowBox[{"Abs", "[", "sigmaP", "]"}]}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"p", "/", "2"}], "*", 
+        RowBox[{"sigma", "^", "2"}]}], ",", 
+       RowBox[{
+        RowBox[{"Abs", "[", "sigmaP", "]"}], "\[LessEqual]", " ", 
+        RowBox[{"Abs", "[", "sigma", "]"}]}]}], "}"}]}], "}"}], 
+   "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"bindingEnergy", "[", "sigma_", "]"}], ":=", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"torque", "[", "sigma", "]"}], "*", "1.2", "*", "2", "Pi"}], "-", 
+   RowBox[{"zRNAP", "*", 
+    RowBox[{"S", "[", "sigma", "]"}]}]}]}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"bindingEnergyNoBubble", "[", "sigma_", "]"}], ":=", 
+  RowBox[{
+   RowBox[{"torque", "[", "sigma", "]"}], "*", "1.2", "*", "2", 
+   "Pi"}]}]}], "Input",
+ CellChangeTimes->{{3.80444592397037*^9, 3.8044460823777685`*^9}, {
+  3.804446541560236*^9, 3.804446546942179*^9}, {3.804447193393383*^9, 
+  3.8044472368924665`*^9}, {3.8049563223259354`*^9, 3.8049563245566072`*^9}, {
+  3.8049564155883894`*^9, 3.804956416197111*^9}, {3.804956611572821*^9, 
+  3.8049566218010063`*^9}},
+ CellLabel->"In[42]:=",ExpressionUUID->"a50316f4-8b49-4e00-930b-2c05fa05c2b5"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"Plot", "[", 
+  RowBox[{
+   RowBox[{"torque", "[", "sigma", "]"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"sigma", ",", 
+     RowBox[{"-", ".1"}], ",", ".1"}], "}"}], ",", 
+   RowBox[{"AxesLabel", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{"\"\<\[Sigma]\>\"", ",", "\"\<Torque (pN nm)\>\""}], "}"}]}], 
+   ",", " ", 
+   RowBox[{"BaseStyle", "\[Rule]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"FontSize", "\[Rule]", "16"}], ",", " ", 
+      RowBox[{"FontFamily", "\[Rule]", "\"\<Helvetica Neue\>\""}], ",", " ", 
+      RowBox[{"FontColor", "\[Rule]", "Black"}]}], "}"}]}], ",", 
+   RowBox[{"PlotStyle", "\[Rule]", 
+    RowBox[{"Thickness", "[", ".01", "]"}]}]}], "]"}], "\[IndentingNewLine]", 
+ RowBox[{"ePlot", " ", "=", " ", 
+  RowBox[{"Plot", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"UnitConvert", "[", 
+       RowBox[{
+        RowBox[{"bindingEnergy", "[", "sigma", "]"}], ",", " ", 
+        RowBox[{
+        "\"\<Piconewtons\>\"", " ", "*", " ", "\"\<Nanometers\>\""}]}], "]"}],
+       ",", 
+      RowBox[{"UnitConvert", "[", 
+       RowBox[{
+        RowBox[{"bindingEnergyNoBubble", "[", "sigma", "]"}], ",", " ", 
+        RowBox[{
+        "\"\<Piconewtons\>\"", " ", "*", " ", "\"\<Nanometers\>\""}]}], 
+       "]"}]}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"sigma", ",", 
+      RowBox[{"-", ".1"}], ",", ".1"}], "}"}], ",", 
+    RowBox[{"AxesLabel", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{
+      "\"\<\!\(\*SubscriptBox[\(\[Sigma]\), \(0\)]\)\>\"", ",", 
+       "\"\<\[CapitalDelta]E (pN nm)\>\""}], "}"}]}], ",", 
+    RowBox[{"PlotLegends", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Bubble\>\"", ",", "\"\<No bubble\>\""}], "}"}]}]}], 
+   "]"}]}], "\[IndentingNewLine]", 
+ RowBox[{"Table", "[", 
+  RowBox[{
+   RowBox[{"UnitConvert", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"sigma", ",", " ", 
+       RowBox[{"bindingEnergy", "[", "sigma", "]"}], ",", " ", 
+       RowBox[{"bindingEnergyNoBubble", "[", "sigma", "]"}]}], "}"}], ",", 
+     " ", 
+     RowBox[{"\"\<Piconewtons\>\"", " ", "*", " ", "\"\<Nanometers\>\""}]}], 
+    "]"}], ",", " ", 
+   RowBox[{"{", 
+    RowBox[{"sigma", ",", 
+     RowBox[{"-", "0.2"}], ",", "0.2", ",", " ", "0.01"}], "}"}]}], 
+  "]"}]}], "Input",
+ CellChangeTimes->{{3.804446084503787*^9, 3.804446091982396*^9}, {
+   3.8044462118309236`*^9, 3.8044462124989576`*^9}, 3.804446324674734*^9, {
+   3.804446555306432*^9, 3.80444655852367*^9}, {3.8044468597075443`*^9, 
+   3.8044468622111545`*^9}, {3.8044470832668734`*^9, 
+   3.8044470845197296`*^9}, {3.8044471855313225`*^9, 
+   3.8044471927294936`*^9}, {3.804447240316039*^9, 3.804447265066242*^9}, 
+   3.8044473488349524`*^9, {3.804447451475877*^9, 3.804447503775443*^9}, {
+   3.8044475522906094`*^9, 3.8044475524885583`*^9}, {3.804447996010234*^9, 
+   3.8044481075831757`*^9}, {3.804448553219966*^9, 3.8044485602572236`*^9}, {
+   3.804956632731445*^9, 3.8049566419093733`*^9}, {3.804956747297185*^9, 
+   3.804956775944278*^9}, {3.804956820457183*^9, 3.8049568315584145`*^9}, {
+   3.8263028787742395`*^9, 3.8263029168669453`*^9}, {3.8263029992148666`*^9, 
+   3.8263031610521135`*^9}, {3.8263032703285065`*^9, 
+   3.8263032712518444`*^9}, {3.8549153704381275`*^9, 
+   3.8549153792527933`*^9}, {3.8549154191254525`*^9, 
+   3.8549154882902794`*^9}, {3.85491569188684*^9, 3.8549157239495325`*^9}, {
+   3.8549157558136387`*^9, 
+   3.8549157563688264`*^9}},ExpressionUUID->"73c171db-8d11-4541-9cff-\
+323e1a3533f7"],
+
+Cell[BoxData[
+ GraphicsBox[{{{{}, {}, 
+     TagBox[
+      {RGBColor[0.368417, 0.506779, 0.709798], Thickness[0.01], Opacity[1.], 
+       LineBox[CompressedData["
+1:eJwB0QIu/SFib1JlAgAAACwAAAACAAAAJcwRiJmZub/aI7IG52MywFqU6WyU
+lbm/oLyRvwNhMsCOXMFRj5G5v2VVcXggXjLA9uxwG4WJub/whjDqWVgywMYN
+0K5webm/BuquzcxMMsBmT47VR1m5vzGwq5SyNTLAqNIKI/YYub+KPKUifgcy
+wCzZA75SmLi/O1WYPhWrMcB33W/uZ4G3v/iT+K634jDASzMm3fh8tr/Qe4VC
+oScwwJG8Np6lfbW/WVxcq2zgLsCU5iTBUXm1v1hyufU02i7AlhAT5P10tb9W
+iBZA/dMuwJpk7ylWbLW/UbTQ1I3HLsCiDKi1Blu1v0cMRf6uri7AtFwZzWc4
+tb82vC1R8XwuwNb8+/sp87S/Ehz/9nUZLsDYJuoe1u60vxAyXEE+Ey7A2lDY
+QYLqtL8NSLmLBg0uwN6ktIfa4bS/CHRzIJcALsDnTG0Ti9C0vwDM50m45y3A
++JzeKuyttL/ue9Cc+rUtwBo9wVmuaLS/ytuhQn9SLcBikKhrpGS0vxBXGMax
+TC3AquOPfZpgtL9W0o5J5EYtwDuKXqGGWLS/5Mh7UEk7LcBc1/voXki0v/61
+VV4TJC3An3E2eA8otL80kAl6p/UswOjEHYoFJLS/fAuA/dnvLMAwGAWc+x+0
+v8KG9oAM6izAwL7Tv+cXtL9OfeOHcd4swOILcQfAB7S/amq9lTvHLMAkpquW
+cOezv55EcbHPmCzAbPmSqGbjs7/kv+c0ApMswLRMerpc37O/KjteuDSNLMBF
+80jeSNezv7gxS7+ZgSzAjkYw8D7Ts78ArcFCzHsswNaZFwI1z7O/Rig4xv51
+LMBmQOYlIcezv9IeJc1jaizArpPNNxfDs78YmptQlmQswPfmtEkNv7O/YBUS
+1MheLMBAOpxbA7uzv6iQiFf7WCzAiI2Dbfm2s7/uC//aLVMswKE8yzYJtrO/
+Ehs0u9RRLMDBuXcv
+        "]], LineBox[CompressedData["
+1:eJxTTMoPSmViYGAQAWIQfVkz1Hnt2s37v/f/LLnsrXNg5S2FrReXIfhvSqJd
+mtoQfD3+aZeN0hD8m8V7eZVvbYLzW248cRf2Q/B9rvb28VtvhPPnKTdObrfa
+AOenXrqjut1jHZy/iMFnYZjjGjj/8NT8g7ouq+D8TMn2a3ukV8D5yg7GGc4S
+y+D8pNDL7xpfLobz2y6qS/04shDOr36o2HK6az6c/+XP7b1iprPh/CNrfa8b
+68+E86fG7f8QoDkdzr+72etQvRyCDwAUpLzC
+        "]], LineBox[CompressedData["
+1:eJwB4QIe/SFib1JlAgAAAC0AAAACAAAAoWhy9A/9lr8oy8NRTjcswIXlGOq0
+9Ja/4rhH3gwtLMCAEoySK+OWvxQXM6qGFyzAej//OqLRlr9FdR52AAIswHVs
+cuMYwJa/d9MJQnrsK8Bqxlg0Bp2Wv9mP4NltwSvAZfPL3HyLlr8L7sul56sr
+wGAgP4XzeZa/PUy3cWGWK8BVeiXW4FaWv6AIjglVayvAQC7yd7sQlr9mgTs5
+PBUrwOv9JP8l+JS/f2Tx99i8KcBBnYoN+8aSv7EqXXUSDCfAa1N95yjyjL9s
+OWJNmsMhwKT4N6Y56oS/9+a0GcKrGcDir4RxVGp4v5h301Oi9w3AOA599uJP
+YL8tnRMkeAX0vwAAAAAAAMi4Zlp1smqjkzwdqpFV0SJfPx+iE3atG/M/Auhn
+fpoTeT9Ir5RlZscOQG4mY2Fim4Q/FnApOf1KGUDHnsKvF1qNP+kTItdiAyJA
+yD2oNff3kj9w7YE0MkgnQGm0Oif7B5M/KaBZdtpbJ0AKK80Y/xeTP+JSMbiC
+bydATBjy+wY4kz9UuOA705YnQNDyO8IWeJM/N4M/Q3TlJ0DXp89ONviTP/0Y
+/VG2gihA5hH3Z3X4lD+JRHhvOr0pQIeIiVl5CJU/QvdPseLQKUAo/xtLfRiV
+P/upJ/OK5ClAauxALoU4lT9tD9d22wsqQO7GivSUeJU/UNo1fnxaKkD1ex6B
+tPiVPxZw84y+9ypAlvKwcrgIlj/PIsvOZgsrQDZpQ2S8GJY/htWiEA8fK0B4
+VmhHxDiWP/g6UpRfRitA/DCyDdR4lj/cBbGbAJUrQJ2nRP/XiJY/lLiI3aio
+K0A+Htfw25iWP01rYB9RvCtAgAv80+O4lj+/0A+joeMrQCGCjsXnyJY/eIPn
+5En3K0DC+CC369iWPzE2vybyCixAY2+zqO/olj/q6JZomh4sQATmRZrz+JY/
+optuqkIyLEChaHL0D/2WPyjLw1FONyxApaFbfA==
+        "]], LineBox[CompressedData["
+1:eJxTTMoPSmViYGBQAGIQfXez16F6uen23/t/llz21nHoymYz4NNF8Lc7fUzM
+sUPwBT4eO6qRiOBnzZ+j+bQZwZf94/4x9iSCfyHi845rfDPgfDMhL48TMxH8
+uacXXN+pMhNhnp3ftzlWsxDqN/4WaQiYDefv/nzwql/4XDjfwaxjmmzcfDj/
+wLfQ50tXL4Tzbz8u5mu9vBjOf6T7d0fOtaVwfkrnpLw5LCvg/EuOk5df4V0F
+58dMvm99lWcNnJ/4zfy2rPk6OF/z9t86c7kNcP79w09FW8w2wvnKlcW3tnhu
+gvMZtKfG8p9C8O/e2fYg02sznJ/DZcBkmovg/zZfqcwwAcGPa2Z/s2kGgn/o
+XOqW1IUIfsmXKRL7lyL4alJHaiRWIfiXNUOd165F8AH0Ug4t
+        "]], LineBox[CompressedData["
+1:eJwBwQI+/SFib1JlAgAAACsAAAACAAAAoTzLNgm2sz8SGzS71FEsQDyLUakk
+t7M/WsKH+GtTLEDusIANfruzP9+1UJ+rWSxAUvze1TDEsz/qnOLsKmYsQBmT
+m2aW1bM//2oGiCl/LEDKuMrK79mzP4Nezy5phSxAfN75Lknesz8IUpjVqIss
+QOApWPf75rM/FDkqIyiYLECowBSIYfizPyoHTr4msSxAN+6NqSwbtD9Uo5X0
+I+MsQFVJgOzCYLQ/qtskYR5HLUDARbZh0mS0P+Zp1M7zTC1ALELs1uFotD8i
++IM8yVItQAQ7WMEAcbQ/nBTjF3ReLUCyLDCWPoG0P41Noc7JdS1AEBDgP7qh
+tD9yvx08daQtQMzWP5Ox4rQ/OqMWF8wBLkBDZP85oGS1P8tqCM15vC5Avksk
+tWFjtj9vMtocPxUwQPY7zzXHd7c/HiK2Gs3bMECk2i/4sHm4P7JoZfUTlTFA
+amJvmjB+uD+em6pBT5gxQDDqrjywgrg/i87vjYqbMUC8+S2Br4u4P2Q0eiYB
+ojFA1BgsCq6duD8XAI9X7q4xQARXKByrwbg/fJe4ucjIMUBk0yBApQm5P0XG
+C359/DFAKltg4iQOuT8y+VDKuP8xQPDin4SkErk/HyyWFvQCMkB88h7Joxu5
+P/iRIK9qCTJAlBEdUqItuT+qXTXgVxYyQMRPGWSfUbk/D/VeQjIwMkCK11gG
+H1a5P/wnpI5tMzJAUF+YqJ5auT/oWunaqDYyQNxuF+2dY7k/wsBzcx89MkD0
+jRV2nHW5P3SMiKQMSjJAuhVVGBx6uT9hv83wR00yQICdlLqbfrk/TfISPYNQ
+MkAMrRP/moe5PydYndX5VjJA0jRToRqMuT8Ti+IhNVoyQJi8kkOakLk/AL4n
+bnBdMkBeRNLlGZW5P+zwbLqrYDJAJcwRiJmZuT/aI7IG52MyQGhXOlE=
+        "]]},
+      Annotation[#, 
+       "Charting`Private`Tag$13733#1"]& ], {}}, {{}, {}}, {{}, {}}}, {}},
+  AspectRatio->NCache[GoldenRatio^(-1), 0.6180339887498948],
+  Axes->{True, True},
+  AxesLabel->{
+    FormBox["\"\[Sigma]\"", TraditionalForm], 
+    FormBox["\"Torque (pN nm)\"", TraditionalForm]},
+  AxesOrigin->{0, 0},
+  BaseStyle->{
+   FontSize -> 16, FontFamily -> "Helvetica Neue", FontColor -> GrayLevel[0]},
+  DisplayFunction->Identity,
+  Frame->{{False, False}, {False, False}},
+  FrameLabel->{{None, None}, {None, None}},
+  FrameTicks->{{Automatic, 
+     Charting`ScaledFrameTicks[{Identity, Identity}]}, {Automatic, 
+     Charting`ScaledFrameTicks[{Identity, Identity}]}},
+  GridLines->{None, None},
+  GridLinesStyle->Directive[
+    GrayLevel[0.5, 0.4]],
+  ImagePadding->All,
+  Method->{
+   "DefaultBoundaryStyle" -> Automatic, 
+    "DefaultGraphicsInteraction" -> {
+     "Version" -> 1.2, "TrackMousePosition" -> {True, False}, 
+      "Effects" -> {
+       "Highlight" -> {"ratio" -> 2}, "HighlightPoint" -> {"ratio" -> 2}, 
+        "Droplines" -> {
+         "freeformCursorMode" -> True, 
+          "placement" -> {"x" -> "All", "y" -> "None"}}}}, "DefaultMeshStyle" -> 
+    AbsolutePointSize[6], "ScalingFunctions" -> None, 
+    "CoordinatesToolOptions" -> {"DisplayFunction" -> ({
+        (Identity[#]& )[
+         Part[#, 1]], 
+        (Identity[#]& )[
+         Part[#, 2]]}& ), "CopiedValueFunction" -> ({
+        (Identity[#]& )[
+         Part[#, 1]], 
+        (Identity[#]& )[
+         Part[#, 2]]}& )}},
+  PlotRange->{{-0.1, 0.1}, {-18.390243929377768`, 18.390243929377768`}},
+  PlotRangeClipping->True,
+  PlotRangePadding->{{
+     Scaled[0.02], 
+     Scaled[0.02]}, {
+     Scaled[0.05], 
+     Scaled[0.05]}},
+  Ticks->{Automatic, Automatic}]], "Output",
+ CellChangeTimes->{
+  3.8044460937524333`*^9, 3.8044462130330896`*^9, 3.804446326367474*^9, {
+   3.804446550418233*^9, 3.8044465588586516`*^9}, {3.8044468629060297`*^9, 
+   3.804446880865109*^9}, 3.804447053639327*^9, 3.8044470848897495`*^9, {
+   3.8044472513797646`*^9, 3.80444726596014*^9}, 3.804447349640869*^9, {
+   3.8044474649788885`*^9, 3.8044475041274033`*^9}, 3.804447553159482*^9, {
+   3.8044480216525764`*^9, 3.804448077879388*^9}, 3.8044481082431583`*^9, 
+   3.804448424661275*^9, 3.8044485612680855`*^9, 3.8049566426163373`*^9, 
+   3.804956777493122*^9, 3.8049568318800693`*^9, 3.826302881702112*^9, 
+   3.8263029176580935`*^9, {3.8263030037441564`*^9, 3.826303034278684*^9}, {
+   3.8263030747123146`*^9, 3.826303127367818*^9}, 3.8263031630779505`*^9, 
+   3.8263032909099073`*^9, {3.854915512123949*^9, 3.8549155341468067`*^9}, {
+   3.8549156976967964`*^9, 3.854915727137088*^9}},
+ CellLabel->"Out[52]=",ExpressionUUID->"7c6cfdeb-75ff-4fe0-8c2c-15ee646e95b3"],
+
+Cell[BoxData[
+ TemplateBox[{GraphicsBox[{{{{}, {}, 
+       TagBox[{
+         Directive[
+          Opacity[1.], 
+          RGBColor[0.368417, 0.506779, 0.709798], 
+          AbsoluteThickness[1.6]], 
+         LineBox[CompressedData["
+1:eJwB0QIu/SFib1JlAgAAACwAAAACAAAAJcwRiJmZub8i5kReskViwFqU6WyU
+lbm/6GI1E65CYsCOXMFRj5G5v5h7A9SpP2LA9uxwG4WJub+4gDh5oTliwMYN
+0K5webm/+NkFUpEtYsBmT47VR1m5v3HILT1zFWLAqNIKI/YYub9XlbL5P+Vh
+wCzZA75SmLi/3+6PC/2EYcB33W/uZ4G3v80buYvotGDASzMm3fh8tr9/nfkA
+z+ZfwJG8Np6lfbW/UViPD95sXsCU5iTBUXm1v2rOumJ5Zl7AlhAT5P10tb+g
+8GbRFGBewJpk7ylWbLW/ZjlBAUxTXsCiDKi1Blu1v2Pc/aq7OV7AtFwZzWc4
+tb8aaJcmoAZewNb8+/sp87S/cpZLvn2gXcDYJuoe1u60v1yQjIEcml3A2lDY
+QYLqtL9iNk5gu5NdwN6ktIfa4bS/zoZTcPmGXcDnTG0Ti9C0vxU5Ztp2bV3A
++JzeKuyttL9c46vWdjpdwBo9wVmuaLS/1k64b4vUXMBikKhrpGS0v/mCCWaa
+zlzAquOPfZpgtL/HBU90qchcwDuKXqGGWLS/afe22Me8XMBc1/voXki0v7mK
++sAFpVzAn3E2eA8otL+VcVAPhnVcwOjEHYoFJLS/d5DmhJZvXMAwGAWc+x+0
+vwP+cBKnaVzAwL7Tv+cXtL8exWJ1yF1cwOILcQfAB7S/aQO6WgxGXMAkpquW
+cOezvzJAN6OYFlzAbPmSqGbjs7/QSRKYqhBcwLRMerpc37O/GqLhpLwKXMBF
+80jeSNezv7Q+XQbh/lvAjkYw8D7Ts78Dgwlb8/hbwNaZFwI1z7O//BWqxwXz
+W8BmQOYlIcezv/MnyOgq51vArpPNNxfDs7/wpkWdPeFbwPfmtEkNv7O/m3S3
+aVDbW8BAOpxbA7uzv/KQHU5j1VvAiI2Dbfm2s7/y+3dKds9bwKE8yzYJtrO/
+2Snw2hXOW8CNp4Ot
+          "]], 
+         LineBox[CompressedData["
+1:eJwV0H1MzHEcwPHLQjvqNlkUSnq2Lg8V5TzEJTrlKbG+X0xHruKEwrjRZXXR
+IpR+1x1xmbq79fyL2up8PnJKNew6kfO0XPM8mscWk58/Pvvstc/nr7e3NGNj
+yhgejzeXm//bGpQorqlh4ZzCY56ik6LBNvOGpZIFo+m4ramD4lehU2dnBQt4
+/R0/ivOinC/9pnIW+s4kiHruUuwOuPXHUMoCb3vQpQEzxU9ZNPqkioUtfx9t
+c7lDMURQap2/m4Wxy4IHZEBxk0SW2JvMQsrV0dj3tygezYt4cmAbCx0O1sZ0
+zubfNlv9JhZU5qO5chPFpHder0PELDhJOgMyWynm3jYMzZ7JAj9Ruu9EM8Wn
+mSZnH1sjCPaof5fUcff+wVWuaxvBg3F0a79CMa7vzFmBqAF8LQ4T65UUy31y
+ivMX1UNXWFVp006KKb3P/ZpX18KUj+miVdEUK3hxus3Lq4HX8zhryJ/inYsZ
+t4XRRnhRKMsQ8immuec/bpumh106t9zhDwR9okJTxVMrIe+VXGi7T1CaaP2c
+8/4arN9vH4qtJaiyBHgMm3UgsB8/FF9EUDHgndtTcAXSsvGs7CDB73+emdzC
+tbB3n3e7IIHgsYKqyre+Wnh4YblJs5Ggw9TMopbJWpjXnNzix9kllJ9Mvmvg
+56iuVrSBYGBahGM5qwHl+Vla2TqCW/tKJH7zNVDS5JMFawiaa+KfhM4pg9YR
+P/+MaIISkTs6epWBp1eM94iYoOXeoL7PpQyU4t3T8zi/tCuOHfmshpWFlZO0
+KwgOuxtntNao4eGMgNGOKILBqnG7VgSrwR4V2O+5hGCja2+c63TuP2W11bCY
+YKTucvjgBDXoT6c+COMc0xY2XvWRAXmv3iwREdzxVWrsMjLwa2dQw+FIgm+y
+Q4o1GgaSTsVWO3CWO48o9hQw0FadVlUYwfUIPB/vnM5Azg/D5YqFXI+bWxe8
+TGLA7t6tFnI+JQ70qotlIGbph+KWBVwfy7fxykgG9FJ+kZjzxe0wtD6IAX7+
+7IIH4QRfsJL2bE8GfqTKE5Sc/wEtfo5Z
+          "]], 
+         LineBox[CompressedData["
+1:eJwB4QIe/SFib1JlAgAAAC0AAAACAAAAoWhy9A/9lr892uXDNyFawIXlGOq0
+9Ja/LRpGIlEXWsCAEoySK+OWvyb7YNGJAlrAej//OqLRlr+dwO/gwu1ZwHVs
+cuMYwJa/kmryUPzYWcBqxlg0Bp2Wv/RrU1Jwr1nAZfPL3HyLlr9jw7HjqppZ
+wGAgP4XzeZa/Uf+D1eWFWcBVeiXW4FaWv6MkhNpcXFnAQC7yd7sQlr8wJfNp
+TwlZwOv9JP8l+JS/GPYd8FW9V8BBnYoN+8aSv6wRIViEJlXAa1N95yjyjL9R
+KzKdZhVQwKT4N6Y56oS/PVCtZBzBRsDir4RxVGp4v4v0r87dLznAOA599uJP
+YL+2CIWpUTAZwNtzknc5aH07MfvvseAaCUAdqpFV0SJfP0VbunY+SShAAuhn
+fpoTeT+ItG9trQdAQG4mY2Fim4Q/UWAXVSlISUDHnsKvF1qNP8/8fJvQoVFA
+yD2oNff3kj9CLaDMY4JWQGm0Oif7B5M/l1wXJ4uUVkAKK80Y/xeTP5xaHDGy
+plZATBjy+wY4kz+0ws9T/8pWQNDyO8IWeJM/I0Pc05UTV0DXp89ONviTP/ME
+jL6zpFdA5hH3Z3X4lD9pjEY+s8ZYQIeIiVl5CJU/tpF3itDYWEAo/xtLfRiV
+P7RlNobt6lhAauxALoU4lT++eV2MJg9ZQO7GivSUeJU/DlJR05RXWUD1ex6B
+tPiVP6XDz0ti6FlAlvKwcrgIlj/us92QevpZQDZpQ2S8GJY/53J5hZIMWkB4
+VmhHxDiWP+pcWn3BMFpA/DCyDdR4lj8s4cGnG3laQJ2nRP/XiJY/9EY+aTGL
+WkA+Htfw25iWP2x7SNpGnVpAgAv80+O4lj9rUAbLcMFaQCGCjsXnyJY/8vC5
+SoXTWkDC+CC369iWPylg+3mZ5VpAY2+zqO/olj8QnspYrfdaQATmRZrz+JY/
+paon58AJW0ChaHL0D/2WP/1KHKFkDltAFpJq9w==
+          "]], 
+         LineBox[CompressedData["
+1:eJwV0GswXAcUB/AlHmFEZNEiiEZjPEaIsFqMc0QapfVMte69pbYtnaBN0o1N
+jRRD4pGIxy7uriWIeGzEI/eyizSVIqnHRFKCNmg6HpGkZEak24eS3n44c+b3
+6f8/541Pj0claPN4vABu/t9zbEh/pi0NwZlPXw3bUXg+Wc/d2JWGGM13ffGc
+1YfWhCn+NAhV4LKwh8JFy1npSDgNSeL+igTOJmt3bjsKaRAJ3tF+YkthUk2V
+01IODWdVIb+s2FBIi/OowHIaLorvHj7OeTD064t1jTRUCCI61qwptPk3aC12
+mIZmVXSeZjeF92PWu6eMZTCqivfiWVG46fbrM087GTwQL9RmW1LorD9sLT0g
+gzlBopEu55yuS1nhH8jguSp5wcCCQgE/5N0huQz4anGp6WsUVo/WTve8KYcY
+deGqA5/CkcsXDCwEchCe3kkod1GoSRP7ioPkkOQtGXThHOH4fo1HkhzS1bTC
+3YRCnXN/Jra0y6FGfTnYx5i7zz9MU+VTCUvq7oZQQy7v+oZZVoQCRN2Lsae0
+KQxZ0LqgilfAXste+1daFMaZb9daPaGAn9KKnxZwzk0zWyVKFeDu65Naw6Nw
+OsD19sFxBazeLC4c2SLxm/G41OWjVfDFgM8Nuw0Sb6z/MBn2UTWQYyUWd9dJ
+REF+hU1cDRxa9JvYt0TiLU30ckNLHei/6DFIHiJxZkFkfG6iHlKjokl/JYnz
+rpvdKVMNkDErA8dCEj8vkHxVpdMMbj3/+NemkDgeIG16sOMqnOnTmdgfTuLH
+0ke+k0bX4GbTQcdIDxKFGu8ZG+82aJrPorVMSXSa2czwtu0A1yCxYugPAh8N
+LJmfFVwHaqugx2aKQPs00cPOYAa+pftlemoCmdzCNnUoA/lWkgqJikAsa8ju
+jWRAWi0ss+Uc1z7tfItgQFnPKxF0EVi55Js+eoyByXb/vESWQH6UjvV8AQOu
+Q72pd9oJ5LmUx+4cYWD2LyYqt5nA4rfaDvDHGFhOz47gc7Y98qOu+TgDL7Yi
+wy41Eegn/LvV6iED23XXglWNBJ6mY7f2PWPAc5dbwOMrBD7f5lDjZ8hCoVOL
+25E6AudmVb8dC2HBl6w30qsksEj78eGBMBZKP5w5lC/n+juaK62PsrAcZZpm
+yPmKSHTyHsWC5L2cJWMZgSmG7tpeX7LwxO+z71+v4Pq4f5JYdJIF/7cVL+Xl
+BN6PLhpZTmVB6jXhbM3Zs25FUpnBAuwPpO3KCNzwVtrzSlgo32N/wklC4LXY
+n/OIMhZ+3001tpRy/8rRX2FkLKCFdNaVs4lSEGFUzUKF2Si/o4TA/rGEzoQ6
+FlZMtgV7cD71ssyir4GFgB2+mZ3FBDpYDZ6xuMoCbSDqEnCecIoObG1loS3F
+b++9IgL/Ayts1m0=
+          "]], 
+         LineBox[CompressedData["
+1:eJwBwQI+/SFib1JlAgAAACsAAAACAAAAoTzLNgm2sz9NqwYqhpNZQDyLUakk
+t7M/ly7X7OWUWUDusIANfruzP5LnOZZLmllAUvze1TDEsz+3BqqVFqVZQBmT
+m2aW1bM/t/k0R6u6WUDKuMrK79mzP3LxJS4QwFlAfN75Lknesz+SzU/5dMVZ
+QOApWPf75rM/ATNOPD7QWUCowBSIYfizP5Wy9XTP5VlAN+6NqSwbtD+UhO+w
+7BBaQFVJgOzCYLQ/AnSOUxJnWkDARbZh0mS0PxO5AEsYbFpALELs1uFotD9T
+8DwqHnFaQAQ7WMEAcbQ/YjUToCl7WkCyLDCWPoG0P6cZN2k/j1pAEBDgP7qh
+tD/lSlxxZrdaQMzWP5Ox4rQ/I1AcWaIHW0BDZP85oGS1P7blcobRp1tAvksk
+tWFjtj/GsA54yuBcQPY7zzXHd7c/rJbAW7QyXkCk2i/4sHm4P3b2uRx6bF9A
+amJvmjB+uD+XGonI73FfQDDqrjywgrg/Tz+gVmV3X0C8+S2Br4u4P3iKphlQ
+gl9A1BgsCq6duD+7JxM7JJhfQARXKByrwbg/8X1s68bDX0Bk0yBApQm5P5zM
+DwF7DWBAKltg4iQOuT/rZ3f7MxBgQPDin4SkErk/hAMD5+wSYEB88h7Joxu5
+P5I7hpFeGGBAlBEdUqItuT8lrzw0QSNgQMRPGWSfUbk/J6RpsAM5YECK11gG
+H1a5PxREEb27O2BAUF+YqJ5auT9K5Ny6cz5gQNxuF+2dY7k/lyXgieNDYED0
+jRV2nHW5P6OrlnXCTmBAuhVVGBx6uT/fTV4LelFgQICdlLqbfrk/ZPBJkjFU
+YEAMrRP/moe5P082jXOgWWBA0jRToRqMuT+y2eTNV1xgQJi8kkOakLk/X31g
+GQ9fYEBeRNLlGZW5P1chAFbGYWBAJcwRiJmZuT+axcODfWRgQBzgPdM=
+          "]]}, Annotation[#, "Charting`Private`Tag$13957#1"]& ], 
+       TagBox[{
+         Directive[
+          Opacity[1.], 
+          RGBColor[0.880722, 0.611041, 0.142051], 
+          AbsoluteThickness[1.6]], 
+         LineBox[CompressedData["
+1:eJwB0QIu/SFib1JlAgAAACwAAAACAAAAJcwRiJmZub/eVQTxF1VhwFqU6WyU
+lbm/ASlDMF9SYcCOXMFRj5G5vyT8gW+mT2HA9uxwG4WJub9qov/tNEphwMYN
+0K5webm/9+766lE/YcBmT47VR1m5vw+I8eSLKWHAqNIKI/YYub9Cut7Y//1g
+wCzZA75SmLi/px65wOemYMB33W/uZ4G3v63Wwmsh1F/ASzMm3fh8tr95Ty2P
+enNewJG8Np6lfbW/z19LnL4ZXcCU5iTBUXm1vzF0q3XiE13AlhAT5P10tb+S
+iAtPBg5dwJpk7ylWbLW/UrHLAU4CXcCiDKi1Blu1v9QCTGfd6lzAtFwZzWc4
+tb/ZpUwy/LtcwNb8+/sp87S/4utNyDleXMDYJuoe1u60v0MArqFdWFzA2lDY
+QYLqtL+iFA57gVJcwN6ktIfa4bS/Yz3OLclGXMDnTG0Ti9C0v+aOTpNYL1zA
++JzeKuyttL/rMU9edwBcwBo9wVmuaLS/83dQ9LSiW8BikKhrpGS0v9HzlOo8
+nVvAquOPfZpgtL+vb9ngxJdbwDuKXqGGWLS/bGdizdSMW8Bc1/voXki0v+VW
+dKb0dlvAn3E2eA8otL/YNZhYNEtbwOjEHYoFJLS/t7HcTrxFW8AwGAWc+x+0
+v5UtIUVEQFvAwL7Tv+cXtL9QJaoxVDVbwOILcQfAB7S/yxS8CnQfW8AkpquW
+cOezv7zz37yz81rAbPmSqGbjs7+abySzO+5awLRMerpc37O/eOtoqcPoWsBF
+80jeSNezvzXj8ZXT3VrAjkYw8D7Ts78UXzaMW9hawNaZFwI1z7O/8tp6guPS
+WsBmQOYlIcezv63SA2/zx1rArpPNNxfDs7+LTkhle8JawPfmtEkNv7O/a8qM
+WwO9WsBAOpxbA7uzv0pG0VGLt1rAiI2Dbfm2s78owhVIE7JawKE8yzYJtrO/
+k2p7As6wWsBAy4Sv
+          "]], 
+         LineBox[CompressedData["
+1:eJxTTMoPSmViYGAQAWIQfVkz1Hnt2s375UtWa6qujjqw8pbC1ovLEPw3JdEu
+TW0Ivh7/tMtGaQj+zeK9vMq3NsH5LTeeuAv7Ifg+V3v7+K03wvnzlBsnt1tt
+gPNTL91R3e6xDs5fxOCzMMxxDZx/eGr+QV2XVXB+pmT7tT3SK+B8ZQfjDGeJ
+ZXB+Uujld40vF8P5bRfVpX4cWQjnVz9UbDndNR/O//Ln9l4x09lw/pG1vteN
+9WfC+VPj9n8I0JwO59/d7HWoXg7BBwBImZtS
+          "]], 
+         LineBox[CompressedData["
+1:eJwB4QIe/SFib1JlAgAAAC0AAAACAAAAoWhy9A/9lr+dEoEyzpdawIXlGOq0
+9Ja/jmCVxCOOWsCAEoySK+OWv1rHBIbaeVrAej//OqLRlr8mLnRHkWVawHVs
+cuMYwJa/8pTjCEhRWsBqxlg0Bp2Wv4hiwou1KFrAZfPL3HyLlr9UyTFNbBRa
+wGAgP4XzeZa/ITChDiMAWsBVeiXW4FaWv7j9f5GQ11nAQC7yd7sQlr/nmD2X
+a4ZZwOv9JP8l+JS/owU0rtdBWMBBnYoN+8aSvxvfINyvuFXAa1N95yjyjL8K
+lYq9A75QwKT4N6Y56oS/kqXkdrwxSMDir4RxVGp4v38nOERYPjzAOA599uJP
+YL8+Rj4ZpN4iwAAAAAAAAMi4VVGPizqCwjwdqpFV0SJfP5OqcylMAiJAAuhn
+fpoTeT9S6ELXKAI9QG4mY2Fim4Q/C+7pk4jWR0DHnsKvF1qNP586ZQYh+lBA
+yD2oNff3kj86e0U9WvFVQGm0Oif7B5M/HQSvB+EDVkAKK80Y/xeTPwGNGNJn
+FlZATBjy+wY4kz/HnutmdTtWQNDyO8IWeJM/VMKRkJCFVkDXp89ONviTP20J
+3uPGGVdA5hH3Z3X4lD+fl3aKM0JYQIeIiVl5CJU/giDgVLpUWEAo/xtLfRiV
+P2apSR9BZ1hAauxALoU4lT8tuxy0ToxYQO7GivSUeJU/ud7C3WnWWED1ex6B
+tPiVP9IlDzGgallAlvKwcrgIlj+1rnj7Jn1ZQDZpQ2S8GJY/lzfixa2PWUB4
+VmhHxDiWP15JtVq7tFlA/DCyDdR4lj/rbFuE1v5ZQJ2nRP/XiJY/zvXETl0R
+WkA+Htfw25iWP7F+LhnkI1pAgAv80+O4lj94kAGu8UhaQCGCjsXnyJY/Wxlr
+eHhbWkDC+CC369iWPz6i1EL/bVpAY2+zqO/olj8iKz4NhoBaQATmRZrz+JY/
+BLSn1wyTWkChaHL0D/2WP50SgTLOl1pAPYVcmg==
+          "]], 
+         LineBox[CompressedData["
+1:eJxTTMoPSmViYGBQAGIQfXez16F6uen28iWrNVVXRzl0ZbMZ8Oki+NudPibm
+2CH4Ah+PHdVIRPCz5s/RfNqM4Mv+cf8YexLBvxDxecc1vhlwvpmQl8eJmQj+
+3NMLru9UmYkwz87v2xyrWQj1G3+LNATMhvN3fz541S98LpzvYNYxTTZuPpx/
+4Fvo86WrF8L5tx8X87VeXgznP9L9uyPn2lI4P6VzUt4clhVw/iXHycuv8K6C
+82Mm37e+yrMGzk/8Zn5b1nwdnK95+2+dudwGOP/+4aeiLWYb4XzlyuJbWzw3
+wfkM2lNj+U8h+HfvbHuQ6bUZzs/hMmAyzUXwf5uvVGaYgODHNbO/2TQDwT90
+LnVL6kIEv+TLFIn9SxF8NakjNRKrEPzLmqHOa9ci+ACct9ie
+          "]], 
+         LineBox[CompressedData["
+1:eJwBwQI+/SFib1JlAgAAACsAAAACAAAAoTzLNgm2sz+TansCzrBaQDyLUakk
+t7M/ooDt0k2yWkDusIANfruzP8D0v3UxuFpAUvze1TDEsz/93GS7+MNaQBmT
+m2aW1bM/dq2uRofbWkDKuMrK79mzP5Qhgelq4VpAfN75Lknesz+ylVOMTuda
+QOApWPf75rM/8H340RXzWkCowBSIYfizP2tOQl2kCltAN+6NqSwbtD9e79Vz
+wTlbQFVJgOzCYLQ/RjH9oPuXW0DARbZh0mS0P+Y96yZ7nVtALELs1uFotD+G
+Stms+qJbQAQ7WMEAcbQ/yWO1uPmtW0CyLDCWPoG0P0uWbdD3w1tAEBDgP7qh
+tD9S+93/8+9bQMzWP5Ox4rQ/XsW+XuxHXEBDZP85oGS1P3hZgBzd91xAvksk
+tWFjtj8b6k+u01BeQPY7zzXHd7c/9HI49RfHX0Ck2i/4sHm4PzCOg4EqkmBA
+amJvmjB+uD9OkUE3NpVgQDDqrjywgrg/bZT/7EGYYEC8+S2Br4u4P6qae1hZ
+nmBA1BgsCq6duD8mp3MviKpgQARXKByrwbg/G8Bj3eXCYEBk0yBApQm5Pwby
+Qzmh82BAKltg4iQOuT8l9QHvrPZgQPDin4SkErk/RPi/pLj5YEB88h7Joxu5
+P4H+OxDQ/2BAlBEdUqItuT/8CjTn/gthQMRPGWSfUbk/8SMklVwkYUCK11gG
+H1a5PxAn4kpoJ2FAUF+YqJ5auT8uKqAAdCphQNxuF+2dY7k/bTAcbIswYUD0
+jRV2nHW5P+c8FEO6PGFAuhVVGBx6uT8GQNL4xT9hQICdlLqbfrk/JEOQrtFC
+YUAMrRP/moe5P2JJDBrpSGFA0jRToRqMuT+ATMrP9EthQJi8kkOakLk/n0+I
+hQBPYUBeRNLlGZW5P75SRjsMUmFAJcwRiJmZuT/eVQTxF1VhQJlCTwo=
+          "]]}, 
+        Annotation[#, 
+         "Charting`Private`Tag$13957#2"]& ], {}}, {{}, {}, {}, {}, {}}, {{}, \
+{}, {}, {}, {}}}, {}}, {
+    DisplayFunction -> Identity, Ticks -> {Automatic, Automatic}, 
+     AxesOrigin -> {0, 0}, FrameTicks -> {{Automatic, 
+        Charting`ScaledFrameTicks[{Identity, Identity}]}, {Automatic, 
+        Charting`ScaledFrameTicks[{Identity, Identity}]}}, 
+     GridLines -> {None, None}, DisplayFunction -> Identity, 
+     PlotRangePadding -> {{
+        Scaled[0.02], 
+        Scaled[0.02]}, {
+        Scaled[0.05], 
+        Scaled[0.05]}}, PlotRangeClipping -> True, ImagePadding -> All, 
+     DisplayFunction -> Identity, AspectRatio -> 
+     NCache[GoldenRatio^(-1), 0.6180339887498948], Axes -> {True, True}, 
+     AxesLabel -> {
+       FormBox[
+       "\"\\!\\(\\*SubscriptBox[\\(\[Sigma]\\), \\(0\\)]\\)\"", 
+        TraditionalForm], 
+       FormBox["\"\[CapitalDelta]E (pN nm)\"", TraditionalForm]}, 
+     AxesOrigin -> {0, 0}, DisplayFunction :> Identity, 
+     Frame -> {{False, False}, {False, False}}, 
+     FrameLabel -> {{None, None}, {None, None}}, 
+     FrameTicks -> {{Automatic, Automatic}, {Automatic, Automatic}}, 
+     GridLines -> {None, None}, GridLinesStyle -> Directive[
+       GrayLevel[0.5, 0.4]], 
+     Method -> {
+      "DefaultBoundaryStyle" -> Automatic, 
+       "DefaultGraphicsInteraction" -> {
+        "Version" -> 1.2, "TrackMousePosition" -> {True, False}, 
+         "Effects" -> {
+          "Highlight" -> {"ratio" -> 2}, "HighlightPoint" -> {"ratio" -> 2}, 
+           "Droplines" -> {
+            "freeformCursorMode" -> True, 
+             "placement" -> {"x" -> "All", "y" -> "None"}}}}, 
+       "DefaultMeshStyle" -> AbsolutePointSize[6], "ScalingFunctions" -> None,
+        "CoordinatesToolOptions" -> {"DisplayFunction" -> ({
+           (Identity[#]& )[
+            Part[#, 1]], 
+           (Identity[#]& )[
+            Part[#, 2]]}& ), "CopiedValueFunction" -> ({
+           (Identity[#]& )[
+            Part[#, 1]], 
+           (Identity[#]& )[
+            Part[#, 2]]}& )}}, 
+     PlotRange -> {{-0.1, 0.1}, {-146.17802346665218`, 138.65917254301797`}}, 
+     PlotRangeClipping -> True, PlotRangePadding -> {{
+        Scaled[0.02], 
+        Scaled[0.02]}, {
+        Scaled[0.02], 
+        Scaled[0.02]}}, Ticks -> {Automatic, Automatic}}],FormBox[
+    FormBox[
+     TemplateBox[{"\"Bubble\"", "\"No bubble\""}, "LineLegend", 
+      DisplayFunction -> (FormBox[
+        StyleBox[
+         StyleBox[
+          PaneBox[
+           TagBox[
+            GridBox[{{
+               TagBox[
+                GridBox[{{
+                   GraphicsBox[{{
+                    Directive[
+                    EdgeForm[
+                    Directive[
+                    Opacity[0.3], 
+                    GrayLevel[0]]], 
+                    PointSize[0.5], 
+                    Opacity[1.], 
+                    RGBColor[0.368417, 0.506779, 0.709798], 
+                    AbsoluteThickness[1.6]], {
+                    LineBox[{{0, 10}, {20, 10}}]}}, {
+                    Directive[
+                    EdgeForm[
+                    Directive[
+                    Opacity[0.3], 
+                    GrayLevel[0]]], 
+                    PointSize[0.5], 
+                    Opacity[1.], 
+                    RGBColor[0.368417, 0.506779, 0.709798], 
+                    AbsoluteThickness[1.6]], {}}}, AspectRatio -> Full, 
+                    ImageSize -> {20, 10}, PlotRangePadding -> None, 
+                    ImagePadding -> Automatic, 
+                    BaselinePosition -> (Scaled[0.1] -> Baseline)], #}, {
+                   GraphicsBox[{{
+                    Directive[
+                    EdgeForm[
+                    Directive[
+                    Opacity[0.3], 
+                    GrayLevel[0]]], 
+                    PointSize[0.5], 
+                    Opacity[1.], 
+                    RGBColor[0.880722, 0.611041, 0.142051], 
+                    AbsoluteThickness[1.6]], {
+                    LineBox[{{0, 10}, {20, 10}}]}}, {
+                    Directive[
+                    EdgeForm[
+                    Directive[
+                    Opacity[0.3], 
+                    GrayLevel[0]]], 
+                    PointSize[0.5], 
+                    Opacity[1.], 
+                    RGBColor[0.880722, 0.611041, 0.142051], 
+                    AbsoluteThickness[1.6]], {}}}, AspectRatio -> Full, 
+                    ImageSize -> {20, 10}, PlotRangePadding -> None, 
+                    ImagePadding -> Automatic, 
+                    BaselinePosition -> (Scaled[0.1] -> Baseline)], #2}}, 
+                 GridBoxAlignment -> {
+                  "Columns" -> {Center, Left}, "Rows" -> {{Baseline}}}, 
+                 AutoDelete -> False, 
+                 GridBoxDividers -> {
+                  "Columns" -> {{False}}, "Rows" -> {{False}}}, 
+                 GridBoxItemSize -> {"Columns" -> {{All}}, "Rows" -> {{All}}},
+                  GridBoxSpacings -> {
+                  "Columns" -> {{0.5}}, "Rows" -> {{0.8}}}], "Grid"]}}, 
+             GridBoxAlignment -> {"Columns" -> {{Left}}, "Rows" -> {{Top}}}, 
+             AutoDelete -> False, 
+             GridBoxItemSize -> {
+              "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+             GridBoxSpacings -> {"Columns" -> {{1}}, "Rows" -> {{0}}}], 
+            "Grid"], Alignment -> Left, AppearanceElements -> None, 
+           ImageMargins -> {{5, 5}, {5, 5}}, ImageSizeAction -> 
+           "ResizeToFit"], LineIndent -> 0, StripOnInput -> False], {
+         FontFamily -> "Arial"}, Background -> Automatic, StripOnInput -> 
+         False], TraditionalForm]& ), 
+      InterpretationFunction :> (RowBox[{"LineLegend", "[", 
+         RowBox[{
+           RowBox[{"{", 
+             RowBox[{
+               RowBox[{"Directive", "[", 
+                 RowBox[{
+                   RowBox[{"Opacity", "[", "1.`", "]"}], ",", 
+                   InterpretationBox[
+                    ButtonBox[
+                    TooltipBox[
+                    GraphicsBox[{{
+                    GrayLevel[0], 
+                    RectangleBox[{0, 0}]}, {
+                    GrayLevel[0], 
+                    RectangleBox[{1, -1}]}, {
+                    RGBColor[0.368417, 0.506779, 0.709798], 
+                    RectangleBox[{0, -1}, {2, 1}]}}, DefaultBaseStyle -> 
+                    "ColorSwatchGraphics", AspectRatio -> 1, Frame -> True, 
+                    FrameStyle -> 
+                    RGBColor[
+                    0.24561133333333335`, 0.3378526666666667, 
+                    0.4731986666666667], FrameTicks -> None, PlotRangePadding -> 
+                    None, ImageSize -> 
+                    Dynamic[{
+                    Automatic, 1.35 CurrentValue["FontCapHeight"]/
+                    AbsoluteCurrentValue[Magnification]}]], 
+                    StyleBox[
+                    RowBox[{"RGBColor", "[", 
+                    RowBox[{"0.368417`", ",", "0.506779`", ",", "0.709798`"}],
+                     "]"}], NumberMarks -> False]], Appearance -> None, 
+                    BaseStyle -> {}, BaselinePosition -> Baseline, 
+                    DefaultBaseStyle -> {}, ButtonFunction :> 
+                    With[{Typeset`box$ = EvaluationBox[]}, 
+                    If[
+                    Not[
+                    AbsoluteCurrentValue["Deployed"]], 
+                    SelectionMove[Typeset`box$, All, Expression]; 
+                    FrontEnd`Private`$ColorSelectorInitialAlpha = 1; 
+                    FrontEnd`Private`$ColorSelectorInitialColor = 
+                    RGBColor[0.368417, 0.506779, 0.709798]; 
+                    FrontEnd`Private`$ColorSelectorUseMakeBoxes = True; 
+                    MathLink`CallFrontEnd[
+                    FrontEnd`AttachCell[Typeset`box$, 
+                    FrontEndResource["RGBColorValueSelector"], {
+                    0, {Left, Bottom}}, {Left, Top}, 
+                    "ClosingActions" -> {
+                    "SelectionDeparture", "ParentChanged", 
+                    "EvaluatorQuit"}]]]], BaseStyle -> Inherited, Evaluator -> 
+                    Automatic, Method -> "Preemptive"], 
+                    RGBColor[0.368417, 0.506779, 0.709798], Editable -> False,
+                     Selectable -> False], ",", 
+                   RowBox[{"AbsoluteThickness", "[", "1.6`", "]"}]}], "]"}], 
+               ",", 
+               RowBox[{"Directive", "[", 
+                 RowBox[{
+                   RowBox[{"Opacity", "[", "1.`", "]"}], ",", 
+                   InterpretationBox[
+                    ButtonBox[
+                    TooltipBox[
+                    GraphicsBox[{{
+                    GrayLevel[0], 
+                    RectangleBox[{0, 0}]}, {
+                    GrayLevel[0], 
+                    RectangleBox[{1, -1}]}, {
+                    RGBColor[0.880722, 0.611041, 0.142051], 
+                    RectangleBox[{0, -1}, {2, 1}]}}, DefaultBaseStyle -> 
+                    "ColorSwatchGraphics", AspectRatio -> 1, Frame -> True, 
+                    FrameStyle -> 
+                    RGBColor[
+                    0.587148, 0.40736066666666665`, 0.09470066666666668], 
+                    FrameTicks -> None, PlotRangePadding -> None, ImageSize -> 
+                    Dynamic[{
+                    Automatic, 1.35 CurrentValue["FontCapHeight"]/
+                    AbsoluteCurrentValue[Magnification]}]], 
+                    StyleBox[
+                    RowBox[{"RGBColor", "[", 
+                    RowBox[{"0.880722`", ",", "0.611041`", ",", "0.142051`"}],
+                     "]"}], NumberMarks -> False]], Appearance -> None, 
+                    BaseStyle -> {}, BaselinePosition -> Baseline, 
+                    DefaultBaseStyle -> {}, ButtonFunction :> 
+                    With[{Typeset`box$ = EvaluationBox[]}, 
+                    If[
+                    Not[
+                    AbsoluteCurrentValue["Deployed"]], 
+                    SelectionMove[Typeset`box$, All, Expression]; 
+                    FrontEnd`Private`$ColorSelectorInitialAlpha = 1; 
+                    FrontEnd`Private`$ColorSelectorInitialColor = 
+                    RGBColor[0.880722, 0.611041, 0.142051]; 
+                    FrontEnd`Private`$ColorSelectorUseMakeBoxes = True; 
+                    MathLink`CallFrontEnd[
+                    FrontEnd`AttachCell[Typeset`box$, 
+                    FrontEndResource["RGBColorValueSelector"], {
+                    0, {Left, Bottom}}, {Left, Top}, 
+                    "ClosingActions" -> {
+                    "SelectionDeparture", "ParentChanged", 
+                    "EvaluatorQuit"}]]]], BaseStyle -> Inherited, Evaluator -> 
+                    Automatic, Method -> "Preemptive"], 
+                    RGBColor[0.880722, 0.611041, 0.142051], Editable -> False,
+                     Selectable -> False], ",", 
+                   RowBox[{"AbsoluteThickness", "[", "1.6`", "]"}]}], "]"}]}],
+              "}"}], ",", 
+           RowBox[{"{", 
+             RowBox[{#, ",", #2}], "}"}], ",", 
+           RowBox[{"LegendMarkers", "\[Rule]", "None"}], ",", 
+           RowBox[{"LabelStyle", "\[Rule]", 
+             RowBox[{"{", "}"}]}], ",", 
+           RowBox[{"LegendLayout", "\[Rule]", "\"Column\""}]}], "]"}]& ), 
+      Editable -> True], TraditionalForm], TraditionalForm]},
+  "Legended",
+  DisplayFunction->(GridBox[{{
+      TagBox[
+       ItemBox[
+        PaneBox[
+         TagBox[#, "SkipImageSizeLevel"], Alignment -> {Center, Baseline}, 
+         BaselinePosition -> Baseline], DefaultBaseStyle -> "Labeled"], 
+       "SkipImageSizeLevel"], 
+      ItemBox[#2, DefaultBaseStyle -> "LabeledLabel"]}}, 
+    GridBoxAlignment -> {"Columns" -> {{Center}}, "Rows" -> {{Center}}}, 
+    AutoDelete -> False, GridBoxItemSize -> Automatic, 
+    BaselinePosition -> {1, 1}]& ),
+  Editable->True,
+  InterpretationFunction->(RowBox[{"Legended", "[", 
+     RowBox[{#, ",", 
+       RowBox[{"Placed", "[", 
+         RowBox[{#2, ",", "After"}], "]"}]}], "]"}]& )]], "Output",
+ CellChangeTimes->{
+  3.8044460937524333`*^9, 3.8044462130330896`*^9, 3.804446326367474*^9, {
+   3.804446550418233*^9, 3.8044465588586516`*^9}, {3.8044468629060297`*^9, 
+   3.804446880865109*^9}, 3.804447053639327*^9, 3.8044470848897495`*^9, {
+   3.8044472513797646`*^9, 3.80444726596014*^9}, 3.804447349640869*^9, {
+   3.8044474649788885`*^9, 3.8044475041274033`*^9}, 3.804447553159482*^9, {
+   3.8044480216525764`*^9, 3.804448077879388*^9}, 3.8044481082431583`*^9, 
+   3.804448424661275*^9, 3.8044485612680855`*^9, 3.8049566426163373`*^9, 
+   3.804956777493122*^9, 3.8049568318800693`*^9, 3.826302881702112*^9, 
+   3.8263029176580935`*^9, {3.8263030037441564`*^9, 3.826303034278684*^9}, {
+   3.8263030747123146`*^9, 3.826303127367818*^9}, 3.8263031630779505`*^9, 
+   3.8263032909099073`*^9, {3.854915512123949*^9, 3.8549155341468067`*^9}, 
+   3.8549156976967964`*^9, 3.8549157289599752`*^9},
+ CellLabel->"Out[53]=",ExpressionUUID->"9d60895d-d0c0-4c98-8ac7-a94d6505e08b"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "307.3937625548245`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "277.3183564051525`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "290.5954926349739`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "263.4524385848949`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "273.94759974587157`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "249.58652076463727`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "257.4500838875177`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "235.72060294437964`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "241.1029450599121`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "221.854685124122`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "224.9061832630549`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "207.9887673038644`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "208.85979849694604`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "194.12284948360676`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "192.96379076158556`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "180.25693166334912`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "177.21816005697343`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "166.3910138430915`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "161.62290638310967`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "152.52509602283388`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "146.17802973999426`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "138.65917820257624`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "130.8835301276272`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "124.79326038231864`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "115.73940754600854`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "110.92734256206101`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "110.3222439367304`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "106.6741432356216`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "109.16535399079676`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "106.6741432356216`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "108.00846404486313`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "106.6741432356216`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "106.8515740989295`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "106.6741432356216`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "105.69468415299588`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "106.6741432356216`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "92.64445707163699`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "94.76457384028171`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      RowBox[{"-", "44.49137289420517`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      RowBox[{"-", "47.38228692014086`"}],
+       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "3.147846445032676`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "0.`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "50.27320094607642`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "47.38228692014073`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "96.88469060892632`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "94.76457384028159`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "107.65360231824732`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "106.6741432356216`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "106.4967123723137`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "106.6741432356216`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "105.33982242638007`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "106.6741432356216`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "104.18293248044644`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "106.6741432356216`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "103.0260425345128`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "106.6741432356216`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "106.11527757811349`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "110.92734256206101`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "118.70299063701`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "124.79326038231858`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "131.14032666515823`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "138.65917820257621`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "143.42728566255806`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "152.52509602283385`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "155.5638676292096`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "166.3910138430915`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "167.55007256511269`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "180.25693166334912`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "179.38590047026747`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "194.12284948360676`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "191.07135134467387`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "207.9887673038644`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "202.60642518833185`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "221.85468512412194`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "213.99112200124156`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "235.72060294437958`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "225.22544178340289`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "249.5865207646372`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "236.3093845348159`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "263.4524385848949`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     TemplateBox[{
+      "247.24295025548048`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"], ",", 
+     TemplateBox[{
+      "277.3183564051525`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
+       "nanometer piconewtons",
+       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
+      "Quantity"]}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.8044460937524333`*^9, 3.8044462130330896`*^9, 3.804446326367474*^9, {
+   3.804446550418233*^9, 3.8044465588586516`*^9}, {3.8044468629060297`*^9, 
+   3.804446880865109*^9}, 3.804447053639327*^9, 3.8044470848897495`*^9, {
+   3.8044472513797646`*^9, 3.80444726596014*^9}, 3.804447349640869*^9, {
+   3.8044474649788885`*^9, 3.8044475041274033`*^9}, 3.804447553159482*^9, {
+   3.8044480216525764`*^9, 3.804448077879388*^9}, 3.8044481082431583`*^9, 
+   3.804448424661275*^9, 3.8044485612680855`*^9, 3.8049566426163373`*^9, 
+   3.804956777493122*^9, 3.8049568318800693`*^9, 3.826302881702112*^9, 
+   3.8263029176580935`*^9, {3.8263030037441564`*^9, 3.826303034278684*^9}, {
+   3.8263030747123146`*^9, 3.826303127367818*^9}, 3.8263031630779505`*^9, 
+   3.8263032909099073`*^9, {3.854915512123949*^9, 3.8549155341468067`*^9}, 
+   3.8549156976967964`*^9, 3.854915729282502*^9},
+ CellLabel->"Out[54]=",ExpressionUUID->"eb95fc22-5536-47d8-bb29-b849323d26d5"]
+}, Open  ]]
+},
+WindowSize->{759, 729},
+WindowMargins->{{Automatic, 13}, {Automatic, 0}},
+FrontEndVersion->"12.0 for Microsoft Windows (64-bit) (April 8, 2019)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[558, 20, 5208, 140, 352, "Input",ExpressionUUID->"1d786fb1-70b1-4a6a-a7f7-d750d14f07ae"],
+Cell[5769, 162, 3292, 88, 200, "Input",ExpressionUUID->"a50316f4-8b49-4e00-930b-2c05fa05c2b5"],
+Cell[CellGroupData[{
+Cell[9086, 254, 3476, 81, 162, "Input",ExpressionUUID->"73c171db-8d11-4541-9cff-323e1a3533f7"],
+Cell[12565, 337, 6756, 132, 250, "Output",ExpressionUUID->"7c6cfdeb-75ff-4fe0-8c2c-15ee646e95b3"],
+Cell[19324, 471, 22993, 449, 245, "Output",ExpressionUUID->"9d60895d-d0c0-4c98-8ac7-a94d6505e08b"],
+Cell[42320, 922, 20382, 508, 593, "Output",ExpressionUUID->"eb95fc22-5536-47d8-bb29-b849323d26d5"]
+}, Open  ]]
+}
+]
+*)
+

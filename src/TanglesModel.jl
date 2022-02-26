@@ -849,7 +849,7 @@ function postprocess_to_h5(
         ϕ::Matrix{Float64} = -ones(len, convert(Int,width / 3))
         z::Matrix{Float64} = -ones(len, convert(Int,width / 3))
         mRNA::Matrix{Int32} = zeros(len, n_genes)
-        discrete_components::Matrix{Int32} = zeros(len, length(solution.u[1].u.discrete_components - n_genes))
+        discrete_components::Matrix{Int32} = zeros(len, length(solution.u[1].u.discrete_components) - n_genes)
         for (index, val) in enumerate(solution.u)
             x = val.u.x[1:end-1]
             n_polymerases = convert(Int, length(x) / 3)
@@ -875,15 +875,28 @@ function simulate_full_examples(
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
     dconfig::DiscreteConfig,
-    t_end::Float64)
-    solver = build_problem(sim_params, bcs, dconfig, t_end)
+    t_end::Float64,
+    tsteps::Int64)
+    solver = build_problem(sim_params, bcs, dconfig, t_end, tsteps=tsteps)
     for _ in 1:n_simulations
         try
             postprocess_to_h5(filename, solver(), comment, dconfig, sim_params, bcs)
         catch err
+            println(err)
             @warn "Solver failed!"
         end
     end
+end
+
+function simulate_full_examples(
+    filename::String,
+    n_simulations::Int64,
+    comment::String,
+    sim_params::SimulationParameters,
+    bcs::BoundaryParameters,
+    dconfig::DiscreteConfig,
+    t_end::Float64)
+    simulate_full_examples(filename, n_simulations, comment, sim_params, bcs, dconfig, t_end, tsteps=-1)
 end
 
 function interp_prev(x::AbstractVector{T}, xs::AbstractVector{T}, ys::AbstractVector{T}) where T<:Real
@@ -986,7 +999,7 @@ function postprocess_sc_rnap_to_h5(
         σ_density[index,:] = calculate_σ_density(val.u, bcs, n_sc_steps, params)
     end
     σ_interp = interp_prev(range(0.0, t_max, length=n_time_steps), timesteps, σ_density)
-    
+
     event_times = zeros(0)
     event_genes = zeros(UInt32, 0)
     event_type  = zeros(Int32, 0)
