@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     63537,       1453]
-NotebookOptionsPosition[     62718,       1433]
-NotebookOutlinePosition[     63059,       1448]
-CellTagsIndexPosition[     63016,       1445]
+NotebookDataLength[     45513,        984]
+NotebookOptionsPosition[     44697,        964]
+NotebookOutlinePosition[     45038,        979]
+CellTagsIndexPosition[     44995,        976]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -290,7 +290,7 @@ Cell[BoxData[{
        "]"}]}], "}"}], ",", 
     RowBox[{"{", 
      RowBox[{"sigma", ",", 
-      RowBox[{"-", ".1"}], ",", ".1"}], "}"}], ",", 
+      RowBox[{"-", ".2"}], ",", ".2"}], "}"}], ",", 
     RowBox[{"AxesLabel", "\[Rule]", 
      RowBox[{"{", 
       RowBox[{
@@ -300,21 +300,33 @@ Cell[BoxData[{
      RowBox[{"{", 
       RowBox[{"\"\<Bubble\>\"", ",", "\"\<No bubble\>\""}], "}"}]}]}], 
    "]"}]}], "\[IndentingNewLine]", 
- RowBox[{"Table", "[", 
+ RowBox[{"Export", "[", 
   RowBox[{
-   RowBox[{"UnitConvert", "[", 
+   RowBox[{
+    RowBox[{"NotebookDirectory", "[", "]"}], "<>", 
+    "\"\<delta_energy.csv\>\""}], ",", 
+   RowBox[{"Table", "[", 
     RowBox[{
      RowBox[{"{", 
       RowBox[{"sigma", ",", " ", 
-       RowBox[{"bindingEnergy", "[", "sigma", "]"}], ",", " ", 
-       RowBox[{"bindingEnergyNoBubble", "[", "sigma", "]"}]}], "}"}], ",", 
-     " ", 
-     RowBox[{"\"\<Piconewtons\>\"", " ", "*", " ", "\"\<Nanometers\>\""}]}], 
-    "]"}], ",", " ", 
-   RowBox[{"{", 
-    RowBox[{"sigma", ",", 
-     RowBox[{"-", "0.2"}], ",", "0.2", ",", " ", "0.01"}], "}"}]}], 
-  "]"}]}], "Input",
+       RowBox[{"QuantityMagnitude", "[", 
+        RowBox[{"UnitConvert", "[", 
+         RowBox[{
+          RowBox[{"bindingEnergy", "[", "sigma", "]"}], ",", " ", 
+          RowBox[{
+          "\"\<Piconewtons\>\"", " ", "*", " ", "\"\<Nanometers\>\""}]}], 
+         "]"}], "]"}], ",", " ", 
+       RowBox[{"QuantityMagnitude", "[", 
+        RowBox[{"UnitConvert", "[", 
+         RowBox[{
+          RowBox[{"bindingEnergyNoBubble", "[", "sigma", "]"}], ",", " ", 
+          RowBox[{
+          "\"\<Piconewtons\>\"", " ", "*", " ", "\"\<Nanometers\>\""}]}], 
+         "]"}], "]"}]}], "}"}], ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"sigma", ",", 
+       RowBox[{"-", "0.2"}], ",", "0.2", ",", " ", "0.01"}], "}"}]}], "]"}], 
+   ",", " ", "\"\<CSV\>\""}], "]"}]}], "Input",
  CellChangeTimes->{{3.804446084503787*^9, 3.804446091982396*^9}, {
    3.8044462118309236`*^9, 3.8044462124989576`*^9}, 3.804446324674734*^9, {
    3.804446555306432*^9, 3.80444655852367*^9}, {3.8044468597075443`*^9, 
@@ -331,9 +343,10 @@ Cell[BoxData[{
    3.8263032712518444`*^9}, {3.8549153704381275`*^9, 
    3.8549153792527933`*^9}, {3.8549154191254525`*^9, 
    3.8549154882902794`*^9}, {3.85491569188684*^9, 3.8549157239495325`*^9}, {
-   3.8549157558136387`*^9, 
-   3.8549157563688264`*^9}},ExpressionUUID->"73c171db-8d11-4541-9cff-\
-323e1a3533f7"],
+   3.8549157558136387`*^9, 3.8549157563688264`*^9}, {3.8549158001857834`*^9, 
+   3.854915866794771*^9}, {3.8549159191490793`*^9, 3.8549159478283553`*^9}, {
+   3.8549160222911673`*^9, 3.85491604058714*^9}},
+ CellLabel->"In[69]:=",ExpressionUUID->"73c171db-8d11-4541-9cff-323e1a3533f7"],
 
 Cell[BoxData[
  GraphicsBox[{{{{}, {}, 
@@ -408,7 +421,7 @@ MkAMrRP/moe5PydYndX5VjJA0jRToRqMuT8Ti+IhNVoyQJi8kkOakLk/AL4n
 bnBdMkBeRNLlGZW5P+zwbLqrYDJAJcwRiJmZuT/aI7IG52MyQGhXOlE=
         "]]},
       Annotation[#, 
-       "Charting`Private`Tag$13733#1"]& ], {}}, {{}, {}}, {{}, {}}}, {}},
+       "Charting`Private`Tag$44318#1"]& ], {}}, {{}, {}}, {{}, {}}}, {}},
   AspectRatio->NCache[GoldenRatio^(-1), 0.6180339887498948],
   Axes->{True, True},
   AxesLabel->{
@@ -466,8 +479,10 @@ bnBdMkBeRNLlGZW5P+zwbLqrYDJAJcwRiJmZuT/aI7IG52MyQGhXOlE=
    3.8263029176580935`*^9, {3.8263030037441564`*^9, 3.826303034278684*^9}, {
    3.8263030747123146`*^9, 3.826303127367818*^9}, 3.8263031630779505`*^9, 
    3.8263032909099073`*^9, {3.854915512123949*^9, 3.8549155341468067`*^9}, {
-   3.8549156976967964`*^9, 3.854915727137088*^9}},
- CellLabel->"Out[52]=",ExpressionUUID->"7c6cfdeb-75ff-4fe0-8c2c-15ee646e95b3"],
+   3.8549156976967964`*^9, 3.854915727137088*^9}, 3.854915814987171*^9, 
+   3.8549158683034964`*^9, 3.8549159232267256`*^9, {3.854916023039755*^9, 
+   3.8549160413216352`*^9}},
+ CellLabel->"Out[69]=",ExpressionUUID->"8efb0202-f78c-488c-bd07-2454ac9e3e48"],
 
 Cell[BoxData[
  TemplateBox[{GraphicsBox[{{{{}, {}, 
@@ -477,186 +492,191 @@ Cell[BoxData[
           RGBColor[0.368417, 0.506779, 0.709798], 
           AbsoluteThickness[1.6]], 
          LineBox[CompressedData["
-1:eJwB0QIu/SFib1JlAgAAACwAAAACAAAAJcwRiJmZub8i5kReskViwFqU6WyU
-lbm/6GI1E65CYsCOXMFRj5G5v5h7A9SpP2LA9uxwG4WJub+4gDh5oTliwMYN
-0K5webm/+NkFUpEtYsBmT47VR1m5v3HILT1zFWLAqNIKI/YYub9XlbL5P+Vh
-wCzZA75SmLi/3+6PC/2EYcB33W/uZ4G3v80buYvotGDASzMm3fh8tr9/nfkA
-z+ZfwJG8Np6lfbW/UViPD95sXsCU5iTBUXm1v2rOumJ5Zl7AlhAT5P10tb+g
-8GbRFGBewJpk7ylWbLW/ZjlBAUxTXsCiDKi1Blu1v2Pc/aq7OV7AtFwZzWc4
-tb8aaJcmoAZewNb8+/sp87S/cpZLvn2gXcDYJuoe1u60v1yQjIEcml3A2lDY
-QYLqtL9iNk5gu5NdwN6ktIfa4bS/zoZTcPmGXcDnTG0Ti9C0vxU5Ztp2bV3A
-+JzeKuyttL9c46vWdjpdwBo9wVmuaLS/1k64b4vUXMBikKhrpGS0v/mCCWaa
-zlzAquOPfZpgtL/HBU90qchcwDuKXqGGWLS/afe22Me8XMBc1/voXki0v7mK
-+sAFpVzAn3E2eA8otL+VcVAPhnVcwOjEHYoFJLS/d5DmhJZvXMAwGAWc+x+0
-vwP+cBKnaVzAwL7Tv+cXtL8exWJ1yF1cwOILcQfAB7S/aQO6WgxGXMAkpquW
-cOezvzJAN6OYFlzAbPmSqGbjs7/QSRKYqhBcwLRMerpc37O/GqLhpLwKXMBF
-80jeSNezv7Q+XQbh/lvAjkYw8D7Ts78Dgwlb8/hbwNaZFwI1z7O//BWqxwXz
-W8BmQOYlIcezv/MnyOgq51vArpPNNxfDs7/wpkWdPeFbwPfmtEkNv7O/m3S3
-aVDbW8BAOpxbA7uzv/KQHU5j1VvAiI2Dbfm2s7/y+3dKds9bwKE8yzYJtrO/
-2Snw2hXOW8CNp4Ot
+1:eJwB8QIO/SFib1JlAgAAAC4AAAACAAAAJcwRiJmZyb9ndoXLTDZzwFqU6WyU
+lcm/z5wn9vwyc8COXMFRj5HJvwz7hDitL3PA9uxwG4WJyb8GX3EEDilzwMYN
+0K5wecm/+MQQudAbc8BmT47VR1nJv9MIapVaAXPAqNIKI/YYyb9rcIYagMxy
+wCzZA75SmMi/Fr9mVhJjcsB33W/uZ4HHv0PMkGHAf3HASzMm3fh8xr/D9WK5
+Ea1wwJG8Np6lfcW/01DTgv2/b8AaPcFZrmjEv7olIOthBm7ALg+W0zJmw7+L
+UnLKWG1swITY5EcTTsK/XtpmWHK1asBM1Y2ODzvBvyhU03b9CGnAniOBk4c6
+wL/okAGSYnxnwGXS3CW3SL6/67G63afRZcCiAEyhVkG8v595biFpRmTAw5Vv
+wS1Eur/C+gvs38ViwGkZh9a8G7i/JRVOue8nYcAjQDNoQxi2v/5HXLyPUV/A
+eMBNYogPtr8or/M+okRfwMxAaFzNBra/wm16MbU3X8B2QZ1QV/W1v0rxVWbc
+HV/AykIHOWvStb+pEUUPMOpewHJF2wmTjLW/m7cDXuyCXsDCSoOr4gC1v0mY
+Au+4tF3AF8udpSf4tL+W7YRv2addwGxLuJ9s77S/VJr2X/qaXcAWTO2T9t20
+vyD6p5A9gV3Aak1XfAq7tL8I00IxyU1dwBJQK00ydbS/CupYb/XmXMBn0EVH
+d2y0v2e20O4c2lzAvFBgQbxjtL812jfeRM1cwGZRlTVGUrS/JSjUDJazXMC6
+Uv8dWi+0v1HdRKk9gFzAD9MZGJ8mtL82ZTeoaHNcwGRTNBLkHbS/jUQZF5Rm
+XMAOVGkGbgy0v44Jq0TsTFzAYlXT7oHps7/brAbfoRlcwFKngMfv4LO/rZDP
+XQwNXMBD+S2gXdizv3pmeUh3AFzANEvbeMvPs79ELgSf4vNbwCSdiFE5x7O/
+B+hvYU7nW8AU7zUqp76zv8iTvI+62lvACUaGMDe6s7/bJ1S8N9RbwDVGghg=
+
           "]], 
          LineBox[CompressedData["
-1:eJwV0H1MzHEcwPHLQjvqNlkUSnq2Lg8V5TzEJTrlKbG+X0xHruKEwrjRZXXR
-IpR+1x1xmbq79fyL2up8PnJKNew6kfO0XPM8mscWk58/Pvvstc/nr7e3NGNj
-yhgejzeXm//bGpQorqlh4ZzCY56ik6LBNvOGpZIFo+m4ramD4lehU2dnBQt4
-/R0/ivOinC/9pnIW+s4kiHruUuwOuPXHUMoCb3vQpQEzxU9ZNPqkioUtfx9t
-c7lDMURQap2/m4Wxy4IHZEBxk0SW2JvMQsrV0dj3tygezYt4cmAbCx0O1sZ0
-zubfNlv9JhZU5qO5chPFpHder0PELDhJOgMyWynm3jYMzZ7JAj9Ruu9EM8Wn
-mSZnH1sjCPaof5fUcff+wVWuaxvBg3F0a79CMa7vzFmBqAF8LQ4T65UUy31y
-ivMX1UNXWFVp006KKb3P/ZpX18KUj+miVdEUK3hxus3Lq4HX8zhryJ/inYsZ
-t4XRRnhRKMsQ8immuec/bpumh106t9zhDwR9okJTxVMrIe+VXGi7T1CaaP2c
-8/4arN9vH4qtJaiyBHgMm3UgsB8/FF9EUDHgndtTcAXSsvGs7CDB73+emdzC
-tbB3n3e7IIHgsYKqyre+Wnh4YblJs5Ggw9TMopbJWpjXnNzix9kllJ9Mvmvg
-56iuVrSBYGBahGM5qwHl+Vla2TqCW/tKJH7zNVDS5JMFawiaa+KfhM4pg9YR
-P/+MaIISkTs6epWBp1eM94iYoOXeoL7PpQyU4t3T8zi/tCuOHfmshpWFlZO0
-KwgOuxtntNao4eGMgNGOKILBqnG7VgSrwR4V2O+5hGCja2+c63TuP2W11bCY
-YKTucvjgBDXoT6c+COMc0xY2XvWRAXmv3iwREdzxVWrsMjLwa2dQw+FIgm+y
-Q4o1GgaSTsVWO3CWO48o9hQw0FadVlUYwfUIPB/vnM5Azg/D5YqFXI+bWxe8
-TGLA7t6tFnI+JQ70qotlIGbph+KWBVwfy7fxykgG9FJ+kZjzxe0wtD6IAX7+
-7IIH4QRfsJL2bE8GfqTKE5Sc/wEtfo5Z
+1:eJwVkXkw3HcYhxdtJGm1TZRFNS1pCKmoiJVgNUTMaKkj5Ph+7bpHprI1jpgk
+QjFCHUWF7M9arI1miSu7P8ZUxfsSV+LcjCbbKpIplcoQV0c0mlT/+Mwzz7/P
+xyw8NiBKm8Ph8Lf2P2M+lnh9W8eCzQUtX+1+in/O8FuWaljYxr2fkdpH8SHv
+Wb5QykL5/GJlVi/F/u+YqKFrLNh16v9c0EOx9tNVw9oMFgRRgtXKbooxibWX
+QkJZaGWXIqCTYnBfUMDwaRa+zDZI679D0dtI54CzLwtPiJN0tIPiwQ7B74au
+LOhpZ45Pt1Nc0tH/fOQDFqL8uCc4bRQTr6W8wX+kAoMFvoVbM8XIWevJWyMq
+qMdwd68mikGOmlajPhW4lWQL/Rsp8iYORa+1qEDkrL4eVk/xhfnTe/XFKujN
+idTNUFBMUQUUmnylggsWeU+7qyhmqS1NXvQoYTxEc8ujiKJOUv/YRocS2hLl
+yYJCimkm0dkvW5QgyTnvnVRA8XLEzbVXNUoIZTmLinyKor8/GX3zqhKebbOy
+eyuHYqCxeab+CSVoNV1qU6dTNA8zXTzYextsN016hAkUk5+YZQ7mNkMOI5i8
+eIri2ubEHUOHeihM+sjjHpdiqRCW/KwUMKiwG/ecJOhWkav3sk8OZ1PTmMcV
+BONFexPutsrh7mNJxZyUYA2/Q5NXIweb463yxXKC26cWbphmyIGzfb5hs4zg
+2B5/J1e+HGp/ONlldJ2gUMaNTmerYb3GYt6vgGDyjRrUlcmgdHDIuSuVYEMC
+32KsQAavbeaODaQQnDr+MI9JkcG5Ii3P0SsE3Wd0T1tRGbgE8fwmLxPcuS9m
+4QtDGcxMVUVuJBH8zCfisKlxFdivxH9vF0sw5mTK3P4VKaiNjKerQwhyXC9a
+73gghewODfOTkGDJ/gTRX0opuIYyAWoBwc5/z63WxUmhXsHt4wQT3F0b+Np6
+uRyyeIaNIWcItm8e4NosScAlUD/5Q3+CvnMWRG9MAqvrDw47+BGcUZtVLDRL
+oK68eNHbl+A7Cu7eplgJcP/YFX7Fh2CYv46t7fMyWIl7z2vCa6vXzd887RYZ
+UBTqccvcCVYU/ZKza4QBof3w2G03goeSx4aWGxkweJSfO3CMYLBfX4BKxEDG
+nrdfrbsSXHbqKi32YeBo92Dbu1ueta9DE2/DwFJUXpwln2DzP0qh/YIYBI07
+Z085E/SYbajWHxbD+/73K79xIqgZVcysNohhcC3nTNZRgqJ2ueV4vhjSGa/d
+lUcIav9Y8XXLeTEccdkx1OpIUFzINJZ4i+H59MDVYd7Wf7/y6hxtxXA2Nsth
+w4Hgf7CbCFM=
           "]], 
          LineBox[CompressedData["
-1:eJwB4QIe/SFib1JlAgAAAC0AAAACAAAAoWhy9A/9lr892uXDNyFawIXlGOq0
-9Ja/LRpGIlEXWsCAEoySK+OWvyb7YNGJAlrAej//OqLRlr+dwO/gwu1ZwHVs
-cuMYwJa/kmryUPzYWcBqxlg0Bp2Wv/RrU1Jwr1nAZfPL3HyLlr9jw7HjqppZ
-wGAgP4XzeZa/Uf+D1eWFWcBVeiXW4FaWv6MkhNpcXFnAQC7yd7sQlr8wJfNp
-TwlZwOv9JP8l+JS/GPYd8FW9V8BBnYoN+8aSv6wRIViEJlXAa1N95yjyjL9R
-KzKdZhVQwKT4N6Y56oS/PVCtZBzBRsDir4RxVGp4v4v0r87dLznAOA599uJP
-YL+2CIWpUTAZwNtzknc5aH07MfvvseAaCUAdqpFV0SJfP0VbunY+SShAAuhn
-fpoTeT+ItG9trQdAQG4mY2Fim4Q/UWAXVSlISUDHnsKvF1qNP8/8fJvQoVFA
-yD2oNff3kj9CLaDMY4JWQGm0Oif7B5M/l1wXJ4uUVkAKK80Y/xeTP5xaHDGy
-plZATBjy+wY4kz+0ws9T/8pWQNDyO8IWeJM/I0Pc05UTV0DXp89ONviTP/ME
-jL6zpFdA5hH3Z3X4lD9pjEY+s8ZYQIeIiVl5CJU/tpF3itDYWEAo/xtLfRiV
-P7RlNobt6lhAauxALoU4lT++eV2MJg9ZQO7GivSUeJU/DlJR05RXWUD1ex6B
-tPiVP6XDz0ti6FlAlvKwcrgIlj/us92QevpZQDZpQ2S8GJY/53J5hZIMWkB4
-VmhHxDiWP+pcWn3BMFpA/DCyDdR4lj8s4cGnG3laQJ2nRP/XiJY/9EY+aTGL
-WkA+Htfw25iWP2x7SNpGnVpAgAv80+O4lj9rUAbLcMFaQCGCjsXnyJY/8vC5
-SoXTWkDC+CC369iWPylg+3mZ5VpAY2+zqO/olj8QnspYrfdaQATmRZrz+JY/
-paon58AJW0ChaHL0D/2WP/1KHKFkDltAFpJq9w==
+1:eJwBkQJu/SFib1JlAgAAACgAAAACAAAAA0OGDVjslr8NESFuaA1awOs5hLkV
+zJa/lHfO8y/nWcCAJH/89auWv/6IObkhwVnAqvl0grZrlr+9uwkPCXVZwP2j
+YI4365W/6GCS5ubcWMCk+DemOeqUv/2pREXfrFfAISKCaGXHlL+QChZKsYNX
+wJ5LzCqRpJS/KP5dy4RaV8CZnmCv6F6Uv2OeUUMwCFfAjkSJuJfTk78Ow8cI
+mWNWwHeQ2sr1vJK/K53v6bEaVcBKKH3vsY+Qv4qULQUBilLA4q+EcVRqiL+/
+H8U+KdpKwDgOffbiT3C/lP0Ct3KGL8Dbc5J3OWiNOzQK6m0k3whAHaqRVdEi
+bz+lT8b4pB41QALoZ36aE4k/pYve+MZjTkCWYXknJ1SJP0jwbHxzrU5AKduK
+0LOUiT8yApNyHfdOQFDOrSLNFYo/3i2mtmmKT0CetPPG/xeLP0hS9M5xWFBA
+OYF/D2UcjT+qB290rn5RQDiNS9CXkpA/Om1FuDLKU0ACStQk3rKQPwR0hyPg
+7lNAzAZdeSTTkD9wURVIjBNUQF+AbiKxE5E/M5AUveBcVECGc5F0ypSRP2gd
+oVZ671RA01nXGP2Wkj+CdvJHcBRWQG4mY2Fim5Q/gyN2I2ddWEBQpJw2Xb6U
+P/L8MDX7hFhAMSLWC1jhlD8KTijHjaxYQPQdSbZNJ5U/M1fMa677WEB5FS8L
+ObOVP2wF6rfdmVlAWpNo4DPWlT8gnIjLZcFZQDwRorUu+ZU/e6pjX+zoWUD+
+DBVgJD+WPy0uzwf1N1pA4IpONR9ilj+Fo18cd19aQMEIiAoahZY/g5AssfeG
+WkCEBPu0D8uWP3rRe1v01VpAA0OGDVjslj8rUYwIhvtaQJyPMG4=
           "]], 
          LineBox[CompressedData["
-1:eJwV0GswXAcUB/AlHmFEZNEiiEZjPEaIsFqMc0QapfVMte69pbYtnaBN0o1N
-jRRD4pGIxy7uriWIeGzEI/eyizSVIqnHRFKCNmg6HpGkZEak24eS3n44c+b3
-6f8/541Pj0claPN4vABu/t9zbEh/pi0NwZlPXw3bUXg+Wc/d2JWGGM13ffGc
-1YfWhCn+NAhV4LKwh8JFy1npSDgNSeL+igTOJmt3bjsKaRAJ3tF+YkthUk2V
-01IODWdVIb+s2FBIi/OowHIaLorvHj7OeTD064t1jTRUCCI61qwptPk3aC12
-mIZmVXSeZjeF92PWu6eMZTCqivfiWVG46fbrM087GTwQL9RmW1LorD9sLT0g
-gzlBopEu55yuS1nhH8jguSp5wcCCQgE/5N0huQz4anGp6WsUVo/WTve8KYcY
-deGqA5/CkcsXDCwEchCe3kkod1GoSRP7ioPkkOQtGXThHOH4fo1HkhzS1bTC
-3YRCnXN/Jra0y6FGfTnYx5i7zz9MU+VTCUvq7oZQQy7v+oZZVoQCRN2Lsae0
-KQxZ0LqgilfAXste+1daFMaZb9daPaGAn9KKnxZwzk0zWyVKFeDu65Naw6Nw
-OsD19sFxBazeLC4c2SLxm/G41OWjVfDFgM8Nuw0Sb6z/MBn2UTWQYyUWd9dJ
-REF+hU1cDRxa9JvYt0TiLU30ckNLHei/6DFIHiJxZkFkfG6iHlKjokl/JYnz
-rpvdKVMNkDErA8dCEj8vkHxVpdMMbj3/+NemkDgeIG16sOMqnOnTmdgfTuLH
-0ke+k0bX4GbTQcdIDxKFGu8ZG+82aJrPorVMSXSa2czwtu0A1yCxYugPAh8N
-LJmfFVwHaqugx2aKQPs00cPOYAa+pftlemoCmdzCNnUoA/lWkgqJikAsa8ju
-jWRAWi0ss+Uc1z7tfItgQFnPKxF0EVi55Js+eoyByXb/vESWQH6UjvV8AQOu
-Q72pd9oJ5LmUx+4cYWD2LyYqt5nA4rfaDvDHGFhOz47gc7Y98qOu+TgDL7Yi
-wy41Eegn/LvV6iED23XXglWNBJ6mY7f2PWPAc5dbwOMrBD7f5lDjZ8hCoVOL
-25E6AudmVb8dC2HBl6w30qsksEj78eGBMBZKP5w5lC/n+juaK62PsrAcZZpm
-yPmKSHTyHsWC5L2cJWMZgSmG7tpeX7LwxO+z71+v4Pq4f5JYdJIF/7cVL+Xl
-BN6PLhpZTmVB6jXhbM3Zs25FUpnBAuwPpO3KCNzwVtrzSlgo32N/wklC4LXY
-n/OIMhZ+3001tpRy/8rRX2FkLKCFdNaVs4lSEGFUzUKF2Si/o4TA/rGEzoQ6
-FlZMtgV7cD71ssyir4GFgB2+mZ3FBDpYDZ6xuMoCbSDqEnCecIoObG1loS3F
-b++9IgL/Ayts1m0=
+1:eJwVjnlQlHUcxpcNCjBFVpGCWQIdbDFYjxYQBvp+RxABszji+L2vIGIIY3Ip
+TggI2KSrKddyLKwsSMUpsscLIQZxhLCOnIaRcgTIoRxxFRhgtf3xzDOff57n
+YxYc6RXCZrFYh9T5v+Of2pTb7hXDRGwP19OURl5iqYAlEMPSqwohX826GyM6
+675i4Jjsv7X/PRpnLhr9/tdFMRxwqq0SmNDYsepdvZAvBq8wxxZbLo1py22B
+k2NiyFC6vXQ0pjEqmiUY1coFRX/3BhrR6DVvpzPIy4XeDZ+tzu/SuH2mkumN
+yAX9I8G27oY0SsZE2g1ruZA+EHfFdxuNCUEdQ7XcPJCzNPIIh8aAYS1GiXnQ
+Yy6sPK5Po+mz2ICyq3mwNSrzl2A9Got7A5WZHAmkaVaaRW6iUd605/iZPbcg
+1WqoQfgGje0FLTJDSgopSbByb5lC+1/lupEJUqh/1FXatERh1ebCkLYCKcwa
+BhLVIoVZCfHGF55L4ag8ob5/nsIgSiB8fLYAdEbrvlqZoXDNoCQwJakQrhwS
+6AnGKcxpa716+fFtSNSy4Mn6KFQ5llmvrn4LkTc4VHENhZqThyXLr0pAOG09
+9VM8hTaK9e3JHndg8Y/ssj8dKESbazncQBlkuLhk+rEp5D4I+5QdIYN/+Wv1
+0RrqP2837alLMgg3rJq8waKwOlo3Ti6VgdsLA/umfwjy7t4McBqSAfubiRHe
+OkFtkatIwJfD+c6v+WvLBBe0jxHqrhx8P/v5Yf4EwUCPhpqPa+TQ6vDl8g/j
+BDvFVhxokMMB8w+4vc8JVuze8mhXpxy2rIiitMYIfu7c7TA3K4d2cbBhxDDB
+35I8TZMtFXBwQCME+gk2rfhMFd9RgFEwssZUBGMilk4drlaAieMDyYt2ghaT
+qSPj9Qowe8fder6NoOhJ+9NdXQrgdXmf2WhV71fbdRQtKMDGPrRvRzPBt85x
+FVJrJXhyUsuO1hGsf1ln5fiREnzmOE5e9whGnfStGHRRgr9KPORfq/bxSPvO
+2F8JJxKLOKdr1P57NXLy4pQQPl2dkKwg+MnceFx2oxKutQx41JQTZIdcXhWo
+lHBTGjTzYxnB2kFuTF+PEtJiJ660lBI07fAN3zamhBz+/P3uYoKLFaoTGZoM
+fC9hm08XESzZGTK4bzMDpReEjQu3CVISDdJjwECFx9vUaiHBluv2XnrvM6B4
+c0eaZgHBrLBK5xQ3BhrPWfxtIiHoOuLabOnFQMuxqkzzPIKv/SYcOygG2ngf
+8i1zCZ4+YmK76SwDncMOp+xyCBo13mcqYhjoqWt+DdkEu2389rlfYqAvyyXX
+JYvgwd3pFtdTGXjm7tHpLSI4K7Us4YkZGDZ/EkplECwyeLhTVcjAKItin0wn
+6JsSUhhaxsD4wHB+aBrBL0wlbknlDOif99F0VfN/CDrwfg==
           "]], 
          LineBox[CompressedData["
-1:eJwBwQI+/SFib1JlAgAAACsAAAACAAAAoTzLNgm2sz9NqwYqhpNZQDyLUakk
-t7M/ly7X7OWUWUDusIANfruzP5LnOZZLmllAUvze1TDEsz+3BqqVFqVZQBmT
-m2aW1bM/t/k0R6u6WUDKuMrK79mzP3LxJS4QwFlAfN75Lknesz+SzU/5dMVZ
-QOApWPf75rM/ATNOPD7QWUCowBSIYfizP5Wy9XTP5VlAN+6NqSwbtD+UhO+w
-7BBaQFVJgOzCYLQ/AnSOUxJnWkDARbZh0mS0PxO5AEsYbFpALELs1uFotD9T
-8DwqHnFaQAQ7WMEAcbQ/YjUToCl7WkCyLDCWPoG0P6cZN2k/j1pAEBDgP7qh
-tD/lSlxxZrdaQMzWP5Ox4rQ/I1AcWaIHW0BDZP85oGS1P7blcobRp1tAvksk
-tWFjtj/GsA54yuBcQPY7zzXHd7c/rJbAW7QyXkCk2i/4sHm4P3b2uRx6bF9A
-amJvmjB+uD+XGonI73FfQDDqrjywgrg/Tz+gVmV3X0C8+S2Br4u4P3iKphlQ
-gl9A1BgsCq6duD+7JxM7JJhfQARXKByrwbg/8X1s68bDX0Bk0yBApQm5P5zM
-DwF7DWBAKltg4iQOuT/rZ3f7MxBgQPDin4SkErk/hAMD5+wSYEB88h7Joxu5
-P5I7hpFeGGBAlBEdUqItuT8lrzw0QSNgQMRPGWSfUbk/J6RpsAM5YECK11gG
-H1a5PxREEb27O2BAUF+YqJ5auT9K5Ny6cz5gQNxuF+2dY7k/lyXgieNDYED0
-jRV2nHW5P6OrlnXCTmBAuhVVGBx6uT/fTV4LelFgQICdlLqbfrk/ZPBJkjFU
-YEAMrRP/moe5P082jXOgWWBA0jRToRqMuT+y2eTNV1xgQJi8kkOakLk/X31g
-GQ9fYEBeRNLlGZW5P1chAFbGYWBAJcwRiJmZuT+axcODfWRgQBzgPdM=
-          "]]}, Annotation[#, "Charting`Private`Tag$13957#1"]& ], 
+1:eJwB4QIe/SFib1JlAgAAAC0AAAACAAAACUaGMDe6sz85mkL6tZhZQHL0OhVG
+wrM/Ai7msbWiWUDb43MOhdOzPwguQ7YauFlABAkerZDbsz/VViMzFcJZQCwu
+yEuc47M/OGD1UA/MWUB8eByJs/OzP8wUb28C4FlAHA3FA+ITtD8gBbk35Ada
+QFw2Fvk+VLQ/fgKn9ZVXWkDeiLjj+NS0Pxtw6yay9lpA4i39uGzWtT/IFhZf
+zTNcQGSJkm6cBLg/2RasWjneXkDSQZOn1A26P9wMPPGSqmBAXJPfO9UMvD8F
+7eCs5dxhQGH2N9sdN74/4dGwmtslY0Ap2/1+Nx7AP7C7kg/GVWRA38PlFYQ2
+wT/hYZtGu5tlQCN5c9q0ScI/b8+Ju1LYZkDd3LbgaUrDP7D5eVCX/GdAVUmA
+7MJgxD+9th8GKTZpQENk/zmgZMU/9HFl8MVXakC+SyS1YWPGP3B3zUHBcGtA
+9jvPNcd3xz9kukjCUJ5sQKTaL/iwecg/i9BsNp+0bUBqYm+aMH7IP5MSjyJz
+uW1AMOquPLCCyD/EVUHTRr5tQLz5LYGvi8g/m99Vgu3HbUDUGCwKrp3IPykB
+Pxc4221ABFcoHKvByD+rexEcwgFuQGTTIEClCck/ZU63kalObkAqW2DiJA7J
+P2K12Q92U25A8OKfhKQSyT+GHYxSQlhuQHzyHsmjG8k/RPGgJdphbkCUER1S
+oi3JP52migIHdW5AxE8ZZJ9RyT+5SF6XVZtuQIrXWAYfVsk/L8KAXh6gbkBQ
+X5ionlrJP8w8M+rmpG5A3G4X7Z1jyT+ANUhPd65uQPSNFXacdck/vjQyUJXB
+bkC6FVUYHHrJP3G31Dtcxm5AgJ2Uupt+yT9KOwfsIstuQAytE/+ah8k/dkYc
+mq/UbkDSNFOhGozJP8bN/pd12W5AmLySQ5qQyT9AVnFaO95uQF5E0uUZlck/
+4N9z4QDjbkAlzBGImZnJP6pqBi3G525AEZNV1Q==
+          "]]}, Annotation[#, "Charting`Private`Tag$44542#1"]& ], 
        TagBox[{
          Directive[
           Opacity[1.], 
           RGBColor[0.880722, 0.611041, 0.142051], 
           AbsoluteThickness[1.6]], 
          LineBox[CompressedData["
-1:eJwB0QIu/SFib1JlAgAAACwAAAACAAAAJcwRiJmZub/eVQTxF1VhwFqU6WyU
-lbm/ASlDMF9SYcCOXMFRj5G5vyT8gW+mT2HA9uxwG4WJub9qov/tNEphwMYN
-0K5webm/9+766lE/YcBmT47VR1m5vw+I8eSLKWHAqNIKI/YYub9Cut7Y//1g
-wCzZA75SmLi/px65wOemYMB33W/uZ4G3v63Wwmsh1F/ASzMm3fh8tr95Ty2P
-enNewJG8Np6lfbW/z19LnL4ZXcCU5iTBUXm1vzF0q3XiE13AlhAT5P10tb+S
-iAtPBg5dwJpk7ylWbLW/UrHLAU4CXcCiDKi1Blu1v9QCTGfd6lzAtFwZzWc4
-tb/ZpUwy/LtcwNb8+/sp87S/4utNyDleXMDYJuoe1u60v0MArqFdWFzA2lDY
-QYLqtL+iFA57gVJcwN6ktIfa4bS/Yz3OLclGXMDnTG0Ti9C0v+aOTpNYL1zA
-+JzeKuyttL/rMU9edwBcwBo9wVmuaLS/83dQ9LSiW8BikKhrpGS0v9HzlOo8
-nVvAquOPfZpgtL+vb9ngxJdbwDuKXqGGWLS/bGdizdSMW8Bc1/voXki0v+VW
-dKb0dlvAn3E2eA8otL/YNZhYNEtbwOjEHYoFJLS/t7HcTrxFW8AwGAWc+x+0
-v5UtIUVEQFvAwL7Tv+cXtL9QJaoxVDVbwOILcQfAB7S/yxS8CnQfW8AkpquW
-cOezv7zz37yz81rAbPmSqGbjs7+abySzO+5awLRMerpc37O/eOtoqcPoWsBF
-80jeSNezvzXj8ZXT3VrAjkYw8D7Ts78UXzaMW9hawNaZFwI1z7O/8tp6guPS
-WsBmQOYlIcezv63SA2/zx1rArpPNNxfDs7+LTkhle8JawPfmtEkNv7O/a8qM
-WwO9WsBAOpxbA7uzv0pG0VGLt1rAiI2Dbfm2s78owhVIE7JawKE8yzYJtrO/
-k2p7As6wWsBAy4Sv
+1:eJwB8QIO/SFib1JlAgAAAC4AAAACAAAAJcwRiJmZyb/eVQTxF1VxwFqU6WyU
+lcm/ASlDMF9SccCOXMFRj5HJvyT8gW+mT3HA9uxwG4WJyb9qov/tNEpxwMYN
+0K5wecm/9+766lE/ccBmT47VR1nJvw+I8eSLKXHAqNIKI/YYyb9Cut7Y//1w
+wCzZA75SmMi/px65wOemcMB33W/uZ4HHv63Wwmsh1G/ASzMm3fh8xr95Ty2P
+enNuwJG8Np6lfcW/z19LnL4ZbcAaPcFZrmjEv/N3UPS0omvALg+W0zJmw7+F
+b2+FskRqwITY5EcTTsK/4m51YWLJaMBM1Y2ODzvBv8sFLyf9VGfAniOBk4c6
+wL8gfAImn/llwGXS3CW3SL6/Qvq8b/OAZMCiAEyhVkG8v9BXkfJOIWPAw5Vv
+wS1Eur/rTBlflchhwGkZh9a8G7i/0UmIFo5SYMAjQDNoQxi2v0dMIg4c613A
+eMBNYogPtr9oy/2fSd9dwMxAaFzNBra/iErZMXfTXcB2QZ1QV/W1v8lIkFXS
+u13AykIHOWvStb9NRf6ciIxdwHJF2wmTjLW/VT7aK/UtXcDCSoOr4gC1v2Qw
+kknOcFzAF8udpSf4tL+Gr23b+2RcwGxLuJ9s77S/py5JbSlZXMAWTO2T9t20
+v+gsAJGEQVzAak1XfAq7tL9sKW7YOhJcwBJQK00ydbS/dCJKZ6ezW8Bn0EVH
+d2y0v5WhJfnUp1vAvFBgQbxjtL+2IAGLApxbwGZRlTVGUrS/+B64rl2EW8C6
+Uv8dWi+0v3wbJvYTVVvAD9MZGJ8mtL+dmgGIQUlbwGRTNBLkHbS/vhndGW89
+W8AOVGkGbgy0vwAYlD3KJVvAYlXT7oHps7+DFAKFgPZawFKngMfv4LO/YTAr
+buXqWsBD+S2gXdizvz5MVFdK31rANEvbeMvPs78caH1Ar9NawCSdiFE5x7O/
++IOmKRTIWsAU7zUqp76zv9afzxJ5vFrACUaGMDe6s78KYUvbdrZawNTwgB0=
+
           "]], 
          LineBox[CompressedData["
-1:eJxTTMoPSmViYGAQAWIQfVkz1Hnt2s375UtWa6qujjqw8pbC1ovLEPw3JdEu
-TW0Ivh7/tMtGaQj+zeK9vMq3NsH5LTeeuAv7Ifg+V3v7+K03wvnzlBsnt1tt
-gPNTL91R3e6xDs5fxOCzMMxxDZx/eGr+QV2XVXB+pmT7tT3SK+B8ZQfjDGeJ
-ZXB+Uujld40vF8P5bRfVpX4cWQjnVz9UbDndNR/O//Ln9l4x09lw/pG1vteN
-9WfC+VPj9n8I0JwO59/d7HWoXg7BBwBImZtS
+1:eJxTTMoPSmViYGAQB2IQna0wy7N+5eb98iWrNVVXRx149sR2y4clCP4Knc9i
+K5oQ/OySFZXxCQj+B2Zh+3PSCH7J5FoW2+ub4PzaTUH9Un4IfttFdakfRzbC
++UqJMu/0jm6A86sfKrac7loP53/5c3uvmOlqOH9q3P4PAZrL4XzHuV28v48t
+QuhfvOQA+4IFCPcG1z7X+DQHzt/1R1tc98MsOJ9j2S03w3cz4PyYgGNBm3IR
+/PW/NsYZv50O5984v/zJ5zUIPtPSuVlbchD86f0z1k7xQfCrb5qtNNdH8AHZ
+abX1
           "]], 
          LineBox[CompressedData["
-1:eJwB4QIe/SFib1JlAgAAAC0AAAACAAAAoWhy9A/9lr+dEoEyzpdawIXlGOq0
-9Ja/jmCVxCOOWsCAEoySK+OWv1rHBIbaeVrAej//OqLRlr8mLnRHkWVawHVs
-cuMYwJa/8pTjCEhRWsBqxlg0Bp2Wv4hiwou1KFrAZfPL3HyLlr9UyTFNbBRa
-wGAgP4XzeZa/ITChDiMAWsBVeiXW4FaWv7j9f5GQ11nAQC7yd7sQlr/nmD2X
-a4ZZwOv9JP8l+JS/owU0rtdBWMBBnYoN+8aSvxvfINyvuFXAa1N95yjyjL8K
-lYq9A75QwKT4N6Y56oS/kqXkdrwxSMDir4RxVGp4v38nOERYPjzAOA599uJP
-YL8+Rj4ZpN4iwAAAAAAAAMi4VVGPizqCwjwdqpFV0SJfP5OqcylMAiJAAuhn
-fpoTeT9S6ELXKAI9QG4mY2Fim4Q/C+7pk4jWR0DHnsKvF1qNP586ZQYh+lBA
-yD2oNff3kj86e0U9WvFVQGm0Oif7B5M/HQSvB+EDVkAKK80Y/xeTPwGNGNJn
-FlZATBjy+wY4kz/HnutmdTtWQNDyO8IWeJM/VMKRkJCFVkDXp89ONviTP20J
-3uPGGVdA5hH3Z3X4lD+fl3aKM0JYQIeIiVl5CJU/giDgVLpUWEAo/xtLfRiV
-P2apSR9BZ1hAauxALoU4lT8tuxy0ToxYQO7GivSUeJU/ud7C3WnWWED1ex6B
-tPiVP9IlDzGgallAlvKwcrgIlj+1rnj7Jn1ZQDZpQ2S8GJY/lzfixa2PWUB4
-VmhHxDiWP15JtVq7tFlA/DCyDdR4lj/rbFuE1v5ZQJ2nRP/XiJY/zvXETl0R
-WkA+Htfw25iWP7F+LhnkI1pAgAv80+O4lj94kAGu8UhaQCGCjsXnyJY/Wxlr
-eHhbWkDC+CC369iWPz6i1EL/bVpAY2+zqO/olj8iKz4NhoBaQATmRZrz+JY/
-BLSn1wyTWkChaHL0D/2WP50SgTLOl1pAPYVcmg==
+1:eJwBkQJu/SFib1JlAgAAACgAAAACAAAAA0OGDVjslr8csVY7d4RawOs5hLkV
+zJa/oATgCyZfWsCAJH/89auWv49Cz9/8OVrAqvl0grZrlr9rvq2Hqu9ZwP2j
+YI4365W/IrZq1wVbWcCk+DemOeqUv5Kl5Ha8MVjAISKCaGXHlL9Kg5E1cglY
+wJ5LzCqRpJS/A2E+9CfhV8CZnmCv6F6Uv3QcmHGTkFfAjkSJuJfTk79Yk0ts
+au9WwHeQ2sr1vJK/HYGyYRitVcBKKH3vsY+Qv6hcgEx0KFPA4q+EcVRqiL9/
+JzhEWD5MwDgOffbiT3C/PkY+GaTeMsAAAAAAAADYuFVRj4s6gtI8HaqRVdEi
+bz+TqnMpTAIyQALoZ36aE4k/UuhC1ygCTUCWYXknJ1SJPyEshXjUTE1AKduK
+0LOUiT/wb8cZgJdNQFDOrSLNFYo/jvdLXNcsTkCetPPG/xeLP8wGVeGFV09A
+OYF/D2UcjT+ikrN1cdZQQDiNS9CXkpA/GrHFf84rU0ACStQk3rKQPwPTZlAk
+UVNAzAZdeSTTkD/q9AchenZTQF+AbiKxE5E/uThKwiXBU0CGc5F0ypSRP1fA
+zgR9VlRA01nXGP2Wkj+Tz9eJK4FVQG4mY2Fim5Q/C+7pk4jWV0BQpJw2Xb6U
+PyhwzXn//ldAMSLWC1jhlD9F8rBfdidYQPQdSbZNJ5U/fvZ3K2R4WEB5FS8L
+ObOVP/H+BcM/GllAWpNo4DPWlT8OgemotkJZQDwRorUu+ZU/KgPNji1rWUD+
+DBVgJD+WP2MHlFobvFlA4IpONR9ilj+BiXdAkuRZQMEIiAoahZY/nQtbJgkN
+WkCEBPu0D8uWP9cPIvL2XVpAA0OGDVjslj8csVY7d4RaQI7qKJU=
           "]], 
          LineBox[CompressedData["
-1:eJxTTMoPSmViYGBQAGIQfXez16F6uen28iWrNVVXRzl0ZbMZ8Oki+NudPibm
-2CH4Ah+PHdVIRPCz5s/RfNqM4Mv+cf8YexLBvxDxecc1vhlwvpmQl8eJmQj+
-3NMLru9UmYkwz87v2xyrWQj1G3+LNATMhvN3fz541S98LpzvYNYxTTZuPpx/
-4Fvo86WrF8L5tx8X87VeXgznP9L9uyPn2lI4P6VzUt4clhVw/iXHycuv8K6C
-82Mm37e+yrMGzk/8Zn5b1nwdnK95+2+dudwGOP/+4aeiLWYb4XzlyuJbWzw3
-wfkM2lNj+U8h+HfvbHuQ6bUZzs/hMmAyzUXwf5uvVGaYgODHNbO/2TQDwT90
-LnVL6kIEv+TLFIn9SxF8NakjNRKrEPzLmqHOa9ci+ACct9ie
+1:eJxTTMoPSmViYGCQAGIQXX3TbKW5/nR7+ZLVmqqroxw06pabMJgg+Fx/HnD+
+DkPwz3wP3vJhDoLf//lY3LNHCL7I6zWbL+bNgPNnPZrEsfcXgr/hgFZMltZs
+OP/4vEPrxaPmwvnTjh1pa7y0AM4/YbvC9Pv3RXA+yzPXWZ9/LIPzzTb+FmkI
+WA3nO5h1TJONWw/nf+DwjYxauwHOP/At9PnS1RvhfPYi2Y1zTTfB+X5vn1RN
+3Y/gf1x1In4iy2Y4f0rGGpdeTwQ/zV3OnDsHwbdQm6DZ2YfgLxQ9qXRiPoKf
+rTDLs34lgg8ABDilBA==
           "]], 
          LineBox[CompressedData["
-1:eJwBwQI+/SFib1JlAgAAACsAAAACAAAAoTzLNgm2sz+TansCzrBaQDyLUakk
-t7M/ooDt0k2yWkDusIANfruzP8D0v3UxuFpAUvze1TDEsz/93GS7+MNaQBmT
-m2aW1bM/dq2uRofbWkDKuMrK79mzP5Qhgelq4VpAfN75Lknesz+ylVOMTuda
-QOApWPf75rM/8H340RXzWkCowBSIYfizP2tOQl2kCltAN+6NqSwbtD9e79Vz
-wTlbQFVJgOzCYLQ/RjH9oPuXW0DARbZh0mS0P+Y96yZ7nVtALELs1uFotD+G
-Stms+qJbQAQ7WMEAcbQ/yWO1uPmtW0CyLDCWPoG0P0uWbdD3w1tAEBDgP7qh
-tD9S+93/8+9bQMzWP5Ox4rQ/XsW+XuxHXEBDZP85oGS1P3hZgBzd91xAvksk
-tWFjtj8b6k+u01BeQPY7zzXHd7c/9HI49RfHX0Ck2i/4sHm4PzCOg4EqkmBA
-amJvmjB+uD9OkUE3NpVgQDDqrjywgrg/bZT/7EGYYEC8+S2Br4u4P6qae1hZ
-nmBA1BgsCq6duD8mp3MviKpgQARXKByrwbg/G8Bj3eXCYEBk0yBApQm5Pwby
-Qzmh82BAKltg4iQOuT8l9QHvrPZgQPDin4SkErk/RPi/pLj5YEB88h7Joxu5
-P4H+OxDQ/2BAlBEdUqItuT/8CjTn/gthQMRPGWSfUbk/8SMklVwkYUCK11gG
-H1a5PxAn4kpoJ2FAUF+YqJ5auT8uKqAAdCphQNxuF+2dY7k/bTAcbIswYUD0
-jRV2nHW5P+c8FEO6PGFAuhVVGBx6uT8GQNL4xT9hQICdlLqbfrk/JEOQrtFC
-YUAMrRP/moe5P2JJDBrpSGFA0jRToRqMuT+ATMrP9EthQJi8kkOakLk/n0+I
-hQBPYUBeRNLlGZW5P75SRjsMUmFAJcwRiJmZuT/eVQTxF1VhQJlCTwo=
+1:eJwB4QIe/SFib1JlAgAAAC0AAAACAAAACUaGMDe6sz8KYUvbdrZaQHL0OhVG
+wrM/dQ8MNWDBWkDb43MOhdOzP66MjH662FpABAkerZDbsz9R/INpn+NaQCwu
+yEuc47M/8mt7VITuWkB8eByJs/OzPzVLaipOBFtAHA3FA+ITtD+6CUjW4S9b
+QFw2Fvk+VLQ/w4YDLgmHW0DeiLjj+NS0P9mAet1XNVxA4i39uGzWtT8FdWg8
+9ZFdQGSJkm6cBLg/4iY7suVCYEDSQZOn1A26P9UzKI3Jo2FAXJPfO9UMvD88
+qWF+wv1iQGH2N9sdN74/1ha0JAl1ZEAp2/1+Nx7APwSl7JFI02VA38PlFYQ2
+wT9nKz601U5nQCN5c9q0ScI/Phrc7HfDaEDd3LbgaUrDP6cpYOwSH2pAVUmA
+7MJgxD9GMf2g+5drQENk/zmgZMU/eFmAHN33bEC+SyS1YWPGPxvqT67TUG5A
+9jvPNcd3xz/0cjj1F8dvQKTaL/iwecg/MI6DgSqScEBqYm+aMH7IP06RQTc2
+lXBAMOquPLCCyD9tlP/sQZhwQLz5LYGvi8g/qpp7WFmecEDUGCwKrp3IPyan
+cy+IqnBABFcoHKvByD8bwGPd5cJwQGTTIEClCck/BvJDOaHzcEAqW2DiJA7J
+PyX1Ae+s9nBA8OKfhKQSyT9E+L+kuPlwQHzyHsmjG8k/gf47END/cECUER1S
+oi3JP/wKNOf+C3FAxE8ZZJ9RyT/xIySVXCRxQIrXWAYfVsk/ECfiSmgncUBQ
+X5ionlrJPy4qoAB0KnFA3G4X7Z1jyT9tMBxsizBxQPSNFXacdck/5zwUQ7o8
+cUC6FVUYHHrJPwZA0vjFP3FAgJ2Uupt+yT8kQ5Cu0UJxQAytE/+ah8k/YkkM
+GulIcUDSNFOhGozJP4BMys/0S3FAmLySQ5qQyT+fT4iFAE9xQF5E0uUZlck/
+vlJGOwxScUAlzBGImZnJP95VBPEXVXFA7vFQtg==
           "]]}, 
         Annotation[#, 
-         "Charting`Private`Tag$13957#2"]& ], {}}, {{}, {}, {}, {}, {}}, {{}, \
+         "Charting`Private`Tag$44542#2"]& ], {}}, {{}, {}, {}, {}, {}}, {{}, \
 {}, {}, {}, {}}}, {}}, {
     DisplayFunction -> Identity, Ticks -> {Automatic, Automatic}, 
      AxesOrigin -> {0, 0}, FrameTicks -> {{Automatic, 
@@ -700,7 +720,7 @@ hQBPYUBeRNLlGZW5P75SRjsMUmFAJcwRiJmZuT/eVQTxF1VhQJlCTwo=
             Part[#, 1]], 
            (Identity[#]& )[
             Part[#, 2]]}& )}}, 
-     PlotRange -> {{-0.1, 0.1}, {-146.17802346665218`, 138.65917254301797`}}, 
+     PlotRange -> {{-0.2, 0.2}, {-307.3937487805728, 277.31834508603595`}}, 
      PlotRangeClipping -> True, PlotRangePadding -> {{
         Scaled[0.02], 
         Scaled[0.02]}, {
@@ -916,505 +936,14 @@ hQBPYUBeRNLlGZW5P75SRjsMUmFAJcwRiJmZuT/eVQTxF1VhQJlCTwo=
    3.804956777493122*^9, 3.8049568318800693`*^9, 3.826302881702112*^9, 
    3.8263029176580935`*^9, {3.8263030037441564`*^9, 3.826303034278684*^9}, {
    3.8263030747123146`*^9, 3.826303127367818*^9}, 3.8263031630779505`*^9, 
-   3.8263032909099073`*^9, {3.854915512123949*^9, 3.8549155341468067`*^9}, 
-   3.8549156976967964`*^9, 3.8549157289599752`*^9},
- CellLabel->"Out[53]=",ExpressionUUID->"9d60895d-d0c0-4c98-8ac7-a94d6505e08b"],
+   3.8263032909099073`*^9, {3.854915512123949*^9, 3.8549155341468067`*^9}, {
+   3.8549156976967964`*^9, 3.854915727137088*^9}, 3.854915814987171*^9, 
+   3.8549158683034964`*^9, 3.8549159232267256`*^9, {3.854916023039755*^9, 
+   3.8549160430096407`*^9}},
+ CellLabel->"Out[70]=",ExpressionUUID->"a2f07108-b046-44b8-8328-d63bfbe75489"],
 
-Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "307.3937625548245`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "277.3183564051525`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "290.5954926349739`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "263.4524385848949`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "273.94759974587157`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "249.58652076463727`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "257.4500838875177`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "235.72060294437964`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "241.1029450599121`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "221.854685124122`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "224.9061832630549`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "207.9887673038644`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "208.85979849694604`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "194.12284948360676`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "192.96379076158556`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "180.25693166334912`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "177.21816005697343`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "166.3910138430915`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "161.62290638310967`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "152.52509602283388`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "146.17802973999426`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "138.65917820257624`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "130.8835301276272`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "124.79326038231864`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "115.73940754600854`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "110.92734256206101`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "110.3222439367304`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "106.6741432356216`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "109.16535399079676`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "106.6741432356216`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "108.00846404486313`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "106.6741432356216`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "106.8515740989295`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "106.6741432356216`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "105.69468415299588`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "106.6741432356216`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "92.64445707163699`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "94.76457384028171`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      RowBox[{"-", "44.49137289420517`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      RowBox[{"-", "47.38228692014086`"}],
-       RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],"nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "3.147846445032676`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "0.`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "50.27320094607642`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "47.38228692014073`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "96.88469060892632`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "94.76457384028159`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "107.65360231824732`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "106.6741432356216`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "106.4967123723137`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "106.6741432356216`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "105.33982242638007`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "106.6741432356216`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "104.18293248044644`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "106.6741432356216`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "103.0260425345128`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "106.6741432356216`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "106.11527757811349`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "110.92734256206101`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "118.70299063701`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "124.79326038231858`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "131.14032666515823`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "138.65917820257621`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "143.42728566255806`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "152.52509602283385`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "155.5638676292096`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "166.3910138430915`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "167.55007256511269`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "180.25693166334912`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "179.38590047026747`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "194.12284948360676`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "191.07135134467387`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "207.9887673038644`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "202.60642518833185`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "221.85468512412194`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "213.99112200124156`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "235.72060294437958`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "225.22544178340289`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "249.5865207646372`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "236.3093845348159`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "263.4524385848949`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}], ",", 
-   RowBox[{"{", 
-    RowBox[{
-     TemplateBox[{
-      "247.24295025548048`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"], ",", 
-     TemplateBox[{
-      "277.3183564051525`",RowBox[{"\"nm\"", "\[ThinSpace]", "\"pN\""}],
-       "nanometer piconewtons",
-       RowBox[{"\"Nanometers\"", " ", "\"Piconewtons\""}]},
-      "Quantity"]}], "}"}]}], "}"}]], "Output",
+Cell[BoxData["\<\"C:\\\\Users\\\\ChemeGrad2019\\\\source\\\\repos\\\\tangles_\
+model\\\\notebooks\\\\delta_energy.csv\"\>"], "Output",
  CellChangeTimes->{
   3.8044460937524333`*^9, 3.8044462130330896`*^9, 3.804446326367474*^9, {
    3.804446550418233*^9, 3.8044465588586516`*^9}, {3.8044468629060297`*^9, 
@@ -1426,9 +955,11 @@ Cell[BoxData[
    3.804956777493122*^9, 3.8049568318800693`*^9, 3.826302881702112*^9, 
    3.8263029176580935`*^9, {3.8263030037441564`*^9, 3.826303034278684*^9}, {
    3.8263030747123146`*^9, 3.826303127367818*^9}, 3.8263031630779505`*^9, 
-   3.8263032909099073`*^9, {3.854915512123949*^9, 3.8549155341468067`*^9}, 
-   3.8549156976967964`*^9, 3.854915729282502*^9},
- CellLabel->"Out[54]=",ExpressionUUID->"eb95fc22-5536-47d8-bb29-b849323d26d5"]
+   3.8263032909099073`*^9, {3.854915512123949*^9, 3.8549155341468067`*^9}, {
+   3.8549156976967964`*^9, 3.854915727137088*^9}, 3.854915814987171*^9, 
+   3.8549158683034964`*^9, 3.8549159232267256`*^9, {3.854916023039755*^9, 
+   3.8549160433368454`*^9}},
+ CellLabel->"Out[71]=",ExpressionUUID->"ebd1d85f-0846-400d-8f29-57fb71bd6910"]
 }, Open  ]]
 },
 WindowSize->{759, 729},
@@ -1450,10 +981,10 @@ Notebook[{
 Cell[558, 20, 5208, 140, 352, "Input",ExpressionUUID->"1d786fb1-70b1-4a6a-a7f7-d750d14f07ae"],
 Cell[5769, 162, 3292, 88, 200, "Input",ExpressionUUID->"a50316f4-8b49-4e00-930b-2c05fa05c2b5"],
 Cell[CellGroupData[{
-Cell[9086, 254, 3476, 81, 162, "Input",ExpressionUUID->"73c171db-8d11-4541-9cff-323e1a3533f7"],
-Cell[12565, 337, 6756, 132, 250, "Output",ExpressionUUID->"7c6cfdeb-75ff-4fe0-8c2c-15ee646e95b3"],
-Cell[19324, 471, 22993, 449, 245, "Output",ExpressionUUID->"9d60895d-d0c0-4c98-8ac7-a94d6505e08b"],
-Cell[42320, 922, 20382, 508, 593, "Output",ExpressionUUID->"eb95fc22-5536-47d8-bb29-b849323d26d5"]
+Cell[9086, 254, 4137, 94, 238, "Input",ExpressionUUID->"73c171db-8d11-4541-9cff-323e1a3533f7"],
+Cell[13226, 350, 6882, 134, 250, "Output",ExpressionUUID->"8efb0202-f78c-488c-bd07-2454ac9e3e48"],
+Cell[20111, 486, 23334, 456, 247, "Output",ExpressionUUID->"a2f07108-b046-44b8-8328-d63bfbe75489"],
+Cell[43448, 944, 1233, 17, 32, "Output",ExpressionUUID->"ebd1d85f-0846-400d-8f29-57fb71bd6910"]
 }, Open  ]]
 }
 ]
