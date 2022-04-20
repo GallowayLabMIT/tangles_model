@@ -1,7 +1,10 @@
 # Supercoiling-mediated feedback rapidly couples and tunes transcription
+[<img src="https://img.shields.io/badge/doi-10.1101/2022.04.20.488937-blue">](https://doi.org/10.1101/2022.04.20.488937)
+[<img src="https://img.shields.io/badge/code_license-MIT-green">](./LICENSE)
+[<img src="https://img.shields.io/badge/text_license-CC--BY--SA--NC--4.0-green">](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 Included in this repo is complete code to:
-1. Simulate gene expression under the control of for any user-defined circuits.
+1. Simulate gene expression under the control of supercoiling for any user-defined circuits.
 2. Regenerate simulation data for the preprint.
 3. Regenerate all figures from simulation data for the preprint.
 
