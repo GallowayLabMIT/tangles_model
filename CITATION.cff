@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: >-
+  Supercoiling-mediated feedback rapidly couples and
+  tunes transcription
+type: article
+doi: 10.1101/2022.04.20.488937
+journal: bioRxiv
+date-released: 2022-04-20
+year: 2022
+authors:
+  - given-names: Christopher
+    family-names: Johnstone
+    email: cjohnsto@mit.edu
+    affiliation: Massachusetts Institute of Technology
+    orcid: 'https://orcid.org/0000-0002-7255-0218'
+  - given-names: Kate
+    name-particle: E
+    family-names: Galloway
+    email: katiegal@mit.edu
+    affiliation: Massachusetts Institute of Technology
+    orcid: 'https://orcid.org/0000-0001-7416-3193'
