@@ -8,7 +8,7 @@ Included in this repo is complete code to:
 2. Regenerate simulation data for the preprint.
 3. Regenerate all figures from simulation data for the preprint.
 
-If you'd like to simulate your own gene circuits, continue reading! If you just want to replicate the paper results, jump to [Replicating paper results](#replicating-paper-results).
+If you'd like to simulate your own gene circuits, continue reading! If you just want to replicate the paper results, jump to [Replicating paper results](#replicating-paper-results). Instead of regenerating the data using the Julia scripts, you may want to [download](https://nextcloud.meson.us/index.php/s/nPeowqMAKLrETgB) the already-generated datasets used in generating all figures including in this paper.
 
 ## Simulating your own gene networks
 The full model described in our work is mostly contained within [TanglesModel.jl](src/TanglesModel.jl), a Julia implementation.
@@ -32,7 +32,7 @@ Precompiling project...
   1 dependency successfully precompiled in 94 seconds (254 already precompiled)
 ```
 
-For the Python part of the analysis, it is most convienent if you install the requirements into a virtual environment. To do this from the root, do:
+For the Python part of the analysis, it is most convenient if you install the requirements into a virtual environment. To do this from the root, do:
 ```
 python -m venv env       # on most OS's
 python3 -m venv env      # on some modern MacOS's
@@ -189,9 +189,9 @@ There is a three-step pipeline for simulating results and generating the figures
 2. Merge datasets together from multiple workers.
 3. Pre-process and generate figures!
 
-If you don't want to regenerate the data yourself, you can download the the raw, Julia-combined dataset and post-processed datasets from [here](https://nextcloud.meson.us/index.php/s/nPeowqMAKLrETgB). Once fully published, we will move the datasets to permanant hosting on Zenodo.
+If you don't want to regenerate the data yourself, you can download the the raw, Julia-combined dataset and post-processed datasets from [here](https://nextcloud.meson.us/index.php/s/nPeowqMAKLrETgB). Once fully published, we will move the datasets to permanent hosting on Zenodo.
 
-After downlaoding the dataset or regenerating it, you can move to [setting a data directory](#setting-a-data-directory) and [replicating figures](#replicating-figures). In any case,
+After downloading the dataset or regenerating it, you can move to [setting a data directory](#setting-a-data-directory) and [replicating figures](#replicating-figures). In any case,
 you will need to perform the Python dependency installation steps in the [code check](#install-and-code-check) section. If you are also
 redoing the raw simulation data, you need to perform the Julia-specific steps.
 
@@ -203,7 +203,7 @@ are:
 
 - `src/simulate_fig_base_model.jl, src/simulate_fig_base_model_spacing.jl` for Figure 3
 - `src/simulate_base_model_examples.jl` for Figure 4
-- `src/simulate_sc_bursting.jl` for all supercoilng density/bursting figures
+- `src/simulate_sc_bursting.jl` for all supercoiling density/bursting figures
 - `src/simulate_fig_toggles.jl` for Figure 5
 - `src/simulate_fig_zinani.jl` for Figure 6
 - `src/simulate_fig_hyperparams.jl` for Figure S2.
