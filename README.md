@@ -257,6 +257,7 @@ in which you placed the data.
 
 ## Replicating figures
 With the datadir in place, you should be able to replicate our figures. Run the Jupyter notebook at `notebooks/modeling_paper_figures.ipynb` to replicate the figure results.
+If you want to replicate the supplemental movies, run `notebooks/short_movies.ipynb`. The annotated movie (Supplemental Movie 1) was manually edited in Adobe Premiere, and is not fully reproducible in code.
 
 There is a manual step in order to prepare figures that contain illustrations. For most of the main-text figures, running the notebook will create an SVG file containing
 the graphics, under a filename like `fig_base_model_mpl.svg` (e.g. the base model figure, Figure 3, generated using `matplotlib`). This can be combined with the PDF-exported
