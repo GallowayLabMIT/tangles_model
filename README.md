@@ -189,9 +189,9 @@ There is a three-step pipeline for simulating results and generating the figures
 2. Merge datasets together from multiple workers.
 3. Pre-process and generate figures!
 
-If you don't want to regenerate the data yourself, contact the authors and we can provide the raw `.h5` or pre-processed `.gzip` datasets.
-Once fully published, we will place the pre-processed datasets on Zenodo.
-and you can just move to [setting a data directory](#setting-a-data-directory) and [replicating figures](#replicating-figures). In any case,
+If you don't want to regenerate the data yourself, you can download the the raw, Julia-combined dataset and post-processed datasets from [here](https://nextcloud.meson.us/index.php/s/nPeowqMAKLrETgB). Once fully published, we will move the datasets to permanant hosting on Zenodo.
+
+After downlaoding the dataset or regenerating it, you can move to [setting a data directory](#setting-a-data-directory) and [replicating figures](#replicating-figures). In any case,
 you will need to perform the Python dependency installation steps in the [code check](#install-and-code-check) section. If you are also
 redoing the raw simulation data, you need to perform the Julia-specific steps.
 
