@@ -1,4 +1,3 @@
-% This document is licensed under the Creative Commons Attribution-ShareAlike-NonCommercial-International 4.0 license (CC-BY-SA-NC-4.0).
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[labelfont=bf,small]{caption}
@@ -33,7 +32,7 @@
 \usepackage[scaled=.96,lf]{XCharter}
 %\usepackage[scaled=.96,lf]{XCharter}
 %\linespread{1.04}
-\usepackage[backend=biber,style=nature,backref=true]{biblatex} %author-year for in-text content
+\usepackage[backend=biber,style=nature,backref=true,url=false]{biblatex} %author-year for in-text content
 %\hyphenpenalty=750
 \usepackage{cleveref}
 \crefname{appendix}{supplemental section}{supplemental sections}
@@ -399,7 +398,7 @@ As a rapid mechanism for coordinating transcriptional dynamics, supercoiling-dep
 % model RNAP binding, initiation, elongation as one step (and it's more complicated, but we chose a simple model to begin). 
 %no explicit modeling of nucleosomes(which you do address below already). 
 %limits-sensitivity to alpha; alpha might not be constant across the genome and may vary by sequence, nucleosome density, and occupancy of SMC complexes. 
-In deriving our model, we made several simplifying assumptions. Our derivation of the energy function for supercoiling-dependent polymerase initiation adds relevant molecular detail to our model. The second-order correction term reflects the asymptotic relationship observed in \textit{in vitro}  assays between torque and supercoiling density for underwound DNA \parencite{leSynergisticCoordinationChromatin2019}. Inclusion of this correction supports the periodic behavior of the native \emph{her1-her7} clock circuit, suggesting this term may accurately capture regulation \textit{in vivo}. For simplicity, we model the dynamic processes of RNAP binding, initiation, and pause release as a single reaction. In real biological systems, each of these processes may vary across the genome by sequence and by the presence of DNA-binding proteins. Additionally, our model excludes nucleosome occupancy, polymerase collision and premature termination, and the impact of 3D structures and loop domains formed by protein complexes such as CCCTC-binding factor (CTCF) and other structural maintenance of chromosomes (SMC) proteins. Nucleosomes act as a ``store'' of negative supercoiling and are displaced by polymerase motion; genomic regions differing in average nucleosome occupancy thus would have a different basal supercoiling density that is ignored in this work. More broadly, we assume that regions of simulated chromatin are uniformly accessible and have equal torque responses during polymerase elongation; these assumptions may fail at the boundaries of chromatin domains. Finally, we also neglect the speed of supercoiling diffusion. While this may be a negligible effect at the scale considered in this work, supercoiling diffusion remains slow at the scale of hundreds of kilobases to megabases.
+In deriving our model, we made several simplifying assumptions. Our derivation of the energy function for supercoiling-dependent polymerase initiation adds relevant molecular detail to our model. The second-order correction term reflects the asymptotic relationship observed in \textit{in vitro}  assays between torque and supercoiling density for underwound DNA \parencite{leSynergisticCoordinationChromatin2019}. Inclusion of this correction supports the periodic behavior of the native \emph{her1-her7} clock circuit, suggesting this term may accurately capture regulation \textit{in vivo}. For simplicity, we model the dynamic processes of RNAP binding, initiation, and pause release as a single reaction. In real biological systems, each of these processes may vary across the genome by sequence and by the presence of DNA-binding proteins. Formation of supercoiled structures shows sequence bias \textit{in vitro} which may impact \textit{in vivo} structures and gene regulation \parencite{kimDNASequenceEncodes2018}.  Additionally, our model excludes nucleosome occupancy, polymerase collision and premature termination, and the impact of 3D structures and loop domains formed by protein complexes such as CCCTC-binding factor (CTCF) and other structural maintenance of chromosomes (SMC) proteins. Nucleosomes act as a ``store'' of negative supercoiling and are displaced by polymerase motion; genomic regions differing in average nucleosome occupancy thus would have a different basal supercoiling density that is ignored in this work. More broadly, we assume that regions of simulated chromatin are uniformly accessible and have equal torque responses during polymerase elongation; these assumptions may fail at the boundaries of chromatin domains. Finally, we also neglect the speed of supercoiling diffusion. While this may be a negligible effect at the scale considered in this work, supercoiling diffusion remains slow at the scale of hundreds of kilobases to megabases.
 
 
 %future directions
@@ -412,7 +411,7 @@ Our model integrates supercoiling-mediated biophysical feedback with classic gen
 Full simulation and complete data analysis and figure-generating code is available at \url{https://github.com/GallowayLabMIT/tangles_model}.
 
 \subsection{Acknowledgements}
-The authors acknowledge the MIT SuperCloud and Lincoln Laboratory Supercomputing Center \parencite{reutherInteractiveSupercomputing402018} for providing HPC resources that have contributed to the research results reported within this paper. We also thank Adam Beitz, Sneha Kabaria, Brittany Lende, Kasey Love, Emma Peterman, and Nathan Wang for helpful suggestions throughout and for their effort in editing this manuscript.
+The authors acknowledge the MIT SuperCloud and Lincoln Laboratory Supercomputing Center \parencite{reutherInteractiveSupercomputing402018} for providing HPC resources that have contributed to the research results reported within this paper. We also thank Adam Beitz,  Ross Jones, Sneha Kabaria, Brittany Lende, Kasey Love, Emma Peterman, and Nathan Wang for helpful suggestions throughout and for their effort in editing this manuscript.
 
 \subsection{Funding}
 Research reported in this manuscript was supported by National Institute of General Medical Sciences of the National Institutes of Health under award number R35-GM143033.
@@ -601,6 +600,14 @@ Research reported in this manuscript was supported by National Institute of Gene
 \end{figure}
 
 \FloatBarrier
+
+{\small \noindent \textbf{Supplemental Movie 1:} An annotated example convergent simulation is shown. The top left panel shows currently loaded polymerases with growing nascent mRNAs. The bottom left panel shows the current supercoiling density plot. The right panel shows the number of mRNAs as a trace through time. The reporter gene (colored) is enabled for the length of the simulation, whereas the adjacent gene is only induced after 2.8 hours.}
+
+{\small \noindent \textbf{Supplemental Movie 2:} An example simulation run is shown for the tandem upstream syntax. Upstream dominance, where the upstream gene has higher mean expression, is demonstrated.}
+
+{\small \noindent \textbf{Supplemental Movie 3:} An example simulation run is shown for the tandem downstream syntax. Upstream dominance is again demonstrated.}
+
+{\small \noindent \textbf{Supplemental Movie 4:} An example simulation run is shown for the divergent syntax. The divergent syntax demonstrates coordinated bursting.}
 
 \section{Additional method details}
 
