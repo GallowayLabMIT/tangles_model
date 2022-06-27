@@ -75,6 +75,16 @@ struct DNA_Parameters
 end
 DEFAULT_DNA_PARAMS = DNA_Parameters(1, 10, 50, 95, 24)
 
+
+abstract type TorqueFunctionPerturbation end
+
+struct NoTorqueFunctionPerturbation <: TorqueFunctionPerturbation end
+
+abstract type RNAPInitPerturbation end
+
+struct NoRNAPInitPerturbation <: RNAPInitPerturbation end
+
+
 struct SimulationParameters
     mRNA_params::mRNA_Parameters
     RNAP_params::RNAP_Parameters
@@ -83,8 +93,37 @@ struct SimulationParameters
     topoisomerase_rate::Float64     # (1 / sec) The base rate of topoisomerase activity.
     mRNA_degradation_rate::Float64  # (1 / sec) The base rate of mRNA degradation.
     sc_dependent::Bool              # If supercoiling-dependent initiation is used
-    σ2_coeff::Float64               # The leading coefficent on the σ^2 term
+    σ2_coeff::Float64               # The leading coefficient on the σ^2 term
+    torque_perturbation::TorqueFunctionPerturbation # Any perturbations to the torque function
+    rnap_init_perturbation::RNAPInitPerturbation    # Any perturbations to the RNAP initiation rate function
 end
+# Helper outer constructors that take none of the above
+SimulationParameters(
+        mRNA_params::mRNA_Parameters, RNAP_params::RNAP_Parameters, DNA_params::DNA_Parameters,
+        temperature, topoisomerase_rate::Float64, mRNA_degradation_rate::Float64,
+        sc_dependent::Bool, σ2_coeff::Float64
+) = SimulationParameters(mRNA_params, RNAP_params, DNA_params, temperature, topoisomerase_rate,
+    mRNA_degradation_rate, sc_dependent, σ2_coeff,
+    NoTorqueFunctionPerturbation(), NoRNAPInitPerturbation()
+)
+# and that take one of the perturbations
+SimulationParameters(
+        mRNA_params::mRNA_Parameters, RNAP_params::RNAP_Parameters, DNA_params::DNA_Parameters,
+        temperature, topoisomerase_rate::Float64, mRNA_degradation_rate::Float64,
+        sc_dependent::Bool, σ2_coeff::Float64, torque_perturbation::TorqueFunctionPerturbation
+) = SimulationParameters(mRNA_params, RNAP_params, DNA_params, temperature, topoisomerase_rate,
+    mRNA_degradation_rate, sc_dependent, σ2_coeff,
+    torque_perturbation, NoRNAPInitPerturbation()
+)
+SimulationParameters(
+        mRNA_params::mRNA_Parameters, RNAP_params::RNAP_Parameters, DNA_params::DNA_Parameters,
+        temperature, topoisomerase_rate::Float64, mRNA_degradation_rate::Float64,
+        sc_dependent::Bool, σ2_coeff::Float64, rnap_init_perturbation::RNAPInitPerturbation
+) = SimulationParameters(mRNA_params, RNAP_params, DNA_params, temperature, topoisomerase_rate,
+    mRNA_degradation_rate, sc_dependent, σ2_coeff,
+    NoTorqueFunctionPerturbation(), rnap_init_perturbation
+)
+
 DEFAULT_SIM_PARAMS = SimulationParameters(
     DEFAULT_mRNA_PARAMS, DEFAULT_RNAP_PARAMS, DEFAULT_DNA_PARAMS,
     298, 1 / 1200, 1 / 1200, false, 0.0
