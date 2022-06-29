@@ -21,6 +21,8 @@ export RNAP_Parameters, DEFAULT_RNAP_PARAMS, DNA_Parameters, DEFAULT_DNA_PARAMS
 export SimulationParameters, DEFAULT_SIM_PARAMS
 export LinearBoundaryParameters, CircularBoundaryParameters, UncoupledGene, MultiUncoupledGene, CoupledGene, MultiCoupledGene, DiscreteConfig
 export simulate_full_examples, simulate_summarized_runs, simulate_discrete_runs, simulate_sc_rnap_dynamics
+export OriginalTopoisomerase, IntragenicTopoisomerase, IntergenicTopoisomerase, NoTopoisomerase
+export NoTorqueFunctionPerturbation, PositiveSupercoilingBuffering
 
 function check_nonnegative(x, name)
     if x < 0
@@ -75,14 +77,38 @@ struct DNA_Parameters
 end
 DEFAULT_DNA_PARAMS = DNA_Parameters(1, 10, 50, 95, 24)
 
+abstract type TopoisomeraseType end
+
+struct OriginalTopoisomerase <: TopoisomeraseType end
+
+struct IntragenicTopoisomerase <: TopoisomeraseType end
+
+struct IntergenicTopoisomerase <: TopoisomeraseType end
+
+struct NoTopoisomerase <: TopoisomeraseType end
 
 abstract type TorqueFunctionPerturbation end
 
 struct NoTorqueFunctionPerturbation <: TorqueFunctionPerturbation end
 
+struct PositiveSupercoilingBuffering <: TorqueFunctionPerturbation
+    # Adds a "buffer" against positive supercoiling, by extending
+    # the function in the positive domain bny a certain amount.
+    # Potentially useful for simulating chromatin fibers.
+    σ_buffer::Float64
+end
+
 abstract type RNAPInitPerturbation end
 
 struct NoRNAPInitPerturbation <: RNAPInitPerturbation end
+
+struct RNAPInitEnergyWell <: RNAPInitPerturbation
+    # Represents the case where there is a left and a right
+    # boundary, beyond which polymerases are incapable of
+    # initiating. Useful for representing R-loops.
+    left_boundary::Float64
+    right_boundary::Float64
+end
 
 
 struct SimulationParameters
@@ -94,6 +120,7 @@ struct SimulationParameters
     mRNA_degradation_rate::Float64  # (1 / sec) The base rate of mRNA degradation.
     sc_dependent::Bool              # If supercoiling-dependent initiation is used
     σ2_coeff::Float64               # The leading coefficient on the σ^2 term
+    topo_type::TopoisomeraseType
     torque_perturbation::TorqueFunctionPerturbation # Any perturbations to the torque function
     rnap_init_perturbation::RNAPInitPerturbation    # Any perturbations to the RNAP initiation rate function
 end
@@ -103,16 +130,24 @@ SimulationParameters(
         temperature, topoisomerase_rate::Float64, mRNA_degradation_rate::Float64,
         sc_dependent::Bool, σ2_coeff::Float64
 ) = SimulationParameters(mRNA_params, RNAP_params, DNA_params, temperature, topoisomerase_rate,
-    mRNA_degradation_rate, sc_dependent, σ2_coeff,
+    mRNA_degradation_rate, sc_dependent, σ2_coeff, OriginalTopoisomerase(),
     NoTorqueFunctionPerturbation(), NoRNAPInitPerturbation()
 )
 # and that take one of the perturbations
 SimulationParameters(
         mRNA_params::mRNA_Parameters, RNAP_params::RNAP_Parameters, DNA_params::DNA_Parameters,
         temperature, topoisomerase_rate::Float64, mRNA_degradation_rate::Float64,
+        sc_dependent::Bool, σ2_coeff::Float64, topo_type::TopoisomeraseType
+) = SimulationParameters(mRNA_params, RNAP_params, DNA_params, temperature, topoisomerase_rate,
+    mRNA_degradation_rate, sc_dependent, σ2_coeff, topo_type,
+    NoTorqueFunctionPerturbation(), NoRNAPInitPerturbation()
+)
+SimulationParameters(
+        mRNA_params::mRNA_Parameters, RNAP_params::RNAP_Parameters, DNA_params::DNA_Parameters,
+        temperature, topoisomerase_rate::Float64, mRNA_degradation_rate::Float64,
         sc_dependent::Bool, σ2_coeff::Float64, torque_perturbation::TorqueFunctionPerturbation
 ) = SimulationParameters(mRNA_params, RNAP_params, DNA_params, temperature, topoisomerase_rate,
-    mRNA_degradation_rate, sc_dependent, σ2_coeff,
+    mRNA_degradation_rate, sc_dependent, σ2_coeff, OriginalTopoisomerase(),
     torque_perturbation, NoRNAPInitPerturbation()
 )
 SimulationParameters(
@@ -120,7 +155,7 @@ SimulationParameters(
         temperature, topoisomerase_rate::Float64, mRNA_degradation_rate::Float64,
         sc_dependent::Bool, σ2_coeff::Float64, rnap_init_perturbation::RNAPInitPerturbation
 ) = SimulationParameters(mRNA_params, RNAP_params, DNA_params, temperature, topoisomerase_rate,
-    mRNA_degradation_rate, sc_dependent, σ2_coeff,
+    mRNA_degradation_rate, sc_dependent, σ2_coeff, OriginalTopoisomerase(),
     NoTorqueFunctionPerturbation(), rnap_init_perturbation
 )
 
@@ -152,7 +187,10 @@ struct InternalParameters
     topo_rate::Float64      # (1 / s) base topoisomerase activity rate
     mRNA_deg_rate::Float64  # (1 / s) base mRNA degradation rate
     sc_dependent::Bool      # If supercoiling dependent initiation is used
-    σ2_coeff::Float64       # The leading coefficent on the σ^2 term
+    σ2_coeff::Float64       # The leading coefficient on the σ^2 term
+    topo_type::TopoisomeraseType # the type of topoisomerase activity we want
+    torque_perturbation::TorqueFunctionPerturbation # Modifications to the torque function
+    rnap_init_perturbation::RNAPInitPerturbation    # Modifications to the RNAP-initiation function
 end
 
 abstract type BoundaryParameters end
@@ -274,7 +312,10 @@ function InternalParameters(sim_params::SimulationParameters)
         sim_params.topoisomerase_rate,
         sim_params.mRNA_degradation_rate,
         sim_params.sc_dependent,
-        sim_params.σ2_coeff
+        sim_params.σ2_coeff,
+        sim_params.topo_type,
+        sim_params.torque_perturbation,
+        sim_params.rnap_init_perturbation
 )
 end
 
@@ -416,8 +457,7 @@ struct TanglesParams
 end
 
 
-function torque_response(σ::Float64, params::TanglesParams)::Float64
-    # Computes the torque response at a specified supercoiling density
+function internal_torque_response(σ::Float64, params::TanglesParams)
     abs_σ = abs(σ)
     # Three regime torque region, from:
     # 0   <= |σ| < σ_s => σ τ_s
@@ -429,6 +469,30 @@ function torque_response(σ::Float64, params::TanglesParams)::Float64
         return params.sim_params.τ_0 * sign(σ)
     end
     return params.sim_params.τ_p * σ
+end
+
+function internal_torque_response(σ::Float64, params::TanglesParams,
+    _::NoTorqueFunctionPerturbation
+)
+    return internal_torque_response(σ, params)
+end
+
+function internal_torque_response(σ::Float64, params::TanglesParams,
+    torque_perturb::PositiveSupercoilingBuffering
+)
+    # Extend the "sigma = 0" range to the right, until we "consume"
+    # all of the σ buffer.
+    if σ >= 0
+        if σ <=torque_perturb.σ_buffer
+            return internal_torque_response(0.0, params)
+        end
+        return internal_torque_response(σ - torque_perturb.σ_buffer, params)
+    end
+    return internal_torque_response(σ, params)
+end
+
+function torque_response(σ::Float64, params::TanglesParams)::Float64
+    internal_torque_response(σ, params, params.sim_params.torque_perturbation)
 end
 
 function polymerase_velocity(σ_b::Float64, σ_f::Float64, params::TanglesParams)
@@ -552,6 +616,24 @@ function polymerase_initiation_rate(u::ExtendedJumpArray{Float64, 1, TanglesArra
     return polymerase_initiation_rate(u.u, p, t, promoter, coupling_func)
 end
 
+function base_polymerase_init_energy(σ::Float64, p::TanglesParams)
+    energy::Float64 = (
+        torque_response(σ, p)
+        + p.sim_params.σ2_coeff * (σ / p.sim_params.σ_s)^2 * p.sim_params.τ_0) * 1.2 * 2.0 * π
+    return energy
+end
+function polymerase_init_energy(σ::Float64, p::TanglesParams, _::NoRNAPInitPerturbation)
+    base_polymerase_init_energy(σ, p)
+end
+
+function polymerase_init_energy(σ::Float64, p::TanglesParams, rnap_perturb::RNAPInitEnergyWell)
+    if σ < rnap_perturb.left_boundary || σ > rnap_perturb.right_boundary
+        # Return a very high (but still finite, to prevent exponential explosions) well boundary
+        # to approximate infinite walls
+        return p.sim_params.k_b * p.sim_params.T * 1000.0
+    end
+    return base_polymerase_init_energy(σ, p)
+end
 
 function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promoter::Promoter, coupling_func)::Float64
     # Initiation rate is zero if initiation site is occupied
@@ -564,7 +646,7 @@ function polymerase_initiation_rate(u::TanglesArray, p::TanglesParams, t, promot
     end
 
     σ::Float64 = supercoiling_density(u, get_sc_region(promoter.position, u), p.bc_params, p.sim_params.ω_0)
-    energy::Float64 = (torque_response(σ, p) + p.sim_params.σ2_coeff * (σ / p.sim_params.σ_s)^2 * p.sim_params.τ_0) * 1.2 * 2.0 * π
+    energy::Float64 = polymerase_init_energy(σ, p, p.sim_params.rnap_init_perturbation)
     sc_rate_factor::Float64 = min(50.0,exp(-energy / (p.sim_params.k_b * p.sim_params.T)))
 
     return promoter.base_rate * coupling_func(u.discrete_components, t) * (promoter.supercoiling_dependent ? sc_rate_factor : 1.0)
@@ -780,6 +862,78 @@ function out_of_domain(u, p, t)
     return any(diff(u.u[1:3:end-1]) .< 0)
 end
 
+function calculate_topo_jumps(_::Array{Gene}, _::NoTopoisomerase)
+    return []
+end
+
+function calculate_topo_jumps(sorted_genes::Array{Gene}, _::OriginalTopoisomerase)
+    # Duplicate gene if there is only one
+    if length(sorted_genes) == 1
+        push!(sorted_genes, sorted_genes[1])
+    end
+    topo_jumps = [
+        # Foreach pair of adjacent genes...
+        ConstantRateJump(
+            # each has an equal probability of relaxing
+            (u,p,t)->sim_params.topoisomerase_rate / (length(dconfig.genes) - 1.0),
+            # when a pair is selected, relax all polymerases that are located between...
+            (int)->relax_supercoiling!(int,
+                # the first gene's left-most extent
+                min(sorted_genes[i].start, sorted_genes[i].terminate),
+                # and the second gene's left-most extent (!)
+                min(sorted_genes[i+1].start, sorted_genes[i+1].terminate)))
+            for i in 1:(length(sorted_genes)-1)]
+        # ex: A/B pair selected
+        #    ------AAAAA----BBBBBB-----CCCCCCC------
+        #          ^        ^
+        #          |--------|
+    return topo_jumps
+end
+
+function calculate_topo_jumps(sorted_genes::Array{Gene}, _::IntragenicTopoisomerase)
+    topo_jumps = [
+        # Foreach gene..
+        ConstantRateJump(
+            # each has an equal probability of relaxing
+            (u,p,t)->sim_params.topoisomerase_rate / length(dconfig.genes),
+            # when a gene is selected, relax all polymerases that are located between...
+            (int)->relax_supercoiling!(int,
+                # the gene's left-most extent
+                min(sorted_genes[i].start, sorted_genes[i].terminate),
+                # and the gene's right-most extent
+                max(sorted_genes[i].start, sorted_genes[i].terminate)))
+            for i in 1:length(sorted_genes)]
+        # ex: B selected
+        #    ------AAAAA----BBBBBB-----CCCCCCC------
+        #                   ^    ^
+        #                   |----|
+    return topo_jumps
+end
+
+function calculate_topo_jumps(sorted_genes::Array{Gene}, _::IntergenicTopoisomerase)
+    # Duplicate gene if there is only one
+    if length(sorted_genes) == 1
+        push!(sorted_genes, sorted_genes[1])
+    end
+    topo_jumps = [
+        # Foreach pair of adjacent genes...
+        ConstantRateJump(
+            # each has an equal probability of relaxing
+            (u,p,t)->sim_params.topoisomerase_rate / (length(dconfig.genes) - 1.0),
+            # when a pair is selected, relax all polymerases that are located between...
+            (int)->relax_supercoiling!(int,
+                # the first gene's left-most extent
+                min(sorted_genes[i].start, sorted_genes[i].terminate),
+                # and the second gene's right-most extent
+                max(sorted_genes[i+1].start, sorted_genes[i+1].terminate)))
+            for i in 1:(length(sorted_genes)-1)]
+        # ex: A/B pair selected
+        #    ------AAAAA----BBBBBB-----CCCCCCC------
+        #          ^             ^
+        #          |-------------|
+    return topo_jumps
+end
+
 function build_problem(
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
@@ -806,17 +960,7 @@ function build_problem(
 
     # Calculate intergenic regions
     sorted_genes::Array{Gene} = sort(dconfig.genes, by=(g::Gene)->min(g.start, g.terminate))
-    # Duplicate gene if there is only one
-    if length(sorted_genes) == 1
-        push!(sorted_genes, sorted_genes[1])
-    end
-    topo_jumps = [
-        ConstantRateJump(
-            (u,p,t)->sim_params.topoisomerase_rate / (length(dconfig.genes) - 1.0),
-            (int)->relax_supercoiling!(int,
-                min(sorted_genes[i].start, sorted_genes[i].terminate),
-                min(sorted_genes[i+1].start, sorted_genes[i+1].terminate)))
-            for i in 1:(length(sorted_genes)-1)]
+    topo_jumps = calculate_topo_jumps(sorted_genes, sim_params.topo_type)
     jump_problem = JumpProblem(problem, Direct(),
         generate_jump.(dconfig.genes, sim_params.sc_dependent)...,
         topo_jumps...,
