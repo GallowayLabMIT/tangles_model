@@ -13,13 +13,13 @@ Run summary:
 overall_start = time()
 
 base_rate = 1.0 / 120.0
-n_examples_per_node = 100
-n_full_examples_per_node = 100
+n_examples_per_node = 40
+n_full_examples_per_node = 40
 n_repeats = 50
 i = 0
 
 function gen_sim_params(;
-    topo_rate_factor::Float64=1.0,
+    topo_rate_factor::Float64=0.0,
     sc_dependent::Bool=DEFAULT_SIM_PARAMS.sc_dependent,
     σ2_coeff::Float64=0.0)
     return SimulationParameters(

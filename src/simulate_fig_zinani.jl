@@ -19,7 +19,7 @@ i = 0
 
 function gen_sim_params(;
     temperature::Float64=273.15+37.0,
-    topo_rate_factor::Float64=1.0,
+    topo_rate_factor::Float64=0.0,
     mRNA_deg_rate::Float64=1.0,
     sc_dependent::Bool=DEFAULT_SIM_PARAMS.sc_dependent,
     σ2_coeff::Float64=0.0)
