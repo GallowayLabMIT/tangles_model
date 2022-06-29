@@ -37,7 +37,7 @@ for _ in 1:20,
     is_plasmid in [false, true],
     sc_dependent in [true],
     induction in exp10.(range(-2,0.5,length=5)),
-    σ2 in vcat([0.0], exp10.(range(-3.0,-1.0,length=9)))
+    σ2 in vcat([0.0], exp10.(range(-1.5,-0.5,length=9)))
 
     start_time = time()
 
