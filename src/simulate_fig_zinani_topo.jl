@@ -92,7 +92,10 @@ for _ in 1:n_repeats,
     temperature in [273.15 + 21.5],
     σ2 in [0.02, 0.025, 0.03],
     state in ["uncoupled", "fully-coupled", "tangles-coupled"],
-    topo in [NoTopoisomerase(), OriginalTopoisomerase(), IntragenicTopoisomerase(), IntergenicTopoisomerase()]
+    (topo, topo_str) in zip(
+        [NoTopoisomerase(), OriginalTopoisomerase(), IntragenicTopoisomerase(), IntergenicTopoisomerase()],
+        ["none", "original", "intragenic", "intergenic"]
+    )
 
     # Distribute work between nodes
     if i % n_nodes != node_idx
@@ -235,7 +238,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.tangles-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.tangles-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature, "topo"=>topo_str))
         println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     end
