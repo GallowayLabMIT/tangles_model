@@ -40,16 +40,16 @@ h5open("output/energy_perturbation_plots.h5", "cw") do h5
         eval_points = Vector(range(-0.2,0.2,length=100))
         σ2_coeffs = vcat([0.0], exp10.(range(-3,-0.5,length=999)))
 
-        sim_params = gen_sim_params(sc_dependent=true,σ2_coeff=α,
-            torque_perturb=tperturb, rnap_init_perturb=initperturb)
-        p = TanglesModel.TanglesParams(
-            TanglesModel.InternalParameters(sim_params), TanglesModel.CircularBoundaryParameters(1000))
 
         for i in 1:length(eval_points),
             j in 1:length(σ2_coeffs)
 
             σ::Float64 = eval_points[i]
             α::Float64 = σ2_coeffs[j]
+            sim_params = gen_sim_params(sc_dependent=true,σ2_coeff=α,
+                torque_perturb=tperturb, rnap_init_perturb=initperturb)
+            p = TanglesModel.TanglesParams(
+                TanglesModel.InternalParameters(sim_params), TanglesModel.CircularBoundaryParameters(1000))
             torque[i,j] = TanglesModel.torque_response(σ, p)
             init_energy[i,j] = TanglesModel.polymerase_init_energy(σ, p, p.sim_params.rnap_init_perturbation)
         end
@@ -59,4 +59,5 @@ h5open("output/energy_perturbation_plots.h5", "cw") do h5
         g["initiation_energy"] = init_energy
         attributes(g)["torque_perturb"] = tperturb_name
         attributes(g)["rnap_perturb"] = initperturb_name
+    end
 end

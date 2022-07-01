@@ -23,6 +23,7 @@ export LinearBoundaryParameters, CircularBoundaryParameters, UncoupledGene, Mult
 export simulate_full_examples, simulate_summarized_runs, simulate_discrete_runs, simulate_sc_rnap_dynamics
 export OriginalTopoisomerase, IntragenicTopoisomerase, IntergenicTopoisomerase, NoTopoisomerase
 export NoTorqueFunctionPerturbation, PositiveSupercoilingBuffering
+export NoRNAPInitPerturbation, RNAPInitEnergyWell
 
 function check_nonnegative(x, name)
     if x < 0
@@ -862,11 +863,11 @@ function out_of_domain(u, p, t)
     return any(diff(u.u[1:3:end-1]) .< 0)
 end
 
-function calculate_topo_jumps(_::Array{Gene}, _::NoTopoisomerase)
+function calculate_topo_jumps(_::Array{Gene}, _::SimulationParameters, _::NoTopoisomerase)
     return []
 end
 
-function calculate_topo_jumps(sorted_genes::Array{Gene}, _::OriginalTopoisomerase)
+function calculate_topo_jumps(sorted_genes::Array{Gene}, sim_params::SimulationParameters, _::OriginalTopoisomerase)
     # Duplicate gene if there is only one
     if length(sorted_genes) == 1
         push!(sorted_genes, sorted_genes[1])
@@ -875,7 +876,7 @@ function calculate_topo_jumps(sorted_genes::Array{Gene}, _::OriginalTopoisomeras
         # Foreach pair of adjacent genes...
         ConstantRateJump(
             # each has an equal probability of relaxing
-            (u,p,t)->sim_params.topoisomerase_rate / (length(dconfig.genes) - 1.0),
+            (u,p,t)->sim_params.topoisomerase_rate / (length(sorted_genes) - 1.0),
             # when a pair is selected, relax all polymerases that are located between...
             (int)->relax_supercoiling!(int,
                 # the first gene's left-most extent
@@ -890,12 +891,12 @@ function calculate_topo_jumps(sorted_genes::Array{Gene}, _::OriginalTopoisomeras
     return topo_jumps
 end
 
-function calculate_topo_jumps(sorted_genes::Array{Gene}, _::IntragenicTopoisomerase)
+function calculate_topo_jumps(sorted_genes::Array{Gene}, sim_params::SimulationParameters, _::IntragenicTopoisomerase)
     topo_jumps = [
         # Foreach gene..
         ConstantRateJump(
             # each has an equal probability of relaxing
-            (u,p,t)->sim_params.topoisomerase_rate / length(dconfig.genes),
+            (u,p,t)->sim_params.topoisomerase_rate / length(sorted_genes),
             # when a gene is selected, relax all polymerases that are located between...
             (int)->relax_supercoiling!(int,
                 # the gene's left-most extent
@@ -910,7 +911,7 @@ function calculate_topo_jumps(sorted_genes::Array{Gene}, _::IntragenicTopoisomer
     return topo_jumps
 end
 
-function calculate_topo_jumps(sorted_genes::Array{Gene}, _::IntergenicTopoisomerase)
+function calculate_topo_jumps(sorted_genes::Array{Gene}, sim_params::SimulationParameters, _::IntergenicTopoisomerase)
     # Duplicate gene if there is only one
     if length(sorted_genes) == 1
         push!(sorted_genes, sorted_genes[1])
@@ -919,7 +920,7 @@ function calculate_topo_jumps(sorted_genes::Array{Gene}, _::IntergenicTopoisomer
         # Foreach pair of adjacent genes...
         ConstantRateJump(
             # each has an equal probability of relaxing
-            (u,p,t)->sim_params.topoisomerase_rate / (length(dconfig.genes) - 1.0),
+            (u,p,t)->sim_params.topoisomerase_rate / (length(sorted_genes) - 1.0),
             # when a pair is selected, relax all polymerases that are located between...
             (int)->relax_supercoiling!(int,
                 # the first gene's left-most extent
@@ -960,7 +961,7 @@ function build_problem(
 
     # Calculate intergenic regions
     sorted_genes::Array{Gene} = sort(dconfig.genes, by=(g::Gene)->min(g.start, g.terminate))
-    topo_jumps = calculate_topo_jumps(sorted_genes, sim_params.topo_type)
+    topo_jumps = calculate_topo_jumps(sorted_genes, sim_params, sim_params.topo_type)
     jump_problem = JumpProblem(problem, Direct(),
         generate_jump.(dconfig.genes, sim_params.sc_dependent)...,
         topo_jumps...,
