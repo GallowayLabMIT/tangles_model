@@ -1172,7 +1172,8 @@ function postprocess_sc_rnap_to_h5(
     n_time_steps::Int64,
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
-    extra_metadata::Dict{String,Float64}
+    extra_metadata::Dict{String,Float64},
+    extra_text_metadata::Dict{String,String}={}
 )
     params = InternalParameters(sim_params)
     full_length = length(solution.t)
@@ -1229,6 +1230,9 @@ function postprocess_sc_rnap_to_h5(
         g["event_type"] = event_type
         write_h5_attributes(g, comment, dconfig, sim_params, bcs)
         for (key, val) in extra_metadata
+            attributes(g)[key] = val
+        end
+        for (key, val) in extra_text_metadata
             attributes(g)[key] = val
         end
     end
@@ -1315,12 +1319,13 @@ function simulate_discrete_runs(
     t_end::Float64,
     t_steps::Int64,
     ics_discrete::Array{Int32,1},
-    extra_metadata::Dict{String,Float64})
+    extra_metadata::Dict{String,Float64},
+    extra_text_metadata::Dict{String,Float64}={})
     solver = build_problem(sim_params, bcs, dconfig, t_end, ics_discrete, tsteps=t_steps)
     simulate_discrete_runs(
         solver, filename, n_simulations, comment,
         sim_params, bcs, dconfig, t_end,
-        t_steps, extra_metadata)
+        t_steps, extra_metadata, extra_text_metadata)
 end
 function simulate_discrete_runs(
     filename::String,
@@ -1331,12 +1336,13 @@ function simulate_discrete_runs(
     dconfig::DiscreteConfig,
     t_end::Float64,
     t_steps::Int64,
-    extra_metadata::Dict{String,Float64})
+    extra_metadata::Dict{String,Float64},
+    extra_text_metadata::Dict{String,Float64}={})
     solver = build_problem(sim_params, bcs, dconfig, t_end, tsteps=t_steps)
     simulate_discrete_runs(
         solver, filename, n_simulations, comment,
         sim_params, bcs, dconfig, t_end,
-        t_steps, extra_metadata)
+        t_steps, extra_metadata, extra_text_metadata)
 end
 
 function simulate_discrete_runs(
@@ -1349,7 +1355,8 @@ function simulate_discrete_runs(
     dconfig::DiscreteConfig,
     t_end::Float64,
     t_steps::Int64,
-    extra_metadata::Dict{String,Float64})
+    extra_metadata::Dict{String,Float64},
+    extra_text_metadata::Dict{String,Float64}={})
 
     n_genes = length(dconfig.genes)
     mRNA_results = zeros(Int32, n_simulations, n_genes, t_steps)
@@ -1388,6 +1395,9 @@ function simulate_discrete_runs(
         g["time"] = Vector(range(0.0, stop=t_end, length=t_steps))
         write_h5_attributes(g, comment, dconfig, sim_params, bcs)
         for (key, val) in extra_metadata
+            attributes(g)[key] = val
+        end
+        for (key, val) in extra_text_metadata
             attributes(g)[key] = val
         end
     end

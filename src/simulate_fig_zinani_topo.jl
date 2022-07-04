@@ -151,7 +151,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.uncoupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.uncoupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature), Dict{String,String}("topo"=>topo_str))
         println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     elseif state == "fully-coupled"
@@ -195,7 +195,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.fully-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.fully-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature), Dict{String,String}("topo"=>topo_str))
         println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     elseif state == "tangles-coupled"
@@ -238,7 +238,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.tangles-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature, "topo"=>topo_str))
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.tangles-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature), Dict{String,String}("topo"=>topo_str))
         println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     end
