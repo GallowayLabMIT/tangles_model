@@ -1173,7 +1173,7 @@ function postprocess_sc_rnap_to_h5(
     sim_params::SimulationParameters,
     bcs::BoundaryParameters,
     extra_metadata::Dict{String,Float64},
-    extra_text_metadata::Dict{String,String}={}
+    extra_text_metadata::Dict{String,String}=Dict{String,String}()
 )
     params = InternalParameters(sim_params)
     full_length = length(solution.t)
@@ -1320,7 +1320,7 @@ function simulate_discrete_runs(
     t_steps::Int64,
     ics_discrete::Array{Int32,1},
     extra_metadata::Dict{String,Float64},
-    extra_text_metadata::Dict{String,Float64}={})
+    extra_text_metadata::Dict{String,String}=Dict{String,String}())
     solver = build_problem(sim_params, bcs, dconfig, t_end, ics_discrete, tsteps=t_steps)
     simulate_discrete_runs(
         solver, filename, n_simulations, comment,
@@ -1337,7 +1337,7 @@ function simulate_discrete_runs(
     t_end::Float64,
     t_steps::Int64,
     extra_metadata::Dict{String,Float64},
-    extra_text_metadata::Dict{String,Float64}={})
+    extra_text_metadata::Dict{String,String}=Dict{String,String}())
     solver = build_problem(sim_params, bcs, dconfig, t_end, tsteps=t_steps)
     simulate_discrete_runs(
         solver, filename, n_simulations, comment,
@@ -1356,7 +1356,7 @@ function simulate_discrete_runs(
     t_end::Float64,
     t_steps::Int64,
     extra_metadata::Dict{String,Float64},
-    extra_text_metadata::Dict{String,Float64}={})
+    extra_text_metadata::Dict{String,String}=Dict{String,String}())
 
     n_genes = length(dconfig.genes)
     mRNA_results = zeros(Int32, n_simulations, n_genes, t_steps)
