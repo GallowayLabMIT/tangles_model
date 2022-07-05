@@ -22,7 +22,8 @@ function gen_sim_params(;
     topo_rate_factor::Float64=1.0,
     mRNA_deg_rate::Float64=1.0,
     sc_dependent::Bool=DEFAULT_SIM_PARAMS.sc_dependent,
-    σ2_coeff::Float64=0.0)
+    σ2_coeff::Float64=0.0,
+    topo_type::TopoisomeraseType)
     return SimulationParameters(
         DEFAULT_SIM_PARAMS.mRNA_params,
         DEFAULT_SIM_PARAMS.RNAP_params,
@@ -31,7 +32,8 @@ function gen_sim_params(;
         DEFAULT_SIM_PARAMS.topoisomerase_rate * topo_rate_factor,
         mRNA_deg_rate,
         sc_dependent,
-        σ2_coeff
+        σ2_coeff,
+        topo_type
     )
 end
 
@@ -108,7 +110,8 @@ for _ in 1:n_repeats,
         temperature = temperature,
         sc_dependent = true,
         σ2_coeff = σ2,
-        mRNA_deg_rate = time_rescaled_rates["mRNA_degradation"])
+        mRNA_deg_rate = time_rescaled_rates["mRNA_degradation"],
+        topo_type = topo)
 
     if state == "uncoupled"
         # Free-end BCs, with 10 million basepairs total

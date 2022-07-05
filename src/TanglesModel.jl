@@ -989,6 +989,65 @@ function write_bcs(group::HDF5.Group, bcs::CircularBoundaryParameters)
     attributes(group)["bcs.length"] = bcs.length
 end
 
+function write_topo_type(
+    group::HDF5.Group,
+    _::NoTopoisomerase
+)
+    attributes(group)["topoisomerase_type"] = "none"
+end
+
+function write_topo_type(
+    group::HDF5.Group,
+    _::OriginalTopoisomerase
+)
+    attributes(group)["topoisomerase_type"] = "original"
+end
+
+function write_topo_type(
+    group::HDF5.Group,
+    _::IntragenicTopoisomerase
+)
+    attributes(group)["topoisomerase_type"] = "intragenic"
+end
+
+function write_topo_type(
+    group::HDF5.Group,
+    _::IntergenicTopoisomerase
+)
+    attributes(group)["topoisomerase_type"] = "intergenic"
+end
+
+function write_torque_perturb(
+    group::HDF5.Group,
+    _::NoTorqueFunctionPerturbation
+)
+    attributes(group)["perturbation.torque.type"] = "none"
+end
+
+function write_torque_perturb(
+    group::HDF5.Group,
+    buffer::PositiveSupercoilingBuffering
+)
+    attributes(group)["perturbation.torque.type"] = "positive_buffer"
+    attributes(group)["perturbation.torque.sigma_buffer"] = buffer.σ_buffer
+end
+
+function write_rnap_perturb(
+    group::HDF5.Group,
+    _::NoRNAPInitPerturbation
+)
+    attributes(group)["perturbation.rnap.type"] = "none"
+end
+
+function write_rnap_perturb(
+    group::HDF5.Group,
+    well_perturb::RNAPInitEnergyWell
+)
+    attributes(group)["perturbation.rnap.type"] = "energy_well"
+    attributes(group)["perturbation.rnap.left_sigma"]  = well_perturb.left_boundary
+    attributes(group)["perturbation.rnap.right_sigma"] = well_perturb.right_boundary
+end
+
 function write_h5_attributes(
     group::HDF5.Group,
     comment::String,
@@ -1010,6 +1069,9 @@ function write_h5_attributes(
     attributes(group)["git_status"] = try read(`git log -n1 --format=format:"%H"`, String) * (run(ignorestatus(`git diff-index --quiet HEAD --`)).exitcode == 0 ? "" : "-dirty") catch IOError; "unknown" end
     attributes(group)["comment"] = comment
     write_bcs(group, bcs)
+    write_topo_type(group, sim_params.topo_type)
+    write_torque_perturb(group, sim_params.torque_perturbation)
+    write_rnap_perturb(group, sim_params.rnap_init_perturbation)
 end
 function postprocess_to_h5(
     filename::String,
