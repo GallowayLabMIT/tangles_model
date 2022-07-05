@@ -23,7 +23,7 @@ function gen_sim_params(;
     mRNA_deg_rate::Float64=1.0,
     sc_dependent::Bool=DEFAULT_SIM_PARAMS.sc_dependent,
     σ2_coeff::Float64=0.0,
-    topo_type::TopoisomeraseType)
+    topo_type::TanglesModel.TopoisomeraseType)
     return SimulationParameters(
         DEFAULT_SIM_PARAMS.mRNA_params,
         DEFAULT_SIM_PARAMS.RNAP_params,
