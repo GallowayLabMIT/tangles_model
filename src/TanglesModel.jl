@@ -968,7 +968,7 @@ function build_problem(
         [VariableRateJump(
             (u,p,t)->mRNA_degradation_rate(u,p,t,convert(UInt32,i)),
             (int)->degrade_mRNA!(int, convert(UInt32,i))) for i in 1:length(dconfig.genes)]...,
-        [ConstantRateJump(
+        [VariableRateJump(
             (u,_,t)-> convert(Float64, propensity(u.u.discrete_components, t)),
             (int)->update_discrete!(int, updates)
             )
