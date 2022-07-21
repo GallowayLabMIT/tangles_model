@@ -198,7 +198,7 @@ for _ in 1:n_repeats,
         endpoint = her1_space + her1_len + her1_her7_space + her7_len + her7_space
         bcs = LinearBoundaryParameters(endpoint, false, false)
         config = DiscreteConfig([
-            # Both genes are active, but only one of the mRNAs makes both proteins
+            # Both genes are active
             CoupledGene(time_rescaled_rates["mRNA_synthesis"], 1, her1_space + her1_len, her1_space,
                 (discrete,_)->Float64(discrete[dmap["her1_promoter_empty"]])),
             CoupledGene(time_rescaled_rates["mRNA_synthesis"], 2, endpoint - (her7_space + her7_len), endpoint - her7_space,
