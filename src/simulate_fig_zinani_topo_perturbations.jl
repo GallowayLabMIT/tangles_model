@@ -100,9 +100,9 @@ for _ in 1:n_repeats,
     state in ["uncoupled", "fully-coupled", "tangles-coupled"],
     (topo, topo_str) in zip(
         [NoTopoisomerase(), OriginalTopoisomerase(), IntragenicTopoisomerase(), IntergenicTopoisomerase()],
-        ["none", "original", "intragenic", "intergenic"]
+        ["none", "intragenic", "intergenic"]
     ),
-    scenario in ["none", "buffering", "energy_well"]
+    scenario in ["buffering", "energy_well"]
 
     # Distribute work between nodes
     if i % n_nodes != node_idx
