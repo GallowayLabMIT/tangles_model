@@ -13,8 +13,8 @@ Run summary:
 overall_start = time()
 
 base_rate = 1.0 / 120.0
-n_examples_per_node = 10
-n_repeats = 50
+n_examples_per_node = 20
+n_repeats = 100
 i = 0
 
 function gen_sim_params(;
@@ -99,7 +99,7 @@ for _ in 1:n_repeats,
     σ2 in [0.025],
     state in ["uncoupled", "fully-coupled", "tangles-coupled"],
     (topo, topo_str) in zip(
-        [NoTopoisomerase(), OriginalTopoisomerase(), IntragenicTopoisomerase(), IntergenicTopoisomerase()],
+        [NoTopoisomerase(), IntragenicTopoisomerase(), IntergenicTopoisomerase()],
         ["none", "intragenic", "intergenic"]
     ),
     scenario in ["buffering", "energy_well"]
