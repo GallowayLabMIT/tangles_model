@@ -1,7 +1,7 @@
 using TanglesModel
 node_idx = parse(Int64, ARGS[1])
 n_nodes = parse(Int64, ARGS[2])
-filename = "output/modeling_paper/fig_zinani_sims-node" * lpad(node_idx, 5, "0") * ".h5"
+filename = "output/modeling_paper/fig_zinani_topo_sims-node" * lpad(node_idx, 5, "0") * ".h5"
 
 println("""
 ======================================================
@@ -14,7 +14,7 @@ overall_start = time()
 
 base_rate = 1.0 / 120.0
 n_examples_per_node = 10
-n_repeats = 1000
+n_repeats = 100
 i = 0
 
 function gen_sim_params(;
@@ -22,7 +22,8 @@ function gen_sim_params(;
     topo_rate_factor::Float64=1.0,
     mRNA_deg_rate::Float64=1.0,
     sc_dependent::Bool=DEFAULT_SIM_PARAMS.sc_dependent,
-    σ2_coeff::Float64=0.0)
+    σ2_coeff::Float64=0.0,
+    topo_type::TanglesModel.TopoisomeraseType)
     return SimulationParameters(
         DEFAULT_SIM_PARAMS.mRNA_params,
         DEFAULT_SIM_PARAMS.RNAP_params,
@@ -31,7 +32,8 @@ function gen_sim_params(;
         DEFAULT_SIM_PARAMS.topoisomerase_rate * topo_rate_factor,
         mRNA_deg_rate,
         sc_dependent,
-        σ2_coeff
+        σ2_coeff,
+        topo_type
     )
 end
 
@@ -91,7 +93,11 @@ discrete_ic = convert(Array{Int32,1}, [0, 0, 0, 0, 100, 1, 1, 0, 0, 0, 0])
 for _ in 1:n_repeats,
     temperature in [273.15 + 21.5],
     σ2 in [0.02, 0.025, 0.03],
-    state in ["uncoupled", "fully-coupled", "tangles-coupled"]
+    state in ["uncoupled", "fully-coupled", "tangles-coupled"],
+    (topo, topo_str) in zip(
+        [NoTopoisomerase(), OriginalTopoisomerase(), IntragenicTopoisomerase(), IntergenicTopoisomerase()],
+        ["none", "original", "intragenic", "intergenic"]
+    )
 
     # Distribute work between nodes
     if i % n_nodes != node_idx
@@ -104,7 +110,8 @@ for _ in 1:n_repeats,
         temperature = temperature,
         sc_dependent = true,
         σ2_coeff = σ2,
-        mRNA_deg_rate = time_rescaled_rates["mRNA_degradation"])
+        mRNA_deg_rate = time_rescaled_rates["mRNA_degradation"],
+        topo_type = topo)
 
     if state == "uncoupled"
         # Free-end BCs, with 10 million basepairs total
@@ -147,7 +154,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.uncoupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.uncoupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature), Dict{String,String}("topo"=>topo_str))
         println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     elseif state == "fully-coupled"
@@ -191,14 +198,14 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.fully-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.fully-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature), Dict{String,String}("topo"=>topo_str))
         println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     elseif state == "tangles-coupled"
         endpoint = her1_space + her1_len + her1_her7_space + her7_len + her7_space
         bcs = LinearBoundaryParameters(endpoint, false, false)
         config = DiscreteConfig([
-            # Both genes are active
+            # Both genes are active, but only one of the mRNAs makes both proteins
             CoupledGene(time_rescaled_rates["mRNA_synthesis"], 1, her1_space + her1_len, her1_space,
                 (discrete,_)->Float64(discrete[dmap["her1_promoter_empty"]])),
             CoupledGene(time_rescaled_rates["mRNA_synthesis"], 2, endpoint - (her7_space + her7_len), endpoint - her7_space,
@@ -234,7 +241,7 @@ for _ in 1:n_repeats,
             ]
         ])
         start_time = time()
-        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.tangles-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature))
+        simulate_discrete_runs(filename, n_examples_per_node, "fig.zinani.tangles-coupled", params, bcs, config, 15000.0, 1000, discrete_ic, Dict{String,Float64}("temperature"=>temperature), Dict{String,String}("topo"=>topo_str))
         println("Done with Zinani fig with params:\n\ttemperature: ", temperature, "\n\ttype: ", state)
         println("Ran round in ", time() - start_time, " seconds")
     end
