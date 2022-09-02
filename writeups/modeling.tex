@@ -33,7 +33,7 @@
 \usepackage[scaled=.96,lf]{XCharter}
 %\usepackage[scaled=.96,lf]{XCharter}
 %\linespread{1.04}
-\usepackage[backend=biber,style=nature,backref=true,url=false]{biblatex} %author-year for in-text content
+\usepackage[backend=biber,style=nature,backref=true,url=false]{biblatex} %author-year for submission to the journal, nature style for viewing
 %\hyphenpenalty=750
 \usepackage{cleveref}
 \crefname{appendix}{supplemental section}{supplemental sections}
@@ -42,7 +42,8 @@
 \newcommand{\unit}[1]{\; \text{#1}\,}
 
 \titlespacing{\section}{0pt}{2ex}{1ex}
-\titleformat{\subsection}[display]{\bfseries}{}{0em}{}
+\titleformat{\subsection}[display]{\bfseries\large}{}{0em}{}
+\titleformat{\subsubsection}[display]{\itshape}{}{0em}{}
 \titlespacing{\subsection}{0pt}{0.1em}{0.1em}
 
 % LAYOUT TWEAKS - reduce separation between text and floats
@@ -51,7 +52,7 @@
 
 \title{Supercoiling-mediated feedback rapidly couples and tunes transcription}
 \author{Christopher P. Johnstone}
-\author{Kate E. Galloway}
+\author{Kate E. Galloway\thanks{Corresponding author and lead contact, katiegal@mit.edu}}
 \affil{Department of Chemical Engineering, MIT, 25 Ames St., Cambridge, MA 02139, USA}
 % ^ pre elseiver
 %\author[1]{Christopher P. Johnstone}
@@ -74,21 +75,7 @@
 \maketitle
 
 \begin{abstract} \noindent
-    % Basic background
-    Transcription induces a wave of DNA supercoiling, altering the binding affinity of RNA polymerases and reshaping the biochemical landscape of gene regulation. 
-     % Detailed background
-     As supercoiling rapidly diffuses, transcription dynamically reshapes the regulation of proximal genes, forming a complex feedback loop. The resulting intergene coupling may provide a mechanism to control transcriptional variance in engineered gene networks and explain the behavior of co-localized native circuits.
-    % General problem
-    However, a theoretical framework is needed for integrating  both biophysical and biochemical transcriptional regulation to investigate the role of supercoiling-mediated feedback within multi-gene systems.
-    % Main result
-    Here, we model transcriptional regulation under the influence of supercoiling-mediated polymerase dynamics, allowing us to identify patterns of expression that result from physical intergene coupling and explore integration of this biophysical model with a set of canonical biochemical gene regulatory systems.  
-    % How did the results further the field?
-    We find that gene syntax---the relative ordering and orientation of genes---defines the expression profiles, variance, burst dynamics, and intergene correlation of two-gene systems. By applying our model to both a synthetic toggle switch and the endogenous zebrafish segmentation network, we find that supercoiling can enhance or weaken conventional biochemical regulatory strategies such as mRNA- and protein-mediated feedback loops. 
-    % Put results in context
-    Together, our results suggest that supercoiling couples behavior between neighboring genes, representing a novel regulatory mechanism. 
-    % Broader perspective
-    Integrating biophysical regulation into the analysis and design of gene regulation provides a framework for enhanced understanding of native networks and engineering of synthetic gene circuits.
-    %idk, is this needed here? We could mention silencing, tight gene clusters, multi-gene viruses, etc as possible targets. Also some interesting reflections on transcription not as a products but as a process. Gene A doesn't care that gene B is coding or not, all that matter is that it induces or doesn't some wake of supercoiling, which may explain pervasive noncoding transcription (this might be a discussion point). 
+   Transcription induces a wave of DNA supercoiling, altering the binding affinity of RNA polymerases and reshaping the biochemical landscape of gene regulation. As supercoiling rapidly diffuses, transcription dynamically reshapes the regulation of proximal genes, forming a complex feedback loop. However, a theoretical framework is needed to integrate biophysical regulation with biochemical transcriptional regulation. To investigate the role of supercoiling-mediated feedback within multi-gene systems, we model transcriptional regulation under the influence of supercoiling-mediated polymerase dynamics, allowing us to identify patterns of expression that result from physical intergene coupling. We find that gene syntax—the relative ordering and orientation of genes—defines the expression profiles, variance, burst dynamics, and intergene correlation of two-gene systems. Furthermore, supercoiling can enhance or weaken biochemical regulation. Our results suggest that supercoiling couples behavior between neighboring genes, providing a regulatory mechanism that tunes transcriptional variance in engineered gene networks and explains the behavior of co-localized native circuits. 
 \end{abstract}
 
 \section{Introduction}
@@ -103,7 +90,7 @@ Alternatively, mechanical sources of gene regulation offer one potential mechani
 The mechanical forces of DNA supercoiling powerfully shape transcriptional variance \parencite{desaiDNArepairPathwayCan2021,chongMechanismTranscriptionalBursting2014}.
 In the process of transcription, RNA polymerases induce a leading wave of positive DNA supercoiling \parencite{wuTranscriptionGeneratesPositively1988,liuSupercoilingDNATemplate1987}, reshaping the local structure of chromatin \parencite{acharNegativeSupercoilGene2020,tevesTranscriptiongeneratedTorsionalStress2014,naughtonTranscriptionFormsRemodels2013,guoHighresolutionGenomewideMapping2021}.
 At the kilobase scale, chromatin structure correlates with gene regulation \parencite{hsiehResolving3DLandscape2020,rowleyEvolutionarilyConservedPrinciples2017, krietensteinUltrastructuralDetailsMammalian2020}.
-In yeast and human cells, transcriptionally-induced supercoiling demarks bounds of gene activity \parencite{acharNegativeSupercoilGene2020,naughtonTranscriptionFormsRemodels2013,kouzineTranscriptiondependentDynamicSupercoiling2013}.
+In yeast and human cells, transcription-induced supercoiling demarks bounds of gene activity \parencite{acharNegativeSupercoilGene2020,naughtonTranscriptionFormsRemodels2013,kouzineTranscriptiondependentDynamicSupercoiling2013}.
 In particular, transcriptional activity dictates the strength of contact domains, indicating a role for transcription in forming and maintaining interactions at the kilobase scale \parencite{rowleyOrganizationalPrinciples3D2018,rowleyEvolutionarilyConservedPrinciples2017}.
 Together these data suggest that the process of transcription drives formation of supercoiling-linked, kilobase-scale structures that feed back into transcriptional regulation of gene expression.
 As supercoiling rapidly diffuses across long distances \parencite{loenhoutDynamicsDNASupercoils2012}, transcriptional activity at one site may impact the overall activity and dynamics of transcription of proximal genes \parencite{sevierPropertiesGeneExpression2018, sevierCollectivePolymeraseDynamics2022,tripathiDNASupercoilingmediatedCollective2021}.
@@ -117,7 +104,7 @@ Understanding how supercoiling induces coupling between neighboring genes provid
 %\end{figure}
 
 Here we develop a model of transcriptional regulation that integrates DNA supercoiling to examine how the orientation and placement of neighboring genes affects expression. Extending from a model of supercoiling-dependent polymerase motion \parencite{sevierPropertiesGeneExpression2018}, we developed our model to include the effects of supercoiling on polymerase binding and initiation. Specifically, we model RNA polymerase binding and initiation as a function of DNA supercoiling, such that underwound DNA favors RNA polymerase binding and overwound DNA limits binding. To extract experimentally testable predictions, we  apply our model to simple two-gene systems that include a constitutive reporter and an inducible gene. Using these two-gene systems, we find that DNA supercoiling strongly influences the profile of gene expression and that influence is defined by syntax---the relative orientation and position of genetic elements---and the enclosing boundary conditions. In addition to regulating the output of simulated genes, supercoiling-dependent feedback tunes the size and frequency of transcriptional bursts. To investigate how these tunable parameters may impact synthetic gene circuits, we applied our model to a canonical gene circuit, a synthetic toggle switch constructed with different syntaxes.
-We find that circuit syntax affects the stability of states and sets biochemical parameters required for bistability including repressor cooperativity and RNA stability. Finally, we explored how DNA supercoiling might support transcriptional coordination within the native genome of zebrafish (\textit{Danio rerio}) to enable somite segmentation. We find that DNA supercoiling acts as a mechanism for coordinating expression between divergently expressed genes in the segmentation network. Supercoiling-dependent feedback supports tight regulation of these proximal segmentation genes, providing a molecular mechanism for the precise coordination of gene expression observed during somite formation \parencite{zinaniPairingSegmentationClock2021}. Thus, supercoiling-mediated feedback represents a novel, testable regulatory mechanism that can both explain native behaviors and guide synthetic designs.
+We find that circuit syntax affects the stability of states and sets biochemical parameters required for bistability including repressor cooperativity and RNA stability. Finally, we explored how DNA supercoiling might support transcriptional coordination within the native genome of zebrafish (\textit{Danio rerio}) to enable somite segmentation. We find that DNA supercoiling acts as a mechanism for coordinating expression between divergently expressed genes in the segmentation network. Supercoiling-dependent feedback supports tight regulation of these proximal segmentation genes, providing a molecular mechanism for the precise coordination of gene expression observed during somite formation \parencite{zinaniPairingSegmentationClock2021}. Thus, supercoiling-mediated feedback represents a testable regulatory mechanism that can both explain native behaviors and guide synthetic designs.
 
 
 
@@ -131,12 +118,12 @@ We find that circuit syntax affects the stability of states and sets biochemical
 Simulating the behavior of native and synthetic circuits under the influence of transcription-induced feedback requires a model that integrates explicitly-modeled RNA polymerase (RNAP) motion and RNA- and protein-mediated feedback mechanisms.
 Our method combines three modeling levels: an ordinary differential equation system that simulates the continuous progression of polymerases loaded onto DNA, a core stochastic system that models supercoiling-dependent polymerase initiation, and a user-specified stochastic layer that allows for simulation of other modes of transcriptional regulation such as the promoter-repressive and -activating interactions that are often included in synthetic circuits (see STAR Methods for details on model development).
 
-As RNA polymerases move along chromatin, positive supercoiling is generated ahead of the polymerase and negative supercoiling is generated behind. Supercoiling generation occurs because the drag of the nascent mRNA rotating with the polymerase is balanced by torque arising from the over- and under-winding of the DNA (\cref{fig:key_variables_diagram}). On the length scale of tens of kilobases, supercoiling diffusion is negligible, causing the supercoiling density, \(\sigma\), to take on a constant value between polymerases. Here, we model supercoiling as affecting gene expression in two ways---excessive supercoiling can both stall polymerases due to excess torque and enhance or suppress polymerase binding at promoter regions due to supercoiling-dependent initiation (\cref{fig:key_variables_diagram}, STAR Methods).
+As RNA polymerases move along chromatin, positive supercoiling is generated ahead of the polymerase and negative supercoiling is generated behind. Supercoiling generation occurs because the drag of the nascent mRNA rotating with the polymerase is balanced by torque arising from the over- and under-winding of the DNA (\cref{fig:key_variables_diagram}). On the length scale of tens of kilobases, supercoiling diffusion is negligible, causing the supercoiling density, \(\sigma\), to take on a constant value between polymerases. Here, we model supercoiling as affecting gene expression in two ways; excessive supercoiling can both stall polymerases due to excess torque and enhance or suppress polymerase binding at promoter regions due to supercoiling-dependent initiation (\cref{fig:key_variables_diagram}, STAR Methods).
 
 \begin{figure}[htb]
     \centering
     \includegraphics{figures/modeling_paper/variable_supercoiling_explanation}
-    \caption{In the limit of fast supercoiling relaxation relative to polymerase motion, the supercoiling density is constant in the region between polymerases and can be calculated from the slope of the linearly-interpolated \(\phi(z)\) graph. The relaxed DNA twist frequency \(\omega_0\) has value \(\omega_0 = 1.85\) radians/nm. Four key variables define the location of each polymerase: its linear distance \(z\) along the genome, the length of the nascent mRNA transcript \(x\), the rotation of the polymerase \(\theta\), and the local DNA excess twist \(\phi\). The tradeoff between RNAP rotation and DNA rotation generates supercoiling upstream and downstream, with the drag generated by the nascent mRNA primarily balancing the torque caused by generated supercoils. Using an energy model responsive to local supercoiling, we can derive supercoiling-dependent initiation terms to model differential polymerase loading rates.}
+    \caption{Four key variables define the location of each polymerase: its linear distance \(z\) along the genome, the length of the nascent mRNA transcript \(x\), the rotation of the polymerase \(\theta\), and the local DNA excess twist \(\phi\). The relaxed DNA twist frequency \(\omega_0\) has value \(\omega_0 = 1.85\) radians/nm. The tradeoff between RNAP rotation and DNA rotation generates supercoiling upstream and downstream, with the drag generated by the nascent mRNA primarily balancing the torque caused by generated supercoils. In the limit of fast supercoiling relaxation relative to polymerase motion, the supercoiling density is constant in the region between polymerases and can be calculated from the slope of the linearly-interpolated \(\phi(z)\) graph. Using an energy model responsive to local supercoiling, we can derive supercoiling-dependent initiation terms to model differential polymerase loading rates.}
     \label{fig:key_variables_diagram}
 \end{figure}
 
@@ -163,7 +150,7 @@ As RNA polymerases move along chromatin, positive supercoiling is generated ahea
     } \label{fig:top:orientation_bc_behavior}
 \end{figure}
 
-In order to characterize the behavior of supercoiling-mediated feedback, we simulated a series of two-gene systems. These experimentally accessible two-gene systems allow us to test and understand the core design considerations---syntax, relevant boundary conditions, and other experimentally-tunable parameters---within a well-defined and controlled system. Our two-gene systems consist of a reporter gene that is constitutively active and an adjacent, inducible gene placed in either a tandem orientation with the reporter upstream, tandem orientation with the reporter downstream, convergent orientation, or divergent orientation (\cref{fig:base_orientations}).
+In order to characterize the behavior of supercoiling-mediated feedback, we simulated a series of two-gene systems. These experimentally accessible circuits allow us to test and understand the core design considerations---syntax, relevant boundary conditions, and other experimentally-tunable parameters---within a well-defined and controlled system. Our two-gene systems consist of a reporter gene that is constitutively active and an adjacent, inducible gene placed in either a tandem orientation with the reporter upstream, tandem orientation with the reporter downstream, convergent orientation, or divergent orientation (\cref{fig:base_orientations}).
 
 Varying syntax, we examined how boundary conditions affect the expression profiles of the reporter and inducible genes. The type of boundary condition determines how transcriptionally-generated supercoiling propagates to adjacent genes. Experimentally, plasmid constructs and genomically-integrated cassettes allow for interrogation of circular and linear boundary conditions, respectively.  Plotting reporter expression as a function of adjacent gene induction, we observed that circular boundary conditions show a monotonic increase in reporter output that scales by syntax (\cref{fig:bc_induction_sweep}). With circular boundary conditions, both the convergent and divergent syntaxes show a large enhancement of expression relative to the uninduced case, whereas the tandem cases showed only a slight enhancement. This phenomena occurs because, on a circle, the convergent and divergent syntaxes differ only in the relative lengths of the intergenic and inter-promoter regions; as such, negative supercoiling density will accumulate in the inter-promoter region, enhancing expression in the convergent and divergent syntaxes. In contrast, linear boundary conditions show diverse behaviors. The upstream-tandem and divergent syntaxes maintain high expression levels while the convergent and downstream-tandem syntaxes show decreasing reporter expression with increasing induction of the neighboring gene.
 
@@ -242,7 +229,7 @@ As noise impacts the properties of native and synthetic gene networks, we quanti
 Transcription occurs in bursts of activity, and native and synthetic mechanisms can modify burst dynamics \parencite{desaiDNArepairPathwayCan2021,chongMechanismTranscriptionalBursting2014,poppAlteringTranscriptionFactor2021}.
 In our base model, transcriptional bursting arises from the stochastic addition of polymerases. We hypothesized that burst dynamics may explain the distribution dynamics observed in \cref{fig:output_distribution_by_orientation_dynamics,fig:noise_by_orientation}. While our base model provides a species-agnostic approach to investigate supercoiling-mediated feedback, the mechanical regulation of eukaryotic chromatin may introduce additional complexity and tunability to bursting dynamics. For example, nucleosomes can serve as a reservoir of negative supercoiling by stabilizing the wrapped double-loop of DNA \parencite{leSynergisticCoordinationChromatin2019}.
 Furthermore, at hypernegative or hyperpositive supercoiling densities, local chromatin structure may be disrupted causing structures such as R-loops and G-quadruplexes to preferentially form. These structures can block polymerase binding and motion \parencite{stolzInterplayDNASequence2019}.
-Even when including our second-order correction term as in \cref{eq:second_order_sc_initation}, our base model predicts favorable supercoiling-dependent polymerase initiation at the hypernegative value of \(\sigma = -0.1\) (\cref{fig:perturbation_overview}). To address these complexities, we implemented two alternate models which extend our torque-response and polymerase initiation energy equations. 
+Even when including our second-order correction term as detailed in \cref{eq:second_order_sc_initation}, our base model predicts favorable supercoiling-dependent polymerase initiation at the hypernegative value of \(\sigma = -0.1\) (\cref{fig:perturbation_overview}). To address these complexities, we implemented two alternate models which extend our torque-response and polymerase initiation energy equations. 
 
 To simulate the effects of structures forming at hypernegative or hyperpositive supercoiling densities, we penalize polymerase initiation by adding a near-infinite positive energy penalty to polymerase initiation at hypernegative and hyperpositive supercoiling densities (\cref{fig:perturbation_overview}) roughly matching the density at which structures such as R-loops form (\(\sigma < -0.06, \sigma > 0.125\), \parencite{stolzInterplayDNASequence2019}). Putatively, these barriers enable us to simulate the formation of stable structures within the DNA that strongly penalize RNAP binding while remaining agnostic to any specific molecular structure. We find that penalization of extreme supercoiling globally reduces supercoiling density (\cref{fig:supp:energy_well_sc_density}) but maintains the qualitative syntax-dependent behavior of the steady-state, linear systems. However, syntax-specific differences are mostly eliminated for circular templates (\cref{fig:supp:energy_well_induction_sweep,fig:supp:energy_well_joint_distribution}).
 
@@ -251,7 +238,7 @@ To model nucleosomes, we updated our torque-response function to phenomenologica
 
 With these three models, we simulated the four linear syntaxes and recorded polymerase initiation events per gene. We then examined the distribution of both \emph{burst size}, which we define as the number of polymerase initiation events during a burst, and \emph{inter-burst time}, the amount of time separating two consecutive bursts for the reporter gene (\cref{fig:burst_time_cartoon}, see \cref{sec:supp:burst_threshold} for more detail). Upon induction of the adjacent gene, we find burst dynamics differ by syntax (\cref{fig:burst_size_dynamics}). In both the base model and the nucleosome-buffering model, the downstream-tandem and convergent syntaxes show a reduced burst size when compared to the divergent and upstream-tandem syntaxes. We attribute this reduction in burst size to accumulated positive supercoiling at the site of the reporter gene's promoter. In contrast, induction of the adjacent gene in the divergent syntax increases the burst size of the reporter gene, putatively due to enhanced loading of polymerases facilitated by accumulated negative supercoiling. With penalization of hypernegative supercoiling density, the divergent syntax shows a decrease in burst size, potentially due a shift in the tradeoff between polymerase stalling and supercoiling-dependent initiation. 
 
-Examining the inter-burst time distributions, induction of the neighboring gene shifts the upstream-tandem and divergent syntaxes to shorter inter-burst times (\cref{fig:interburst_time_dynamics}).  The downstream-tandem and convergent syntaxes shift to longer inter-burst times upon induction of the adjacent gene. Interestingly, this qualitative observation holds \emph{independently} of the choice of torque-energy model, suggesting that changes in inter-burst time---and its inverse, burst frequency---is a syntax-dependent effect that is largely insensitive to additional chromatin perturbations. All in all, these results suggest that syntax provides a method of orthogonally tuning burst frequency.
+Examining the inter-burst time distributions, induction of the neighboring gene shifts the upstream-tandem and divergent syntaxes to shorter inter-burst times (\cref{fig:interburst_time_dynamics}).  The downstream-tandem and convergent syntaxes shift to longer inter-burst times upon induction of the adjacent gene. Interestingly, this qualitative observation holds \emph{independently} of the choice of torque-energy model, suggesting that changes in inter-burst time---and its inverse, burst frequency---is a syntax-dependent effect that is largely insensitive to additional chromatin perturbations.
 
 From these observations, we can now understand the population-level behaviors observed in \cref{fig:output_distribution_by_orientation_dynamics,fig:noise_by_orientation}. 
 The increase of noise and reduction of mean expression value in the downstream-tandem and convergent cases occurs concomitant with an \emph{increase} in inter-burst time (\cref{fig:interburst_time_dynamics}). This is expected; if bursts occur rarely, stochastic fluctuations will have an outsized effect on each individual simulation, enhancing population variance. In contrast, the decrease of noise in the upstream-tandem and divergent syntaxes is matched by a decrease in the inter-burst time (\cref{fig:interburst_time_dynamics}). Because bursts happen more frequently, the ensemble reporter output is more stable as we approach the limit of constant transcription.
@@ -295,7 +282,7 @@ The convergent syntax approaches an equilibrium where approximately half of the 
 To quantify these distribution results, we computed the \emph{stable fraction} of the ensemble, defined as the fraction of simulations that have never left the initial starting basin at a certain simulation time.
 The stable fraction monotonically decreases toward zero with time, as simulations that cross into the other stable basin are no longer counted as stable even if they return to the original basin.
 We observe substantial syntax differences in the dynamics of the stable fraction of the ensemble (\cref{fig:toggle_stable_frac_n_2.0}). While the tandem orientations represent the extremes of stability, the convergent and divergent syntaxes exhibit intermediate stabilities.
-As expected, different burst dynamics characterize toggle switch behaviors, varying by syntax. In particular, we observe that the divergent syntax displays \emph{reduced} burst size when compared to the other syntaxes (\cref{fig:toggle_burst_size}). In contrast, the inter-burst time distributions do not significantly vary with syntax (\cref{fig:supp_toggles_interburst_time}), suggesting that burst size, not burst frequency, is a key parameter tuned by supercoiling-mediated feedback. We hypothesize that the divergent toggle switch may be governed by a conflicting interaction at the promoter level between supercoiling-mediated feedback and mutual inhibition.
+As expected, different burst dynamics characterize toggle switch behaviors, varying by syntax. In particular, we observe that the divergent syntax displays \emph{reduced} burst size when compared to the other syntaxes (\cref{fig:toggle_burst_size}). In contrast, the inter-burst time distributions do not significantly vary with syntax (\cref{fig:supp_toggles_interburst_time}), suggesting that burst size, not burst frequency, is a key parameter tuned by supercoiling-mediated feedback in this context. We hypothesize that the divergent toggle switch may be governed by a conflicting interaction at the promoter level between supercoiling-mediated feedback and mutual inhibition.
 Overall, these trends suggest that the observed toggle switch behavior emerges through correlated (or anti-correlated) transcription and changes in burst size, suggesting that toggle switch behavior could be tuned orthogonally by supercoiling-mediated feedback.
 
 For any stochastic system, the steady-state number of molecules influences the stability of the system. As the reservoir of molecules grows larger, the size of fluctuations relative to the total concentration decreases. For toggle switches, we expect that as the number of steady-state mRNA molecules grows, we should approach the theoretical, continuous solution that predicts that no state-switching occurs. To examine this expectation, we modified the simulated mRNA degradation rate, scaling \(K\) as described in \cref{sec:supp:choice_of_k}, and plotted the resulting half-lives (\cref{fig:toggle_half_life_vs_mRNA_deg}).
@@ -327,7 +314,7 @@ DNA supercoiling provides a mechanism for the precise coordination of colocalize
     \caption{Supercoiling-mediated feedback supports robust transcriptional coordination within the zebrafish segmentation clock circuit.
         \subref{fig:her1_her7_cartoon} Schematic of the mutually-inhibitory \textit{her1}-\textit{her7} system. Either a \textit{her1-her1} dimer or a \textit{hes6-her7} dimer can bind to either promoter, preventing transcription of the downstream gene.
         \subref{fig:zinani_summary_cartoon} Coupling between \textit{her1}-\textit{her7} genes on the same allele supports proper zebrafish somite formation \parencite{zinaniPairingSegmentationClock2021}. Disruption of this intra-allele coupling through unpaired mutations in \textit{her1}-\textit{her7} leads to loss of proper segmentation.
-        \subref{fig:zinani_mRNA_behavior} Example simulations of \textit{her1} and \textit{her7} mRNA levels are shown as a function of gene syntax and topoisomerase activity. The initial spike of mRNA in the gene-paired, topoisomerase-active case is a result of starting from an initial condition without repressors; this initial condition was chosen to match literature modeling work \parencite{zinaniPairingSegmentationClock2021}.
+        \subref{fig:zinani_mRNA_behavior} Example simulations of \textit{her1} and \textit{her7} mRNA levels are shown as a function of gene syntax and topoisomerase activity.
         \subref{fig:zinani_cross_correlation} The ensemble cross-correlation between the \textit{her1} and \textit{her7} mRNA counts is shown across pairing and topoisomerase conditions.  The large maxima at \(\tau = 0\) combined with large roughly-symmetric minima observed in the gene-paired cases signal the strong cyclic behavior observed experimentally in zebrafish.
         \subref{fig:zinani_correlation_coeff} The distribution of correlation coefficients between the \textit{her1} and \textit{her7} mRNA counts is shown for the various pairing and topoisomerase conditions. 
         \subref{fig:zinani_oscillation_amplitude} The oscillation amplitude over the ensemble is shown for the various conditions. 
@@ -335,35 +322,35 @@ DNA supercoiling provides a mechanism for the precise coordination of colocalize
 \end{figure}
 Based on our above results from two-gene systems, we hypothesized the feedback from DNA supercoiling supports coordination between discrete transcripts expressed from divergent promoters. Using our full computational model, we replicated the previously developed stochastic reaction network. Importantly, \textit{her1} and \textit{her7} are regulated in a binary fashion; the promoters are either completely off when bound by a dimer or expressed at their basal rate when unbound. We simulated two cases: an \emph{unpaired} system where the simulated genes were separated by a large distance (1Mb) to prevent supercoiling interactions, and a \emph{gene paired} system where \textit{her1} and \textit{her7} were spaced at their genomically-active locations. In the paired system, linear boundary conditions were used with boundaries chosen at the nearest adjacent genes on each side in the zebrafish genome.
 
-Strikingly, the gene-paired case shows strong periodic levels of mRNA expression (\cref{fig:zinani_mRNA_behavior}). In fact, such levels of periodicity are not observed even in the original computational model presented by \textcite{zinaniPairingSegmentationClock2021} (\cref{fig:supp:zinani_matlab_mRNA,fig:supp:zinani_matlab_cross_correlation}); we confirmed that this is not simply an artifact of the uniform time resampling performed in order to compare our model behavior to the literature model (\cref{fig:supp:zinani_matlab_correlation}). The level of periodicity appears sensitive to the second-order polymerase initiation model. Performing simulations below the behavior transition at \(\alpha = 0.02\) (see \cref{fig:top:orientation_bc_behavior,fig:top:alpha_sweep}), the system displays weak periodicity (\cref{fig:supp:zinani_alpha_mRNA,fig:supp:zinani_alpha_cross_correlation,fig:supp:zinani_alpha_correlation,fig:supp:zinani_alpha_oscillation_amplitude}). 
+Strikingly, the gene-paired case shows strong periodic levels of mRNA expression (\cref{fig:zinani_mRNA_behavior}). In fact, such levels of periodicity are not observed even in the original computational model presented by \textcite{zinaniPairingSegmentationClock2021} (\cref{fig:supp:zinani_matlab_mRNA,fig:supp:zinani_matlab_cross_correlation}); we confirmed that this is not simply an artifact of the uniform time resampling performed in order to compare our model behavior to the literature model (\cref{fig:supp:zinani_matlab_correlation}). The level of periodicity appears sensitive to our second-order polymerase initiation model. Performing simulations with a weakened second-order penalty term (see STAR Methods, \cref{fig:top:orientation_bc_behavior,fig:top:alpha_sweep}) reduces the amount of periodicity observed (\cref{fig:supp:zinani_alpha_mRNA,fig:supp:zinani_alpha_cross_correlation,fig:supp:zinani_alpha_correlation,fig:supp:zinani_alpha_oscillation_amplitude}). 
 
 Examining the time-dependent nature of the \textit{her1}-\textit{her7} system, we plotted the ensemble cross-correlation for paired and unpaired genes (\cref{fig:zinani_cross_correlation}). Here, we found that in addition to the enhanced positive correlation peak at a time delay of \(\tau = 0\) seconds, the paired case showed exceptionally strong, nearly-symmetric cross-correlation at positive and negative time offsets. Such cross-correlation is the hallmark of a periodic signal. Thus, both individual examples (\cref{fig:zinani_mRNA_behavior}) and ensemble behavior (\cref{fig:zinani_cross_correlation}) show that supercoiling-mediated feedback provides a strong mechanistic driver of intergene coordination in the \textit{her1}-\textit{her7} clock circuit that is inaccessible to solely dimer-mediated regulation.
 
-In order to confirm that these results apply across the ensemble, we examined the ensemble correlation between the counts of \textit{her1} and \textit{her7} mRNA (\cref{fig:zinani_correlation_coeff}). We found that while the unpaired case shows minimal correlation, the biophysically-coupled case shows strong correlation between the two clock genes. We attribute this strong, periodic correlation to the additional biophysical coupling conferred by the divergent syntax. Notably, we observed that our model predicts an increase in the amplitude of oscillations (\cref{fig:zinani_oscillation_amplitude}). \textit{In vivo}, loss of gene pairing reduces oscillation amplitude, leading to improper segmentation \parencite{zinaniPairingSegmentationClock2021}. 
+In order to confirm that these results apply across the ensemble, we examined the ensemble correlation between the counts of \textit{her1} and \textit{her7} mRNA (\cref{fig:zinani_correlation_coeff}). We found that while the unpaired case shows minimal correlation, the gene-paired case shows strong correlation between the two clock genes. We attribute this strong, periodic correlation to the additional biophysical coupling conferred by the divergent syntax. Notably, we observed that our model predicts an increase in the amplitude of oscillations (\cref{fig:zinani_oscillation_amplitude}). \textit{In vivo}, loss of gene pairing reduces oscillation amplitude, leading to improper segmentation \parencite{zinaniPairingSegmentationClock2021}. 
 
-Because this periodic behavior depends on biophysical coupling, we investigated if the periodicity was robust to topoisomerase activity, nucleosome buffering, or hypernegative chromatin structure formation. We found that intergenic topoisomerase relaxation did not abrogate the periodic behavior, with strong correlated oscillations still visible (\cref{fig:zinani_cross_correlation,fig:zinani_correlation_coeff,fig:zinani_oscillation_amplitude}). However, intergenic topoisomerase activity did reduce the cross-correlation after a few periods, indicating that topoisomerase activity contributes to variance in oscillation frequency while still supporting strongly correlated \emph{her1} and \emph{her7} expression. Intragenic topoisomerase activity showed similar behaviors (\cref{fig:supp:intragenic_cross_correlation}). Finally, we found that while penalization of hypernegative supercoiling densities eliminated periodic behavior (\cref{fig:supp:energy_well_zinani_examples,fig:supp:energy_well_zinani_crosscorr,fig:supp:energy_well_zinani_correlation_coefficient,fig:supp:energy_well_zinani_oscillation_amplitude}), periodicity was maintained in the presence of nucleosome buffering (\cref{fig:supp:nucleosome_zinani_examples,fig:supp:nucleosome_zinani_crosscorr,fig:supp:nucleosome_zinani_correlation_coefficient,fig:supp:nucleosome_zinani_oscillation_amplitude}).
+Because this periodic behavior depends on biophysical coupling, we investigated if the periodicity was robust to topoisomerase activity, nucleosome buffering, or hypernegative chromatin structure formation. We found that intergenic topoisomerase relaxation (see STAR Methods) did not abrogate the periodic behavior, with strong correlated oscillations still visible (\cref{fig:zinani_cross_correlation,fig:zinani_correlation_coeff,fig:zinani_oscillation_amplitude}). However, intergenic topoisomerase activity did reduce the cross-correlation after a few periods, indicating that topoisomerase activity contributes to variance in oscillation frequency while still supporting strongly correlated \emph{her1} and \emph{her7} expression. Intragenic topoisomerase activity showed similar behaviors (\cref{fig:supp:intragenic_cross_correlation}). Finally, we found that while penalization of hypernegative supercoiling densities eliminated periodic behavior (\cref{fig:supp:energy_well_zinani_examples,fig:supp:energy_well_zinani_crosscorr,fig:supp:energy_well_zinani_correlation_coefficient,fig:supp:energy_well_zinani_oscillation_amplitude}), periodicity was maintained in the presence of nucleosome buffering (\cref{fig:supp:nucleosome_zinani_examples,fig:supp:nucleosome_zinani_crosscorr,fig:supp:nucleosome_zinani_correlation_coefficient,fig:supp:nucleosome_zinani_oscillation_amplitude}).
 Thus, we propose that supercoiling-mediated feedback offers a mechanism to support robust oscillations in the \textit{her1} and \textit{her7} network for proper somite formation. 
 
 
 \FloatBarrier
 \section{Discussion}
 %big picture resummary broad to specific
-Transcription induces significant variance in gene expression. At a single-cell level, individual genes are expressed stochastically, with most genes experiencing relatively long periods of quiescence punctuated by bursts of polymerase activity. Phenomenological models of this process based on stochastic probability distributions can provide some insights, but defining the mechanically-regulated physical factors that influence RNA polymerase dynamics  will improve existing models of gene regulation and support enhanced design of transgenic systems. Thus, we aimed to integrate a biophysical model of DNA supercoiling into RNA polymerase binding and transcription to examine how DNA supercoiling-mediated feedback influences patterns of gene expression in two-gene systems. Importantly, we sought to use this model to define a set of experimentally-testable predictions as well as lay the groundwork for future modeling across multigenic loci and circuits. 
+Transcription induces significant variance in gene expression. At a single-cell level, individual genes are expressed stochastically, with most genes experiencing relatively long periods of quiescence punctuated by bursts of polymerase activity. Phenomenological models of this process based on stochastic probability distributions can provide some insights, but defining the mechanically-regulated physical factors that influence RNA polymerase dynamics  will improve existing models of gene regulation and support enhanced design of transgenic systems.  Importantly, we sought to develop a model that would define a set of experimentally-testable predictions as well as lay the groundwork for future modeling across multigenic loci and circuits. 
  
 %what we did
-In this work, we developed a model of supercoiling-mediated feedback that captures emergent coupling between neighboring genes to influence expression levels as well as dynamics. This model allowed us to tractably compute polymerase activity at the scale of synthetic circuits (\cref{fig:top:orientation_bc_behavior}). Within supercoiling-mediated feedback, we included both supercoiling-dependent polymerase motion terms and supercoiling-dependent polymerase initiation terms. Importantly, this computational framework lays the groundwork for understanding how DNA supercoiling functions as a regulatory mechanism that can be integrated with canonical biochemical models of gene regulation. Using this model, we extracted insights into how mechanical and biochemical regulation combine to generate diverse profiles of expression and support or impede the performance of gene networks.
+In this work, we developed a model of supercoiling-mediated feedback that captures emergent coupling between neighboring genes to influence expression levels as well as dynamics. This model allowed us to tractably compute polymerase activity at the scale of synthetic circuits (\cref{fig:top:orientation_bc_behavior}). Within supercoiling-mediated feedback, we included both supercoiling-dependent polymerase motion terms and supercoiling-dependent polymerase initiation terms. This computational framework lays the groundwork for understanding how DNA supercoiling functions as a regulatory mechanism that can be integrated with canonical biochemical models of gene regulation. Using this model, we extracted insights into how mechanical and biochemical regulation combine to generate diverse profiles of expression and support or impede the performance of gene networks.
 
 %what we found..
 %[First sentence summarizes fig 3 and 4 then goes into supporting detail; need to discuss fit with existing literature modeling and/or relevant experimental systems]
 We find that induction of neighboring genes significantly influences the transcriptional activity of both genes (\cref{fig:top:orientation_bc_behavior}). Syntax-specific differences in DNA supercoiling dynamics, expression profiles, and noise emerge due to physical coupling. We find that such a system regulated by this biophysical coupling is responsive to expression level changes in adjacent genes, with both mean expression and population variance changing as a function of gene orientation (\cref{fig:top:single_cell_behavior}). The observed supercoiling-mediated feedback is itself dependent on inter-gene spacing, mRNA degradation rate, and other variables tunable in an experimental setting. Generally, accumulated negative supercoiling leads to correlated bursting, which occurs concomitant to a decrease in intrinsic noise. In contrast, accumulated positive supercoiling can lead to anti-correlated bursting, which instead enhances intrinsic noise. While the tandem syntax does not lead to large supercoiling accumulation in the intergenic region, we observe upstream dominance, where the upstream gene is more highly expressed than the downstream gene.
 
 Our prediction of burst dynamics (\cref{fig:top:bursts}) complements theoretical and experimental investigations of cooperative interactions of RNA polymerases arising from the beneficial cancellation of positive and negative supercoiling generated by adjacent polymerases \parencite{sevierCollectivePolymeraseDynamics2022,kimLongDistanceCooperativeAntagonistic2019}. We predict that syntax causes a two- to three-fold change in burst size (\cref{fig:burst_size_dynamics}), but can shift inter-burst time by an order of magnitude (\cref{fig:interburst_time_dynamics}). In addition, the syntax-specific trends in inter-burst time are not strongly affected by other potential mechanical regulators of eukaryotic chromatin---nucleosomes and strained structures such as R-loops---suggesting that syntax may robustly control gene expression through differences in burst dynamics.
-While we do not directly examine transcription elongation rates, we similarly predict syntax-specific differences in expression dynamics, but observe distinct syntax-specific behaviors in our model \parencite{sevierCollectivePolymeraseDynamics2022,tripathiDNASupercoilingmediatedCollective2021}.  We also find that intergenic distance only weakly affects supercoiling feedback \parencite{tripathiDNASupercoilingmediatedCollective2021}.
+While we do not directly examine transcription elongation rates, we similarly predict syntax-specific differences in expression dynamics but observe distinct syntax-specific behaviors in our model \parencite{sevierCollectivePolymeraseDynamics2022,tripathiDNASupercoilingmediatedCollective2021}.  We also find that intergenic distance only weakly affects supercoiling feedback \parencite{tripathiDNASupercoilingmediatedCollective2021}.
  In alignment with experimental work, we find that  positive supercoiling accumulates in the intergenic region of convergently-oriented native genes \parencite{guoHighresolutionGenomewideMapping2021}. When combined with sequencing methods that precisely measure nascent mRNA transcription \parencite{mellorInterleavedGenome2016}, these methods may provide a window into experimental systems in order to test theoretical predictions of our work and others.
 
 
 %reflections on circuit tuning
- The fast timescale of supercoiling-mediated feedback offers access to a uniquely tunable and orthogonal form of gene regulation. In contrast to regulatory mechanisms dependent on relatively long timescales, such as mRNA- and protein-mediated systems, supercoiling-mediated feedback occurs at the timescale of seconds. Polymerases can stall and unstall each other within seconds, while local polymerase loading rates can vary over the course of minutes. By combining the fast dynamic feedback with slower classic feedback mechanisms, circuit regulation can be selectively stabilized or destabilized. We found that specification of syntax within a simple two-gene toggle switch generated diverse behaviors including: a reasonably stable switch, a hypersensitive toggle with hysteresis, and an asymmetric system that preferentially decays towards a single target state (\cref{fig:top:toggle_switch}).
+ The fast timescale of supercoiling-mediated feedback offers access to a uniquely tunable and orthogonal form of gene regulation. In contrast to regulatory mechanisms dependent on relatively long timescales, such as mRNA- and protein-mediated systems, supercoiling-mediated feedback occurs at the timescale of seconds. Polymerases can stall and unstall each other within seconds, while local polymerase loading rates can vary over the course of minutes. By combining the fast dynamic feedback with slower classic feedback mechanisms, circuit regulation can be selectively stabilized or destabilized. We found that specification of syntax within a simple two-gene toggle switch generated diverse behaviors including a reasonably stable switch, a hypersensitive toggle with hysteresis, and an asymmetric system that preferentially decays towards a single target state (\cref{fig:top:toggle_switch}).
 As a rapid mechanism for coordinating transcriptional dynamics, supercoiling-dependent feedback may support intergenic coordination in native systems. Examining the zebrafish segmentation clock, we find that addition of supercoiling-mediated feedback recapitulates the synchronized, periodic expression of the clock genes, \textit{her1-her7} (\cref{fig:top:her1_her7}). 
 
 Our model integrates supercoiling-mediated biophysical feedback with classic gene regulation motifs that are well-studied in native and synthetic contexts. This unified framework brings us closer to an understanding of how supercoiling contributes to transcriptional regulation. We offer testable predictions about the performance of genetic circuits. The predicted changes in reporter output, supercoiling density, and burst dynamics observed in \cref{fig:top:orientation_bc_behavior,fig:top:single_cell_behavior,fig:top:bursts} are experimentally accessible with modern sequencing and single-cell imaging technology \parencite{guoHighresolutionGenomewideMapping2021,mellorInterleavedGenome2016,patelDNASupercoilingRestricts2022}. Experimental verification of our theoretical results will aid in constructing a mechanistic understanding of how transcription-induced supercoiling couples expression. Harnessing these insights will enable gene regulation at the level of transcription, providing a robust method to control expression dynamics, levels, and noise.
@@ -381,6 +368,14 @@ In deriving our model, we made several simplifying assumptions. Our derivation o
 
 %big take-home message (if they can only remember one what should they know and remind them why important; 3 sentence)
 
+\subsection{Acknowledgments}
+Research reported in this manuscript was supported by National Institute of General Medical Sciences of the National Institutes of Health under award number R35-GM143033. The authors acknowledge the MIT SuperCloud and Lincoln Laboratory Supercomputing Center \parencite{reutherInteractiveSupercomputing402018} for providing HPC resources that have contributed to the research results reported within this paper. We also thank Adam Beitz, Patrick Han,  Ross Jones, Sneha Kabaria, Brittany Lende, Kasey Love, Christian Otero, Emma Peterman, Jack Suggs, and Nathan Wang for helpful suggestions throughout and for their effort in editing this manuscript.
+
+\subsubsection{Author contributions}
+C.P.J. and K.E.G. conceptualized the work. C.J. developed the mathematical model, wrote the simulation and data analysis software, and visualized and synthesized results. K.G. supervised the project and acquired financial support for this project. C.P.J. and K.E.G. discussed results and reviewed and edited the manuscript.
+
+\subsubsection{Declaration of interests}
+The authors declare no competing interests.
 
 \section{STAR Methods}
 
@@ -490,7 +485,241 @@ The core ordinary differential equations were simulated using a Tsitouras's expl
 Normally, one implements stochastic simulations using a time-jumping method such as Gillespie's method. However, because the propensity of our stochastic events changes \emph{continuously} with the continuous simulation, we need a stochastic solver that can be applied within the continuous integrator loop. Here, we used \texttt{DifferentialEquations.jl}, a performant Julia package that allows layered differential and stochastic equations
 \parencite{rackauckasDifferentialEquationsJlPerformant2017}.
 
-Due to the stochastic nature of these simulations, we simulated ensembles of simulations, choosing an ensemble size that was large enough to show the desired population behavior. These simulations then were post-processed, by either taking the average over each ensemble or by directly showing population distributions, summarized by a kernel density estimate (smoothed histograms provided by the Python package \texttt{seaborn}). The specific meaning and ensemble size for each plot is summarized below.
+Due to the stochastic nature of these simulations, we simulated ensembles of simulations, choosing an ensemble size that was large enough to show the desired population behavior. These simulations then were post-processed, by either taking the average over each ensemble or by directly showing population distributions, summarized by a kernel density estimate (smoothed histograms provided by the Python package \texttt{seaborn}). The ensemble size for each plot is described in Supplemental Table 1.
+
+
+
+\FloatBarrier
+\subsubsection{Computing cross-correlation} \label{sec:supp:cross_correlation}
+We computed the cross-correlation between the gene outputs following induction (\cref{fig:cross_correlation_cartoon}), normalized by the geometric mean of the auto-correlation of these outputs.  Strong negative or positive peaks evenly spaced around \(\tau = 0\) is a hallmark of periodic behavior, with the time offset of the peak encoding the phase offset between the signals. For two signals \(f(t)\) and \(g(t)\), the normalized cross-correlation at a certain time offset \(\tau\) is bounded between \(\pm1\) and can be thought of as the correlation coefficient between the unshifted version of one of the signals (\(f(t)\)) and the other signal shifted in the time axis by \(\tau\) (\(g(t + \tau)\)). Mathematically, we use:
+\begin{equation}
+\text{cross-correlation}(\tau) = \frac{(f \star g)(\tau)}{\sqrt{(f \star f)(0) \cdot (g \star g)(0)}}
+\end{equation}
+for
+\begin{equation}
+    (f \star g)(\tau) = \sum_t (f(t) - \langle f(t)\rangle)(g(t+\tau) - \langle g(t)\rangle)
+\end{equation}
+In fact, for \(\tau = 0\), the cross-correlation of the two signals is exactly the Pearson correlation coefficient. The shape of the cross-correlation curve can also reveal periodic and other time-dependent correlative behaviors.
+
+\subsubsection{Burst threshold choice} \label{sec:supp:burst_threshold}
+We calculated burst size and inter-burst time by using a burst threshold. From polymerase initiation times, we calculate the time between successive polymerase additions. Intra-addition times greater than the burst threshold form the boundaries between different expression bursts. We define the burst size to be the number of polymerases included in a burst, and the inter-burst time to be those intra-polymerase-addition times greater than the burst threshold. For the main text, we used a burst threshold of 30 seconds; specifically, this means that bursts ended if 30 seconds passed without a new polymerase being added.
+
+In \cref{fig:burst_threshold_burst_size,fig:burst_threshold_interburst_time}, we reanalyze the data presented in \cref{fig:burst_size_dynamics,fig:interburst_time_dynamics} for different burst thresholds. We find that using a burst threshold of twenty or sixty seconds does not significantly affect the qualitative results observed. However, using a ten second burst threshold does dramatically shift the resulting burst size and inter-burst time distributions, with the inter-burst time distribution becoming concentrated around ten seconds. This indicates that a ten-second burst time is too short and incorrectly separates bursts.
+
+\subsubsection{Toggle-switch parameter selection} \label{sec:supp:choice_of_k}
+The half-max value \(K\), the mRNA count at which the promoter activity is half that of \(r_0\), is chosen here to approximately match the mean steady-state expression of the steady states. The mean steady-state value is identified using simulations where only one of the toggle switch genes is enabled; this allows us to directly account for the influence of supercoiling-mediated feedback on the steady state mRNA concentration. With this choice of \(K\), we ensure that the toggle switch operates in the regime of maximum sensitivity (e.g. the stable basin steady-state value is in the middle of the sigmoidal repression curve).
+
+ In \cref{fig:toggle_half_life_vs_mRNA_deg}, we tune the mRNA degradation rate, which directly impacts the mean steady-state value. If the mRNA degradation rate is doubled, we expect that the mean steady-state value should decrease to half its original value. To compare between these otherwise disparate conditions, we scaled the \(K\) value alongside the mRNA degradation rate, dividing by the fold increase in the mRNA degradation rate.
+
+
+\section{Supplemental movie captions}
+
+{\small \noindent \textbf{Supplemental Movie 1:} An annotated example convergent simulation is shown. The top left panel shows currently loaded polymerases with growing nascent mRNAs. The bottom left panel shows the current supercoiling density plot. The right panel shows the number of mRNAs as a trace through time. The reporter gene (colored) is enabled for the length of the simulation, whereas the adjacent gene is only induced after 2.8 hours.}
+
+{\small \noindent \textbf{Supplemental Movie 2:} An example simulation run is shown for the tandem upstream syntax. Upstream dominance, where the upstream gene has higher mean expression, is demonstrated.}
+
+{\small \noindent \textbf{Supplemental Movie 3:} An example simulation run is shown for the tandem downstream syntax. Upstream dominance is again demonstrated.}
+
+{\small \noindent \textbf{Supplemental Movie 4:} An example simulation run is shown for the divergent syntax. The divergent syntax demonstrates coordinated bursting.}
+
+\FloatBarrier
+
+
+\printbibliography
+
+\clearpage
+\appendix
+\titleformat{\subsection}[hang]{\bfseries}{\thesubsection}{0em}{\;\;}
+\renewcommand{\appendixpagename}{Supplemental information}
+% Reset supplemental figures to using S syntax.
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\theequation}{S\arabic{equation}}
+\setcounter{equation}{0}
+\setcounter{figure}{0}
+\appendixpage
+
+\section{Supplemental figures}
+\FloatBarrier
+
+
+\begin{figure}[htbp]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_supp_dynamics_details.pdf}
+    \phantomsubcaption\label{fig:supp:sc_density_induction}
+    \phantomsubcaption\label{fig:supp:fig_examples_ensemble_behavior}
+    \phantomsubcaption\label{fig:supp:sc_distributions_high_alpha_induction}
+    \phantomsubcaption\label{fig:burst_threshold_burst_size}
+    \phantomsubcaption\label{fig:burst_threshold_interburst_time}
+    }
+\end{figure}
+\begin{figure}[htbp]
+    \ContinuedFloat
+    \caption{Related to \cref{fig:top:orientation_bc_behavior,fig:top:single_cell_behavior,fig:top:bursts}.
+    \subref{fig:supp:sc_density_induction} Supercoiling density profiles are plotted for a wide range of adjacent gene induction levels across the four syntaxes considered. At low adjacent induction of the adjacent gene, positive and negative supercoiling mainly accumulates upstream and downstream, respectively, of the reporter gene. At 1-fold (equal base rates) induction, the supercoiling distributions are nearly symmetric in the convergent and divergent syntaxes. At high adjacent induction, the adjacent gene expression dominates the generated supercoiling profiles.
+    \subref{fig:supp:fig_examples_ensemble_behavior} The distribution of inducible and reporter mRNA counts are shown for the simulation ensembles presented in \cref{fig:top:single_cell_behavior}. The different initial starting condition does not affect the final distribution state when compared to \cref{fig:linear_bc_distributions}, indicating that the final state reached is independent of initial state.
+    \subref{fig:supp:sc_distributions_high_alpha_induction}The ensemble distribution of the four linear circuit syntaxes is shown for \(\alpha = 0.03\) and high induction of the adjacent gene (1.8 fold).
+    \subref{fig:burst_threshold_burst_size},\subref{fig:burst_threshold_interburst_time} Burst size and inter-burst time distributions are shown at equal-induction as a function of threshold time and circuit syntax. At the lowest threshold time, the burst size and inter-burst time distributions qualitatively differ, with only a small percentage of bursts having an inter-burst time larger than 20 seconds. This lack of larger inter-burst times suggests that a burst threshold of at least 20 seconds gives useful predictions.
+    }
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_supp_perturb_energy_well}
+    \phantomsubcaption\label{fig:supp:energy_well_sc_density}
+    \phantomsubcaption\label{fig:supp:energy_well_induction_sweep}
+    \phantomsubcaption\label{fig:supp:energy_well_joint_distribution}
+    \phantomsubcaption\label{fig:supp:energy_well_zinani_examples}
+    \phantomsubcaption\label{fig:supp:energy_well_zinani_crosscorr}
+    \phantomsubcaption\label{fig:supp:energy_well_zinani_correlation_coefficient}
+    \phantomsubcaption\label{fig:supp:energy_well_zinani_oscillation_amplitude}
+    }
+\end{figure}
+\begin{figure}
+    \ContinuedFloat
+    \caption{Related to \Cref{fig:top:orientation_bc_behavior,fig:top:bursts,fig:top:her1_her7}.
+        Simulation of an RNAP binding penalty at highly positive and negative supercoiling densities reduces syntax-specific differences and impedes transcriptional coupling between \textit{her1}and \textit{her7}.
+        \subref{fig:supp:energy_well_sc_density} The average supercoiling density for both the induced and induced case is shown. The average supercoiling density is smaller than observed in \cref{fig:sc_density,fig:supp:nucleosome_sc_density} due to the inhibition of polymerase initiation at extreme values of supercoiling density.
+        \subref{fig:supp:energy_well_induction_sweep} Reporter output as a function of adjacent gene induction and circuit syntax is shown for both circular and linear boundary conditions.
+        \subref{fig:supp:energy_well_joint_distribution} The population distribution is shown as a function of boundary condition and circuit syntax for the equally-induced case. The noise ratio of each is defined as the intrinsic noise (off-diagonal component) divided by the extrinsic noise (on-diagonal component).
+        \subref{fig:supp:energy_well_zinani_examples} Four example simulation traces of the zebrafish segmentation gene network are shown, for two topoisomerase conditions and the gene-unpaired and gene-paired orientations. No clear periodicity is observed.
+        \subref{fig:supp:energy_well_zinani_crosscorr} The ensemble cross-correlation for the zebrafish segmentation gene network is shown. In this restricted polymerase initiation case, strong periodicity is not observed.
+        \subref{fig:supp:energy_well_zinani_correlation_coefficient} The ensemble distribution of the correlation coefficient between \textit{her1} and \textit{her7} is shown. Restricting polymerase initiation eliminates \emph{her1}/\emph{her7} correlation, even in the gene-paired case.
+        \subref{fig:supp:energy_well_zinani_oscillation_amplitude} The ensemble oscillation amplitude is shown for each topoisomerase and gene pairing condition.
+    }
+    \label{fig:top:supp_perturb_energy_well}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_supp_perturb_nucleosomes}
+    \phantomsubcaption\label{fig:supp:nucleosome_sc_density}
+    \phantomsubcaption\label{fig:supp:nucleosome_induction_sweep}
+    \phantomsubcaption\label{fig:supp:nucleosome_joint_distribution}
+    \phantomsubcaption\label{fig:supp:nucleosome_zinani_examples}
+    \phantomsubcaption\label{fig:supp:nucleosome_zinani_crosscorr}
+    \phantomsubcaption\label{fig:supp:nucleosome_zinani_correlation_coefficient}
+    \phantomsubcaption\label{fig:supp:nucleosome_zinani_oscillation_amplitude}
+    }
+\end{figure}
+\begin{figure}
+    \ContinuedFloat
+    \caption{Related to \Cref{fig:top:orientation_bc_behavior,fig:top:bursts,fig:top:her1_her7}.
+        Nucleosome buffering of positive supercoiling displays weak effects on the expression profiles of two-gene systems at steady state and on the \textit{her1}-\textit{her7} somite network.
+        \subref{fig:supp:nucleosome_sc_density} The average supercoiling density for both the induced and induced case is shown.
+        \subref{fig:supp:nucleosome_induction_sweep} Reporter output as a function of adjacent gene induction and circuit syntax is shown for both circular and linear boundary conditions.
+        \subref{fig:supp:nucleosome_joint_distribution} The population distribution is shown as a function of boundary condition and circuit syntax for the equally-induced case. The noise ratio of each is defined as the intrinsic noise (off-diagonal component) divided by the extrinsic noise (on-diagonal component).
+        \subref{fig:supp:nucleosome_zinani_examples} Four example simulation traces of the zebrafish segmentation gene network are shown, for two topoisomerase conditions and the gene-unpaired and gene-paired orientations.
+        \subref{fig:supp:nucleosome_zinani_crosscorr} The ensemble cross-correlation for the zebrafish segmentation gene network with nucleosome buffering is shown. Robust periodicity in the gene-paired case remains in the presence of nucleosomes.
+        \subref{fig:supp:nucleosome_zinani_correlation_coefficient} The ensemble distribution of the correlation coefficient between \textit{her1} and \textit{her7} is shown. In the presence of nucleosomes, the gene-paired case has a significantly increased correlation coefficient.
+        \subref{fig:supp:nucleosome_zinani_oscillation_amplitude} The ensemble oscillation amplitude is shown for each topoisomerase and gene pairing condition.
+    }
+    \label{fig:top:supp_perturb_nucleosomes}
+\end{figure}
+
+
+\begin{figure}[htbp]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_supp_extra_toggles.pdf}
+    \phantomsubcaption\label{fig:supp_toggles_run_examples}
+    \phantomsubcaption\label{fig:supp_toggles_mean_sc_density}
+    \phantomsubcaption\label{fig:supp_toggles_interburst_time}
+    \phantomsubcaption\label{fig:supp:n1_toggle_distributions}
+    \phantomsubcaption\label{fig:supp:toggles_hill_n_sweep}
+    }
+    \caption{Related to \Cref{fig:top:toggle_switch}.
+        \subref{fig:supp_toggles_run_examples} Four example simulation runs for the toggle switches are placed in the four orientations. 
+        \subref{fig:supp_toggles_mean_sc_density} The mean ensemble supercoiling density is plotted for the four different circuit syntaxes.
+        \subref{fig:supp_toggles_interburst_time} The distribution of inter-burst times for the four different toggle switch architectures is shown.
+        \subref{fig:supp:n1_toggle_distributions} The ensemble mRNA count distributions are shown as a function of syntax at four selected time points for \(n = 1.0\). Even as early as 200 seconds after induction of the second gene, we see that the tandem-downstream and divergent syntaxes are quickly approaching their equilibrium ensemble distributions.
+        \subref{fig:supp:toggles_hill_n_sweep} The basin stability for the four toggle-switch architectures is shown explicitly as a function of Hill coefficient, \(n\).
+    }
+\end{figure}
+
+% ---- Zinani supplements ----
+\begin{figure}[htbp]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_supp_zinani.pdf}
+    \phantomsubcaption\label{fig:supp:zinani_matlab_mRNA}
+    \phantomsubcaption\label{fig:supp:zinani_matlab_cross_correlation}
+    \phantomsubcaption\label{fig:supp:zinani_matlab_correlation}
+    \phantomsubcaption\label{fig:supp:zinani_alpha_mRNA}
+    \phantomsubcaption\label{fig:supp:zinani_alpha_cross_correlation}
+    \phantomsubcaption\label{fig:supp:zinani_alpha_correlation}
+    \phantomsubcaption\label{fig:supp:zinani_alpha_oscillation_amplitude}
+    \phantomsubcaption\label{fig:supp:intragenic_zinani_examples}
+    \phantomsubcaption\label{fig:supp:intragenic_cross_correlation}
+    \phantomsubcaption\label{fig:supp:zinani_topo_correlation_coefficent}
+    \phantomsubcaption\label{fig:supp:zinani_topo_oscillation_amplitude}
+    }
+\end{figure}
+\begin{figure}[htbp]
+    \ContinuedFloat
+    \caption{Related to \Cref{fig:top:her1_her7}.
+       \subref{fig:supp:zinani_matlab_mRNA} Using the authors' MATLAB implementation of the model in \textcite{zinaniPairingSegmentationClock2021}, we simulated ensembles of 10,000 runs in order to compare to our simulation work. Unlike our implementation, which does not contain extra delays not due to polymerase motion and stalling, the original model uses a fixed mRNA production delay time of 9 minutes and a fixed protein production delay time of 1 minute. Example runs of the original model are shown. The transcript-coupled case shows correlated but relatively aperiodic behavior.
+        \subref{fig:supp:zinani_matlab_cross_correlation} The ensemble cross-correlation shows that the uncoupled and transcript coupled cases in the original model show very similar correlation structures, showing that both have similar amounts of periodicity in the original model.
+        \subref{fig:supp:zinani_matlab_correlation} Using Zinani's original MATLAB code, we computed the correlation coefficient distributions using both their original sampling method (far-left) and with the dataset resampled uniformly in time. The qualitative results between these two sampling methods remain the same, with the original sampling method slightly under-reporting \textit{her1}-\textit{her7} correlation due to its reliance on Gillespie-sampled timepoints. We further found that down-sampling the uniformly-sampled dataset did not noticeably change the correlation distributions.
+        Re-simulation of the \textit{her1-her7} system presented in \cref{fig:top:her1_her7} is shown for \(\alpha = 0.02\), a choice that occurs in the first regime of supercoiling-dependent initiation behavior. Strikingly, the strong correlated behavior seen in \cref{fig:top:her1_her7} is absent at this choice of \(\alpha\), suggesting that supercoiling-dependent initiation is an important phenomena in the synchronization of \textit{her1} and \textit{her7} activity.
+        \subref{fig:supp:zinani_alpha_mRNA} The number of \textit{her1} and \textit{her7} mRNAs are shown in the two different simulation contexts.
+        \subref{fig:supp:zinani_alpha_cross_correlation} For \(\alpha = 0.02\), the biophysically-coupled case no longer shows strong periodic behavior in the cross-correlation plots, instead showing similar asymmetric cross-correlation behavior.
+        \subref{fig:supp:zinani_alpha_correlation} In contrast to \cref{fig:zinani_correlation_coeff}, for \(\alpha = 0.02\), the gene paired system now shows a weaker correlated expression.
+        \subref{fig:supp:zinani_alpha_oscillation_amplitude} The mean oscillation amplitude is shown for the gene unpaired and gene paired cases. The gene paired case still shows an increase in average oscillation amplitude.
+        \subref{fig:supp:intragenic_zinani_examples} Example mRNA traces are shown for the zebrafish segmentation network with intragenic topoisomerase relaxation.
+        \subref{fig:supp:intragenic_cross_correlation} The cross correlation of clock gene expression is shown for intragenic topoisomerase relaxation.
+        \subref{fig:supp:zinani_topo_correlation_coefficent} The correlation coefficient between \textit{her1} \and \textit{her7} is shown, compared across the three different topoisomerase activity conditions.
+        \subref{fig:supp:zinani_topo_oscillation_amplitude} The size of oscillations is compared across the three different topoisomerase activity conditions.
+    }
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    {\includegraphics{figures/modeling_paper/fig_supp_hyper_torque.pdf}
+    \phantomsubcaption\label{fig:supp:torque_diagram}
+    \phantomsubcaption\label{fig:supp:energy_with_melting}
+    \phantomsubcaption\label{fig:hyperparam_drag_coeff}
+    \phantomsubcaption\label{fig:hyperparam_drag_exponent}
+    \phantomsubcaption\label{fig:hyperparam_stall_torque}
+    \phantomsubcaption\label{fig:hyperparam_stall_width}
+    }
+\end{figure}
+\begin{figure}[htbp]
+    \ContinuedFloat
+    \caption{Related to STAR Methods. Reporter output of two-gene circuits with linear boundary conditions (as in \cref{fig:top:orientation_bc_behavior}) demonstrates similar qualitative behavior when underlying model parameters are changed.
+        \subref{fig:supp:torque_diagram} The torque response predicted by Marko's model (\cref{eq:marko_torque}) exhibits phase behavior, with a transition occurring between a over- and under-twisted phase to a largely plectonemic phase. During the transition, the torque response is constant.
+        \subref{fig:supp:energy_with_melting} For the supercoiling-dependent initiation model, the energy that it takes to introduce supercoiling upstream and downstream by unwinding the DNA dominates the energy expression. Including a term representing the energy of local melting of the double helix at the location of the polymerase only gives a minor correction.
+        \subref{fig:hyperparam_drag_coeff} Varying the nascent mRNA drag coefficient from the chosen value \(\eta = 0.05\) rescales but does not dramatically change reporter output behavior. Larger drag coefficients increase generated supercoiling by introducing additional torque into the system.
+        \subref{fig:hyperparam_drag_exponent} Varying the exponent on the nascent mRNA length in the drag coefficient from the choice of linear drag \(\beta = 1.0\) also rescales but does not dramatically change reporter output behavior. Choices of \(\beta > 1.0\) tends to increase generated supercoiling due to longer nascent mRNAs having an increased drag profile.
+        \subref{fig:hyperparam_stall_torque} Varying the RNAP stall torque from the chosen \(\tau_s = 12\) pN nm has a minor effect on reporter output.
+        \subref{fig:hyperparam_stall_width} Varying the width of the stalling function from the chosen \(\tau_w = 3\) pN nm has no noticeable effect on reporter output.
+    }
+    \label{fig:top:supp_hyperparams}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    {\includegraphics[width=\textwidth]{figures/modeling_paper/fig_supp_alpha_sweep.pdf}
+    \phantomsubcaption\label{fig:supp:initation_order_comparison}
+    \phantomsubcaption\label{fig:supp:alpha_reporter_counts}
+    \phantomsubcaption\label{fig:supp_alpha_sweep_induction}
+    \phantomsubcaption\label{fig:supp_alpha_sweep_energy}
+    \phantomsubcaption\label{fig:supp_alpha_sweep_linear}
+    \phantomsubcaption\label{fig:supp_alpha_sweep_circular}
+    \phantomsubcaption\label{fig:supp_alpha_sweep_distribution}
+    }
+\end{figure}
+\begin{figure}[htbp]
+    \ContinuedFloat
+    \caption{Related to STAR Methods.
+    As the value of the quadratic energy correction coefficient \(\alpha\) varies, two regimes of supercoiling-dependent behaviors emerge.
+        \subref{fig:supp:initation_order_comparison} Reporter output is shown, normalized to the zero-fold induction case for the four tested syntaxes for the three different polymerase initiation models.
+        \subref{fig:supp:alpha_reporter_counts} For the second-order model, we chose the value of \(\alpha\) that defined the transition between regimes.
+        \subref{fig:supp_alpha_sweep_induction} For \(\alpha \leq 0.02\), supercoiling-dependent initiation appears to dominate, leading to both the maintenance of reporter output in the linear divergent case and near-equality of the convergent and divergent cases with circular boundary conditions. For \(\alpha \geq 0.025\), emergent non-monotonic behavior appears, leading to complex behaviors with linear boundary conditions and a separation between the response of the convergent and divergent syntaxes with circular boundary conditions.
+        \subref{fig:supp_alpha_sweep_energy} The additional polymerase binding energy as a function of supercoiling density is plotted for various values of \(\alpha\).
+        \subref{fig:supp_alpha_sweep_linear} \subref{fig:supp_alpha_sweep_circular} Reporter behavior of the four syntaxes under linear and circular boundary conditions are shown, in comparison to \cref{fig:bc_induction_sweep}.
+        \subref{fig:supp_alpha_sweep_distribution} The overall distribution of the four syntaxes as a function of alpha is shown, in comparison to \cref{fig:linear_bc_distributions}.
+    }
+    \label{fig:top:alpha_sweep}
+\end{figure}
+\FloatBarrier
 
 \begin{table}[h]
 \centering
@@ -527,30 +756,6 @@ The standard deviation of gene output for an ensemble of \(n\) simulations is sh
 \caption{Key ensemble size and interpretive description of each plot.}
 \end{table}
 
-\FloatBarrier
-\subsubsection{Computing cross-correlation} \label{sec:supp:cross_correlation}
-We computed the cross-correlation between the gene outputs following induction (\cref{fig:cross_correlation_cartoon}), normalized by the geometric mean of the auto-correlation of these outputs.  Strong negative or positive peaks evenly spaced around \(\tau = 0\) is a hallmark of periodic behavior, with the time offset of the peak encoding the phase offset between the signals. For two signals \(f(t)\) and \(g(t)\), the normalized cross-correlation at a certain time offset \(\tau\) is bounded between \(\pm1\) and can be thought of as the correlation coefficient between the unshifted version of one of the signals (\(f(t)\)) and the other signal shifted in the time axis by \(\tau\) (\(g(t + \tau)\)). Mathematically, we use:
-\begin{equation}
-\text{cross-correlation}(\tau) = \frac{(f \star g)(\tau)}{\sqrt{(f \star f)(0) \cdot (g \star g)(0)}}
-\end{equation}
-for
-\begin{equation}
-    (f \star g)(\tau) = \sum_t (f(t) - \langle f(t)\rangle)(g(t+\tau) - \langle g(t)\rangle)
-\end{equation}
-In fact, for \(\tau = 0\), the cross-correlation of the two signals is exactly the Pearson correlation coefficient. The shape of the cross-correlation curve can also reveal periodic and other time-dependent correlative behaviors.
-
-\subsubsection{Burst threshold choice} \label{sec:supp:burst_threshold}
-We calculated burst size and inter-burst time by using a burst threshold. From polymerase initiation times, we calculate the time between successive polymerase additions. Intra-addition times greater than the burst threshold form the boundaries between different expression bursts. We define the burst size to be the number of polymerases included in a burst, and the inter-burst time to be those intra-polymerase-addition times greater than the burst threshold. For the main text, we used a burst threshold of 30 seconds; specifically, this means that bursts ended if 30 seconds passed without a new polymerase being added.
-
-In \cref{fig:burst_threshold_burst_size,fig:burst_threshold_interburst_time}, we reanalyze the data presented in \cref{fig:burst_size_dynamics,fig:interburst_time_dynamics} for different burst thresholds. We find that using a burst threshold of twenty or sixty seconds does not significantly affect the qualitative results observed. However, using a ten second burst threshold does dramatically shift the resulting burst size and inter-burst time distributions, with the inter-burst time distribution becoming concentrated around ten seconds. This indicates that a ten-second burst time is too short and incorrectly separates bursts.
-
-\subsubsection{Toggle-switch parameter selection} \label{sec:supp:choice_of_k}
-The half-max value \(K\), the mRNA count at which the promoter activity is half that of \(r_0\), is chosen here to approximately match the mean steady-state expression of the steady states. The mean steady-state value is identified using simulations where only one of the toggle switch genes is enabled; this allows us to directly account for the influence of supercoiling-mediated feedback on the steady state mRNA concentration. With this choice of \(K\), we ensure that the toggle switch operates in the regime of maximum sensitivity (e.g. the stable basin steady-state value is in the middle of the sigmoidal repression curve).
-
- In \cref{fig:toggle_half_life_vs_mRNA_deg}, we tune the mRNA degradation rate, which directly impacts the mean steady-state value. If the mRNA degradation rate is doubled, we expect that the mean steady-state value should decrease to half its original value. To compare between these otherwise disparate conditions, we scaled the \(K\) value alongside the mRNA degradation rate, dividing by the fold increase in the mRNA degradation rate.
-
-\subsubsection{Relevant simulation parameters}
-
 \begin{table}[h]
 \centering
 \begin{tabular}{@{}lllll@{}}
@@ -565,7 +770,7 @@ Drag coefficient & Drag exponent & Stall torque & Stall width \\
 1/20 & 1 & 12 & 1\(\leftrightarrow\)5 & \Cref{fig:hyperparam_stall_width} \\
 \bottomrule
 \end{tabular}
-\caption{Key dynamic constants.}
+\caption{Key dynamic constants for all simulations.}
 \end{table}
 
 \begin{table}[h]
@@ -606,219 +811,6 @@ Gene-paired & 0, 34393 & 12422\(\rightarrow\)6017 & 24529\(\rightarrow\)25844 \\
 \caption{Simulated circuit locations and distances. Locations are all given in basepairs (with 0.34 nanometers per base pair). For the given genes, the first number given is the simulated promoter location and start of the gene body, and the second number is a simulated termination site.}
 \label{tab:supp:simulated_loc_distances}
 \end{table}
-
-\FloatBarrier
-\subsection{Acknowledgments}
-Research reported in this manuscript was supported by National Institute of General Medical Sciences of the National Institutes of Health under award number R35-GM143033. The authors acknowledge the MIT SuperCloud and Lincoln Laboratory Supercomputing Center \parencite{reutherInteractiveSupercomputing402018} for providing HPC resources that have contributed to the research results reported within this paper. We also thank Adam Beitz, Patrick Han,  Ross Jones, Sneha Kabaria, Brittany Lende, Kasey Love, Christian Otero, Emma Peterman, Jack Suggs, and Nathan Wang for helpful suggestions throughout and for their effort in editing this manuscript.
-
-\subsubsection{Author contributions}
-C.P.J. and K.E.G. conceptualized the work. C.J. developed the mathematical model, wrote the simulation and data analysis software, and visualized and synthesized results. K.G. supervised the project and acquired financial support for this project. C.P.J. and K.E.G. discussed results and reviewed and edited the manuscript.
-
-\subsubsection{Declaration of interests}
-The authors declare no competing interests.
-
-\printbibliography
-
-\clearpage
-\appendix
-\titleformat{\subsection}[hang]{\bfseries}{\thesubsection}{0em}{\;\;}
-\renewcommand{\appendixpagename}{Supplemental information}
-% Reset supplemental figures to using S syntax.
-\renewcommand{\thefigure}{S\arabic{figure}}
-\renewcommand{\theequation}{S\arabic{equation}}
-\setcounter{equation}{0}
-\setcounter{figure}{0}
-\appendixpage
-
-\section{Supplemental figures}
-\FloatBarrier
-\begin{figure}[htbp]
-    \centering
-    {\includegraphics{figures/modeling_paper/fig_supp_hyper_torque.pdf}
-    \phantomsubcaption\label{fig:supp:torque_diagram}
-    \phantomsubcaption\label{fig:supp:energy_with_melting}
-    \phantomsubcaption\label{fig:hyperparam_drag_coeff}
-    \phantomsubcaption\label{fig:hyperparam_drag_exponent}
-    \phantomsubcaption\label{fig:hyperparam_stall_torque}
-    \phantomsubcaption\label{fig:hyperparam_stall_width}
-    }
-\end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \caption{Related to \Cref{fig:key_variables_diagram,fig:top:orientation_bc_behavior}. Reporter output of two-gene circuits with linear boundary conditions (as in \cref{fig:top:orientation_bc_behavior}) demonstrates similar qualitative behavior when underlying model parameters are changed.
-        \subref{fig:supp:torque_diagram} The torque response predicted by Marko's model (\cref{eq:marko_torque}) exhibits phase behavior, with a transition occurring between a over- and under-twisted phase to a largely plectonemic phase. During the transition, the torque response is constant.
-        \subref{fig:supp:energy_with_melting} For the supercoiling-dependent initiation model, the energy that it takes to introduce supercoiling upstream and downstream by unwinding the DNA dominates the energy expression. Including a term representing the energy of local melting of the double helix at the location of the polymerase only gives a minor correction.
-        \subref{fig:hyperparam_drag_coeff} Varying the nascent mRNA drag coefficient from the chosen value \(\eta = 0.05\) rescales but does not dramatically change reporter output behavior. Larger drag coefficients increase generated supercoiling by introducing additional torque into the system.
-        \subref{fig:hyperparam_drag_exponent} Varying the exponent on the nascent mRNA length in the drag coefficient from the choice of linear drag \(\beta = 1.0\) also rescales but does not dramatically change reporter output behavior. Choices of \(\beta > 1.0\) tends to increase generated supercoiling due to longer nascent mRNAs having an increased drag profile.
-        \subref{fig:hyperparam_stall_torque} Varying the RNAP stall torque from the chosen \(\tau_s = 12\) pN nm has a minor effect on reporter output.
-        \subref{fig:hyperparam_stall_width} Varying the width of the stalling function from the chosen \(\tau_w = 3\) pN nm has no noticeable effect on reporter output.
-    }
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    {\includegraphics[width=\textwidth]{figures/modeling_paper/fig_supp_alpha_sweep.pdf}
-    \phantomsubcaption\label{fig:supp:initation_order_comparison}
-    \phantomsubcaption\label{fig:supp:alpha_reporter_counts}
-    \phantomsubcaption\label{fig:supp_alpha_sweep_induction}
-    \phantomsubcaption\label{fig:supp_alpha_sweep_energy}
-    \phantomsubcaption\label{fig:supp_alpha_sweep_linear}
-    \phantomsubcaption\label{fig:supp_alpha_sweep_circular}
-    \phantomsubcaption\label{fig:supp_alpha_sweep_distribution}
-    }
-\end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \caption{Related to \Cref{fig:top:orientation_bc_behavior}.
-    As the value of the quadratic energy correction coefficient \(\alpha\) varies, two regimes of supercoiling-dependent behaviors emerge.
-        \subref{fig:supp:initation_order_comparison} Reporter output is shown, normalized to the zero-fold induction case for the four tested syntaxes for the three different polymerase initiation models.
-        \subref{fig:supp:alpha_reporter_counts} For the second-order model, we chose the value of \(\alpha\) that defined the transition between regimes.
-        \subref{fig:supp_alpha_sweep_induction} For \(\alpha \leq 0.02\), supercoiling-dependent initiation appears to dominate, leading to both the maintenance of reporter output in the linear divergent case and near-equality of the convergent and divergent cases with circular boundary conditions. For \(\alpha \geq 0.025\), emergent non-monotonic behavior appears, leading to complex behaviors with linear boundary conditions and a separation between the response of the convergent and divergent syntaxes with circular boundary conditions.
-        \subref{fig:supp_alpha_sweep_energy} The additional polymerase binding energy as a function of supercoiling density is plotted for various values of \(\alpha\).
-        \subref{fig:supp_alpha_sweep_linear} \subref{fig:supp_alpha_sweep_circular} Reporter behavior of the four syntaxes under linear and circular boundary conditions are shown, in comparison to \cref{fig:bc_induction_sweep}.
-        \subref{fig:supp_alpha_sweep_distribution} The overall distribution of the four syntaxes as a function of alpha is shown, in comparison to \cref{fig:linear_bc_distributions}.
-    }
-    \label{fig:top:alpha_sweep}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    {\includegraphics{figures/modeling_paper/fig_supp_dynamics_details.pdf}
-    \phantomsubcaption\label{fig:supp:sc_density_induction}
-    \phantomsubcaption\label{fig:supp:fig_examples_ensemble_behavior}
-    \phantomsubcaption\label{fig:supp:sc_distributions_high_alpha_induction}
-    \phantomsubcaption\label{fig:burst_threshold_burst_size}
-    \phantomsubcaption\label{fig:burst_threshold_interburst_time}
-    }
-\end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \caption{Related to \cref{fig:top:single_cell_behavior,fig:top:bursts}.
-    \subref{fig:supp:sc_density_induction} Supercoiling density profiles are plotted for a wide range of adjacent gene induction levels across the four syntaxes considered. At low adjacent induction of the adjacent gene, positive and negative supercoiling mainly accumulates upstream and downstream, respectively, of the reporter gene. At 1-fold (equal base rates) induction, the supercoiling distributions are nearly symmetric in the convergent and divergent syntaxes. At high adjacent induction, the adjacent gene expression dominates the generated supercoiling profiles.
-    \subref{fig:supp:fig_examples_ensemble_behavior} The distribution of inducible and reporter mRNA counts are shown for the simulation ensembles presented in \cref{fig:top:single_cell_behavior}. The different initial starting condition does not affect the final distribution state when compared to \cref{fig:linear_bc_distributions}, indicating that the final state reached is independent of initial state.
-    \subref{fig:supp:sc_distributions_high_alpha_induction}The ensemble distribution of the four linear circuit syntaxes is shown for \(\alpha = 0.03\) and high induction of the adjacent gene (1.8 fold).
-    \subref{fig:burst_threshold_burst_size},\subref{fig:burst_threshold_interburst_time} Burst size and inter-burst time distributions are shown at equal-induction as a function of threshold time and circuit syntax. At the lowest threshold time, the burst size and inter-burst time distributions qualitatively differ, with only a small percentage of bursts having an inter-burst time larger than 20 seconds. This lack of larger inter-burst times suggests that a burst threshold of at least 20 seconds gives useful predictions.
-    }
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    {\includegraphics{figures/modeling_paper/fig_supp_perturb_energy_well}
-    \phantomsubcaption\label{fig:supp:energy_well_sc_density}
-    \phantomsubcaption\label{fig:supp:energy_well_induction_sweep}
-    \phantomsubcaption\label{fig:supp:energy_well_joint_distribution}
-    \phantomsubcaption\label{fig:supp:energy_well_zinani_examples}
-    \phantomsubcaption\label{fig:supp:energy_well_zinani_crosscorr}
-    \phantomsubcaption\label{fig:supp:energy_well_zinani_correlation_coefficient}
-    \phantomsubcaption\label{fig:supp:energy_well_zinani_oscillation_amplitude}
-    }
-\end{figure}
-\begin{figure}
-    \ContinuedFloat
-    \caption{Related to \Cref{fig:top:orientation_bc_behavior,fig:top:bursts,fig:top:her1_her7}.
-        Simulation of RNAP binding penalty at highly positive and negative supercoiling densities reduces syntax-specific differences and impedes transcriptional coupling between \textit{her1}and \textit{her7}.
-        \subref{fig:supp:energy_well_sc_density} The average supercoiling density for both the induced and induced case is shown. The average supercoiling density is smaller than observed in \cref{fig:sc_density,fig:supp:nucleosome_sc_density} due to the inhibition of polymerase initiation at extreme values of supercoiling density.
-        \subref{fig:supp:energy_well_induction_sweep} Reporter output as a function of adjacent gene induction and circuit syntax is shown for both circular and linear boundary conditions.
-        \subref{fig:supp:energy_well_joint_distribution} The population distribution is shown as a function of boundary condition and circuit syntax for the equally-induced case. The noise ratio of each is defined as the intrinsic noise (off-diagonal component) divided by the extrinsic noise (on-diagonal component).
-        \subref{fig:supp:energy_well_zinani_examples} Four example simulation traces of the zebrafish segmentation gene network are shown, for two topoisomerase conditions and the gene-unpaired and gene-paired orientations. No clear periodicity is observed.
-        \subref{fig:supp:energy_well_zinani_crosscorr} The ensemble cross-correlation for the zebrafish segmentation gene network is shown. In this restricted polymerase initiation case, strong periodicity is not observed.
-        \subref{fig:supp:energy_well_zinani_correlation_coefficient} The ensemble distribution of the correlation coefficient between \textit{her1} and \textit{her7} is shown. Restricting polymerase initiation eliminates \emph{her1}/\emph{her7} correlation, even in the gene-paired case.
-        \subref{fig:supp:energy_well_zinani_oscillation_amplitude} The ensemble oscillation amplitude is shown for each topoisomerase and gene pairing condition.
-    }
-    \label{fig:top:supp_perturb_energy_well}
-\end{figure}
-
-\begin{figure}[htbp]
-    \centering
-    {\includegraphics{figures/modeling_paper/fig_supp_perturb_nucleosomes}
-    \phantomsubcaption\label{fig:supp:nucleosome_sc_density}
-    \phantomsubcaption\label{fig:supp:nucleosome_induction_sweep}
-    \phantomsubcaption\label{fig:supp:nucleosome_joint_distribution}
-    \phantomsubcaption\label{fig:supp:nucleosome_zinani_examples}
-    \phantomsubcaption\label{fig:supp:nucleosome_zinani_crosscorr}
-    \phantomsubcaption\label{fig:supp:nucleosome_zinani_correlation_coefficient}
-    \phantomsubcaption\label{fig:supp:nucleosome_zinani_oscillation_amplitude}
-    }
-\end{figure}
-\begin{figure}
-    \ContinuedFloat
-    \caption{Related to \Cref{fig:top:orientation_bc_behavior,fig:top:bursts,fig:top:her1_her7}.
-        Nucleosome buffering of positive supercoiling displays weak effect on expression profile of two-gene systems at steady state and on the \textit{her1}-\textit{her7} somite network.
-        \subref{fig:supp:nucleosome_sc_density} The average supercoiling density for both the induced and induced case is shown.
-        \subref{fig:supp:nucleosome_induction_sweep} Reporter output as a function of adjacent gene induction and circuit syntax is shown for both circular and linear boundary conditions.
-        \subref{fig:supp:nucleosome_joint_distribution} The population distribution is shown as a function of boundary condition and circuit syntax for the equally-induced case. The noise ratio of each is defined as the intrinsic noise (off-diagonal component) divided by the extrinsic noise (on-diagonal component).
-        \subref{fig:supp:nucleosome_zinani_examples} Four example simulation traces of the zebrafish segmentation gene network are shown, for two topoisomerase conditions and the gene-unpaired and gene-paired orientations.
-        \subref{fig:supp:nucleosome_zinani_crosscorr} The ensemble cross-correlation for the zebrafish segmentation gene network with nucleosome buffering is shown. Robust periodicity in the gene-paired case remains in the presence of nucleosomes.
-        \subref{fig:supp:nucleosome_zinani_correlation_coefficient} The ensemble distribution of the correlation coefficient between \textit{her1} and \textit{her7} is shown. In the presence of nucleosomes, the gene-paired case has a significantly increased correlation coefficient.
-        \subref{fig:supp:nucleosome_zinani_oscillation_amplitude} The ensemble oscillation amplitude is shown for each topoisomerase and gene pairing condition.
-    }
-    \label{fig:top:supp_perturb_nucleosomes}
-\end{figure}
-
-
-\begin{figure}[htbp]
-    \centering
-    {\includegraphics{figures/modeling_paper/fig_supp_extra_toggles.pdf}
-    \phantomsubcaption\label{fig:supp_toggles_run_examples}
-    \phantomsubcaption\label{fig:supp_toggles_mean_sc_density}
-    \phantomsubcaption\label{fig:supp_toggles_interburst_time}
-    \phantomsubcaption\label{fig:supp:n1_toggle_distributions}
-    \phantomsubcaption\label{fig:supp:toggles_hill_n_sweep}
-    }
-    \caption{Related to \Cref{fig:top:toggle_switch}.
-        \subref{fig:supp_toggles_run_examples} Four example simulation runs for the toggle switches are placed in the four orientations. 
-        \subref{fig:supp_toggles_mean_sc_density} The mean ensemble supercoiling density is plotted for the four different circuit syntaxes.
-        \subref{fig:supp_toggles_interburst_time} The distribution of inter-burst times for the four different toggle switch architectures is shown.
-        \subref{fig:supp:n1_toggle_distributions} The ensemble mRNA count distributions are shown as a function of syntax at four selected time points for \(n = 1.0\). Even as early as 200 seconds after induction of the second gene, we see that the tandem-downstream and divergent syntaxes are quickly approaching their equilibrium ensemble distributions.
-        \subref{fig:supp:toggles_hill_n_sweep} The basin stability for the four toggle-switch architectures is shown explicitly as a function of hill coefficient, \(n\).
-    }
-\end{figure}
-
-% ---- Zinani supplements ----
-\begin{figure}[htbp]
-    \centering
-    {\includegraphics{figures/modeling_paper/fig_supp_zinani.pdf}
-    \phantomsubcaption\label{fig:supp:zinani_matlab_mRNA}
-    \phantomsubcaption\label{fig:supp:zinani_matlab_cross_correlation}
-    \phantomsubcaption\label{fig:supp:zinani_matlab_correlation}
-    \phantomsubcaption\label{fig:supp:zinani_alpha_mRNA}
-    \phantomsubcaption\label{fig:supp:zinani_alpha_cross_correlation}
-    \phantomsubcaption\label{fig:supp:zinani_alpha_correlation}
-    \phantomsubcaption\label{fig:supp:zinani_alpha_oscillation_amplitude}
-    \phantomsubcaption\label{fig:supp:intragenic_zinani_examples}
-    \phantomsubcaption\label{fig:supp:intragenic_cross_correlation}
-    \phantomsubcaption\label{fig:supp:zinani_topo_correlation_coefficent}
-    \phantomsubcaption\label{fig:supp:zinani_topo_oscillation_amplitude}
-    }
-\end{figure}
-\begin{figure}[htbp]
-    \ContinuedFloat
-    \caption{Related to \Cref{fig:top:her1_her7}.
-       \subref{fig:supp:zinani_matlab_mRNA} Using the authors' MATLAB implementation of the model in \textcite{zinaniPairingSegmentationClock2021}, we simulated ensembles of 10,000 runs in order to compare to our simulation work. Unlike our implementation, which does not contain extra delays not due to polymerase motion and stalling, the original model uses a fixed mRNA production delay time of 9 minutes and a fixed protein production delay time of 1 minute. Example runs of the original model are shown. The transcript-coupled case shows correlated but relatively aperiodic behavior.
-        \subref{fig:supp:zinani_matlab_cross_correlation} The ensemble cross-correlation shows that the uncoupled and transcript coupled cases in the original model show very similar correlation structures, showing that both have similar amounts of periodicity in the original model.
-        \subref{fig:supp:zinani_matlab_correlation} Using Zinani's original MATLAB code, we computed the correlation coefficient distributions using both their original sampling method (far-left) and with the dataset resampled uniformly in time. The qualitative results between these two sampling methods remain the same, with the original sampling method slightly under-reporting \textit{her1}-\textit{her7} correlation due to its reliance on Gillespie-sampled timepoints. We further found that down-sampling the uniformly-sampled dataset did not noticeably change the correlation distributions.
-        Re-simulation of the \textit{her1-her7} system presented in \cref{fig:top:her1_her7} is shown for \(\alpha = 0.02\), a choice that occurs in the first regime of supercoiling-dependent initiation behavior. Strikingly, the strong correlated behavior seen in \cref{fig:top:her1_her7} is absent at this choice of \(\alpha\), suggesting that supercoiling-dependent initiation is an important phenomena in the synchronization of \textit{her1} and \textit{her7} activity.
-        \subref{fig:supp:zinani_alpha_mRNA} The number of \textit{her1} and \textit{her7} mRNAs are shown in the two different simulation contexts.
-        \subref{fig:supp:zinani_alpha_cross_correlation} For \(\alpha = 0.02\), the biophysically-coupled case no longer shows strong periodic behavior in the cross-correlation plots, instead showing similar asymmetric cross-correlation behavior.
-        \subref{fig:supp:zinani_alpha_correlation} In contrast to \cref{fig:zinani_correlation_coeff}, for \(\alpha = 0.02\), the gene paired system now shows a weaker correlated expression.
-        \subref{fig:supp:zinani_alpha_oscillation_amplitude} The mean oscillation amplitude is shown for the gene unpaired and gene paired cases. The gene paired case still shows an increase in average oscillation amplitude.
-        \subref{fig:supp:intragenic_zinani_examples} Example mRNA traces are shown for the zebrafish segmentation network with intragenic topoisomerase relaxation.
-        \subref{fig:supp:intragenic_cross_correlation} The cross correlation of clock gene expression is shown for intragenic topoisomerase relaxation.
-        \subref{fig:supp:zinani_topo_correlation_coefficent} The correlation coefficient between \textit{her1} \and \textit{her7} is shown, compared across the three different topoisomerase activity conditions.
-        \subref{fig:supp:zinani_topo_oscillation_amplitude} The size of oscillations is compared across the three different topoisomerase activity conditions.
-    }
-\end{figure}
-
-
-\FloatBarrier
-
-{\small \noindent \textbf{Supplemental Movie 1:} An annotated example convergent simulation is shown. The top left panel shows currently loaded polymerases with growing nascent mRNAs. The bottom left panel shows the current supercoiling density plot. The right panel shows the number of mRNAs as a trace through time. The reporter gene (colored) is enabled for the length of the simulation, whereas the adjacent gene is only induced after 2.8 hours.}
-
-{\small \noindent \textbf{Supplemental Movie 2:} An example simulation run is shown for the tandem upstream syntax. Upstream dominance, where the upstream gene has higher mean expression, is demonstrated.}
-
-{\small \noindent \textbf{Supplemental Movie 3:} An example simulation run is shown for the tandem downstream syntax. Upstream dominance is again demonstrated.}
-
-{\small \noindent \textbf{Supplemental Movie 4:} An example simulation run is shown for the divergent syntax. The divergent syntax demonstrates coordinated bursting.}
 
 \FloatBarrier
 \section{Model design and derivation}
