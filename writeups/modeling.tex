@@ -146,7 +146,7 @@ As RNA polymerases move along chromatin, positive supercoiling is generated ahea
         \subref{fig:circular_bc_distributions} Gene expression distributions of circular-boundary-condition simulations are shown, where the adjacent induced gene is equally induced relative to the reporter gene. For each of the four syntaxes, the expression variance can be decomposed into intrinsic and extrinsic noise components; the ratio of intrinsic to extrinsic noise is shown on the right. Reporter output is normalized by dividing mRNA counts by a constant value (10 mRNAs).
         \subref{fig:linear_bc_distributions} Gene expression distributions and the intrinsic to extrinsic noise ratios are shown for linear boundary conditions. Reporter output is normalized by dividing counts by a constant value (250 mRNAs).
         \subref{fig:base_model_sc_density} The mean supercoiling density of linear constructs are shown as a function of induction of the inducible gene. Induction (colored line) displays syntax-specific behavior compared to the uninduced case (dashed line).
-        \subref{fig:reporter_output_by_spacing_fold_induction} Reporter output is shown as a function of intergene spacing (\(\Delta x\)) at five different induction levels. Reporter output is normalized by dividing mRNA counts by a constant value (250 mRNAs).
+        \subref{fig:reporter_output_by_spacing_fold_induction} Reporter output is shown as a function of intergene spacing (\(\Delta x\)) at five different induction levels. Reporter output is normalized by dividing mRNA counts by a constant value (250 mRNAs). See also \Cref{fig:top:supp_dynamics_details}.
     } \label{fig:top:orientation_bc_behavior}
 \end{figure}
 
@@ -186,6 +186,7 @@ Supercoiling density determines both supercoiling-dependent initiation and polym
         \subref{fig:orientation_cross_correlation} The cross-correlation between the two genes is shown for the equal-induction case across the four syntaxes. The convergent and divergent syntaxes showed the strongest cross-correlation, with the convergent case showing periodic behavior and the divergent case showing strong correlated expression.
         \subref{fig:output_distribution_by_orientation_dynamics} Distributions of the reporter output before \textit{(dotted)} and after \textit{(solid)} induction of the adjacent gene show changes in both the mean and standard deviation due to adjacent expression.
         \subref{fig:noise_by_orientation} Ensemble noise behavior for the four simulated syntaxes is shown by plotting the standard deviation of the reporter gene across the ensemble of simulations as a function of time.
+        See also \Cref{fig:top:supp_dynamics_details}.
     }
     \label{fig:top:single_cell_behavior}
 \end{figure}
@@ -219,6 +220,7 @@ As noise impacts the properties of native and synthetic gene networks, we quanti
         \subref{fig:burst_time_cartoon} Bursts are defined as a group of consecutive polymerase loading events. The size of a burst is defined as the number of loaded polymerases, whereas inter-burst time is defined as the gap between successive bursts.
         \subref{fig:burst_size_dynamics} The ensemble distribution of burst size is shown for the different orientations for each of the polymerase conditions.
         \subref{fig:interburst_time_dynamics} The ensemble distribution of inter-burst time is shown for the different orientations for each of the polymerase conditions.
+        See also \Cref{fig:top:supp_dynamics_details,fig:top:supp_perturb_energy_well,fig:top:supp_perturb_nucleosomes}
     }
     \label{fig:top:bursts}
 \end{figure}
@@ -264,6 +266,7 @@ Taken as a whole, syntax provides a powerful design parameter for inducing and t
     \subref{fig:toggle_stable_frac_n_2.0} The stability, measured as the percentage of simulations in the ensemble that have never escaped the initial starting basin, of the four starting states of the system plotted as a function of time. 
     \subref{fig:toggle_burst_size} Expression burst size distributions of the initially-active gene A are plotted as a function of circuit syntax. 
     \subref{fig:toggle_half_life_vs_mRNA_deg} The half life at different values of the mRNA degradation rate are shown. As the mRNA degradation rate principally sets the average number of mRNA molecules, high degradation rates lead to systems with low overall mRNA concentration and concordant stochastic instability.
+    See also \Cref{fig:top:supp_toggles}
 } \label{fig:top:toggle_switch}
 \end{figure}
 
@@ -538,7 +541,7 @@ The half-max value \(K\), the mRNA count at which the promoter activity is half 
 \setcounter{figure}{0}
 \appendixpage
 
-\section{Supplemental figures}
+\section{Supplemental figures and tables}
 \FloatBarrier
 
 
@@ -560,6 +563,7 @@ The half-max value \(K\), the mRNA count at which the promoter activity is half 
     \subref{fig:supp:sc_distributions_high_alpha_induction}The ensemble distribution of the four linear circuit syntaxes is shown for \(\alpha = 0.03\) and high induction of the adjacent gene (1.8 fold).
     \subref{fig:burst_threshold_burst_size},\subref{fig:burst_threshold_interburst_time} Burst size and inter-burst time distributions are shown at equal-induction as a function of threshold time and circuit syntax. At the lowest threshold time, the burst size and inter-burst time distributions qualitatively differ, with only a small percentage of bursts having an inter-burst time larger than 20 seconds. This lack of larger inter-burst times suggests that a burst threshold of at least 20 seconds gives useful predictions.
     }
+    \label{fig:top:supp_dynamics_details}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -633,6 +637,7 @@ The half-max value \(K\), the mRNA count at which the promoter activity is half 
         \subref{fig:supp:n1_toggle_distributions} The ensemble mRNA count distributions are shown as a function of syntax at four selected time points for \(n = 1.0\). Even as early as 200 seconds after induction of the second gene, we see that the tandem-downstream and divergent syntaxes are quickly approaching their equilibrium ensemble distributions.
         \subref{fig:supp:toggles_hill_n_sweep} The basin stability for the four toggle-switch architectures is shown explicitly as a function of Hill coefficient, \(n\).
     }
+    \label{fig:top:supp_toggles}
 \end{figure}
 
 % ---- Zinani supplements ----
@@ -658,16 +663,17 @@ The half-max value \(K\), the mRNA count at which the promoter activity is half 
        \subref{fig:supp:zinani_matlab_mRNA} Using the authors' MATLAB implementation of the model in \textcite{zinaniPairingSegmentationClock2021}, we simulated ensembles of 10,000 runs in order to compare to our simulation work. Unlike our implementation, which does not contain extra delays not due to polymerase motion and stalling, the original model uses a fixed mRNA production delay time of 9 minutes and a fixed protein production delay time of 1 minute. Example runs of the original model are shown. The transcript-coupled case shows correlated but relatively aperiodic behavior.
         \subref{fig:supp:zinani_matlab_cross_correlation} The ensemble cross-correlation shows that the uncoupled and transcript coupled cases in the original model show very similar correlation structures, showing that both have similar amounts of periodicity in the original model.
         \subref{fig:supp:zinani_matlab_correlation} Using Zinani's original MATLAB code, we computed the correlation coefficient distributions using both their original sampling method (far-left) and with the dataset resampled uniformly in time. The qualitative results between these two sampling methods remain the same, with the original sampling method slightly under-reporting \textit{her1}-\textit{her7} correlation due to its reliance on Gillespie-sampled timepoints. We further found that down-sampling the uniformly-sampled dataset did not noticeably change the correlation distributions.
-        Re-simulation of the \textit{her1-her7} system presented in \cref{fig:top:her1_her7} is shown for \(\alpha = 0.02\), a choice that occurs in the first regime of supercoiling-dependent initiation behavior. Strikingly, the strong correlated behavior seen in \cref{fig:top:her1_her7} is absent at this choice of \(\alpha\), suggesting that supercoiling-dependent initiation is an important phenomena in the synchronization of \textit{her1} and \textit{her7} activity.
+        \subref{fig:supp:zinani_alpha_mRNA}-\subref{fig:supp:zinani_alpha_correlation} Re-simulation of the \textit{her1-her7} system presented in \cref{fig:top:her1_her7} is shown for \(\alpha = 0.02\), a choice that occurs in the first regime of supercoiling-dependent initiation behavior. Strikingly, the strong correlated behavior seen in \cref{fig:top:her1_her7} is absent at this choice of \(\alpha\), suggesting that supercoiling-dependent initiation is an important phenomena in the synchronization of \textit{her1} and \textit{her7} activity.
         \subref{fig:supp:zinani_alpha_mRNA} The number of \textit{her1} and \textit{her7} mRNAs are shown in the two different simulation contexts.
         \subref{fig:supp:zinani_alpha_cross_correlation} For \(\alpha = 0.02\), the biophysically-coupled case no longer shows strong periodic behavior in the cross-correlation plots, instead showing similar asymmetric cross-correlation behavior.
         \subref{fig:supp:zinani_alpha_correlation} In contrast to \cref{fig:zinani_correlation_coeff}, for \(\alpha = 0.02\), the gene paired system now shows a weaker correlated expression.
-        \subref{fig:supp:zinani_alpha_oscillation_amplitude} The mean oscillation amplitude is shown for the gene unpaired and gene paired cases. The gene paired case still shows an increase in average oscillation amplitude.
+        \subref{fig:supp:zinani_alpha_oscillation_amplitude} The mean oscillation amplitude is shown for the gene unpaired and gene paired cases with intragenic topoisomerase relaxation. The gene paired case still shows an increase in average oscillation amplitude.
         \subref{fig:supp:intragenic_zinani_examples} Example mRNA traces are shown for the zebrafish segmentation network with intragenic topoisomerase relaxation.
         \subref{fig:supp:intragenic_cross_correlation} The cross correlation of clock gene expression is shown for intragenic topoisomerase relaxation.
         \subref{fig:supp:zinani_topo_correlation_coefficent} The correlation coefficient between \textit{her1} \and \textit{her7} is shown, compared across the three different topoisomerase activity conditions.
         \subref{fig:supp:zinani_topo_oscillation_amplitude} The size of oscillations is compared across the three different topoisomerase activity conditions.
     }
+    \label{fig:top:supp_zinani}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -779,10 +785,11 @@ Drag coefficient & Drag exponent & Stall torque & Stall width \\
 \toprule
 Type & Boundary locations & Reporter gene & Inducible gene & Figures \\
 \midrule
-Upstream tandem & 0, 10000 &  3000\(\rightarrow\)4000 & 6000\(\rightarrow\)7000 & \multirow{4}{3cm}{\Cref{fig:bc_induction_sweep,fig:circular_bc_distributions,fig:linear_bc_distributions,fig:base_model_sc_density,fig:top:single_cell_behavior,fig:top:bursts,fig:supp:initation_order_comparison,fig:hyperparam_drag_coeff,fig:hyperparam_drag_exponent,fig:hyperparam_stall_torque,fig:hyperparam_stall_width,fig:top:alpha_sweep,fig:supp:sc_density_induction,fig:supp:sc_distributions_high_alpha_induction,fig:supp:fig_examples_ensemble_behavior,fig:burst_threshold_burst_size,fig:burst_threshold_interburst_time,fig:supp:energy_well_sc_density,fig:supp:energy_well_induction_sweep,fig:supp:energy_well_joint_distribution,fig:supp:nucleosome_sc_density,fig:supp:nucleosome_induction_sweep,fig:supp:nucleosome_joint_distribution}}\\
+Upstream tandem & 0, 10000 &  3000\(\rightarrow\)4000 & 6000\(\rightarrow\)7000 & \multirow{5}{3cm}{\Cref{fig:bc_induction_sweep,fig:circular_bc_distributions,fig:linear_bc_distributions,fig:base_model_sc_density,fig:top:single_cell_behavior,fig:top:bursts,fig:supp:initation_order_comparison,fig:hyperparam_drag_coeff,fig:hyperparam_drag_exponent,fig:hyperparam_stall_torque,fig:hyperparam_stall_width,fig:top:alpha_sweep,fig:supp:sc_density_induction,fig:supp:sc_distributions_high_alpha_induction,fig:supp:fig_examples_ensemble_behavior,fig:burst_threshold_burst_size,fig:burst_threshold_interburst_time,fig:supp:energy_well_sc_density,fig:supp:energy_well_induction_sweep,fig:supp:energy_well_joint_distribution,fig:supp:nucleosome_sc_density,fig:supp:nucleosome_induction_sweep,fig:supp:nucleosome_joint_distribution}}\\
 Downstream tandem & 0, 10000 &  6000\(\rightarrow\)7000 & 3000\(\rightarrow\)4000 \\
 Convergent & 0, 10000 & 7000\(\rightarrow\)6000 & 3000\(\rightarrow\)4000 \\
 Divergent & 0, 10000 & 6000\(\rightarrow\)7000 & 4000\(\rightarrow\)3000 \\
+\\
 \midrule
 Type & Boundary locations & Reporter gene & Inducible gene & Figures \\
 \midrule
@@ -813,7 +820,7 @@ Gene-paired & 0, 34393 & 12422\(\rightarrow\)6017 & 24529\(\rightarrow\)25844 \\
 \end{table}
 
 \FloatBarrier
-\section{Model design and derivation}
+\section{Supplemental text}
 \label{sec:appendix:model}
 Our model builds upon several prior papers and relevant mathematical frameworks. To ensure access and provide definitions needed for implementation of our model, we have aggregated all of these relevant equations and simulation constants together. From this foundation, we discuss how we have extended our model to examine how DNA supercoiling generates coupling between proximal genes.
 
