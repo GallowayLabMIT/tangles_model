@@ -1,7 +1,12 @@
 # Supercoiling-mediated feedback rapidly couples and tunes transcription
-[<img src="https://img.shields.io/badge/doi-10.1101/2022.04.20.488937-blue">](https://doi.org/10.1101/2022.04.20.488937)
 [<img src="https://img.shields.io/badge/code_license-MIT-green">](./LICENSE)
-[<img src="https://img.shields.io/badge/text_license-CC--BY--SA--NC--4.0-green">](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[<img src="https://img.shields.io/badge/text_license-CC--BY--4.0-green">](https://creativecommons.org/licenses/by/4.0/)
+
+| Item          | DOI           |
+| ------------- |:-------------:|
+| Article (preprint)       | [![Article DOI](https://img.shields.io/badge/Article_DOI-10.1101/2022.04.20.488937-green)](https://doi.org/10.1101/2022.04.20.488937)     |
+| Software (this repository)      | [![Software DOI](https://img.shields.io/badge/Software_DOI-10.5281/zenodo.7054395-blue)](https://doi.org/10.5281/zenodo.7054395)                                                              |
+| Dataset for article figures     | [![Dataset DOI](https://img.shields.io/badge/Dataset_DOI-10.5281/zenodo.7041641-blue)](https://doi.org/10.5281/zenodo.7041641)     |
 
 Included in this repo is complete code to:
 1. Simulate gene expression under the control of supercoiling for any user-defined circuits.
@@ -189,7 +194,7 @@ There is a three-step pipeline for simulating results and generating the figures
 2. Merge datasets together from multiple workers.
 3. Pre-process and generate figures!
 
-If you don't want to regenerate the data yourself, you can download the the raw, Julia-combined dataset and post-processed datasets from [here](https://nextcloud.meson.us/index.php/s/nPeowqMAKLrETgB). Once fully published, we will move the datasets to permanent hosting on Zenodo.
+If you don't want to regenerate the data yourself, you can download the the raw, Julia-combined dataset (`unprocessed_datasets.zip`, 15.1GB)  and post-processed datasets (`preprocessed_datasets.zip`, 2.8GB) from [Zenodo](https://doi.org/10.5281/zenodo.7041641). You can unzip both the unprocessed and post-processed datasets into your data directory folder; they should not be in subdirectories.
 
 After downloading the dataset or regenerating it, you can move to [setting a data directory](#setting-a-data-directory) and [replicating figures](#replicating-figures). In any case,
 you will need to perform the Python dependency installation steps in the [code check](#install-and-code-check) section. If you are also
@@ -253,7 +258,11 @@ src/merge_hyperparameters.py
 We use [rushd](https://github.com/GallowayLabMIT/rushd) to keep our data analysis tidy. Part of this is specifying
 a *data directory*, potentially on another drive or outside of this repository, as the raw simulation data is several gigabytes.
 After you decide where to put the data locally, create a file called `datadir.txt` that contains only the absolute path to the folder
-in which you placed the data.
+in which you placed the data. For example, if you placed the data at `D:/tangles_data`, e.g. in this folder you have the unzipped `.h5` (unprocessed) or `.gzip` (processed) files , then your `datadir.txt` file should contain one line:
+
+```
+D:/tangles_data
+```
 
 ## Replicating figures
 With the datadir in place, you should be able to replicate our figures. Run the Jupyter notebook at `notebooks/modeling_paper_figures.ipynb` to replicate the figure results.
@@ -266,7 +275,7 @@ version of the Adobe Illustrator files. to create the final version.
 Don't have access to Adobe products? Just rename the `.ai`'s in `writeups/figures/modeling_paper` to `.pdf`'s and it should be importable.
 
 ## License and reuse
-Until (non-preprint) publication, all figures and text (e.g. content within the `writeups` subfolder) are licensed under [CC-BY-SA-NC-4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+All figures and text (e.g. content within the `writeups` subfolder) are licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).
 All figure generating code and simulation code are licensed under the [MIT license](./LICENSE).
 
 ## Why is it called "TANGLES model"?

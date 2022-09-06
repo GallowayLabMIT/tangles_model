@@ -1,21 +1,35 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
 cff-version: 1.2.0
 title: >-
-  Supercoiling-mediated feedback rapidly couples and
-  tunes transcription
-type: article
-doi: 10.1101/2022.04.20.488937
-journal: bioRxiv
-date-released: 2022-04-20
-year: 2022
+  Software for Supercoiling-mediated feedback rapidly
+  couples and tunes transcription.
+message: >-
+  If you use this software, preferably cite the paper
+  "Supercoiling-mediated feedback rapidly couples and
+  tunes transcription" instead of this repository. If
+  you make a derivative work of this software, you
+  can cite it using the metadata from this file.
+type: software
 authors:
-  - given-names: Christopher
+  - given-names: Christopher P.
     family-names: Johnstone
     email: cjohnsto@mit.edu
-    affiliation: Massachusetts Institute of Technology
+    affiliation: 'Department of Chemical Engineering, MIT'
     orcid: 'https://orcid.org/0000-0002-7255-0218'
-  - given-names: Kate
-    name-particle: E
+  - given-names: Kate E.
     family-names: Galloway
     email: katiegal@mit.edu
-    affiliation: Massachusetts Institute of Technology
+    affiliation: 'Department of Chemical Engineering, MIT'
     orcid: 'https://orcid.org/0000-0001-7416-3193'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7054394
+    description: Software DOI
+  - type: doi
+    value: 10.5281/zenodo.CHANGEME
+    description: Accompanying dataset
+repository-code: 'https://github.com/GallowayLabMIT/tangles_model'
+license: MIT
+
