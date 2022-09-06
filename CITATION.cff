@@ -28,7 +28,7 @@ identifiers:
     value: 10.5281/zenodo.7054394
     description: Software DOI
   - type: doi
-    value: 10.5281/zenodo.CHANGEME
+    value: 10.5281/zenodo.7041641
     description: Accompanying dataset
 repository-code: 'https://github.com/GallowayLabMIT/tangles_model'
 license: MIT
