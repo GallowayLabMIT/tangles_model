@@ -10,8 +10,8 @@
 
 Included in this repo is complete code to:
 1. Simulate gene expression under the control of supercoiling for any user-defined circuits.
-2. Regenerate simulation data for the preprint.
-3. Regenerate all figures from simulation data for the preprint.
+2. Regenerate simulation data for the paper.
+3. Regenerate all figures from simulation data for the paper.
 
 If you'd like to simulate your own gene circuits, continue reading! If you just want to replicate the paper results, jump to [Replicating paper results](#replicating-paper-results). Instead of regenerating the data using the Julia scripts, you may want to [download](https://doi.org/10.5281/zenodo.7041641) the already-generated datasets used in generating all figures including in this paper.
 
