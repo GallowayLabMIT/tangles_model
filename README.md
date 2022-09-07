@@ -13,7 +13,7 @@ Included in this repo is complete code to:
 2. Regenerate simulation data for the preprint.
 3. Regenerate all figures from simulation data for the preprint.
 
-If you'd like to simulate your own gene circuits, continue reading! If you just want to replicate the paper results, jump to [Replicating paper results](#replicating-paper-results). Instead of regenerating the data using the Julia scripts, you may want to [download](https://nextcloud.meson.us/index.php/s/nPeowqMAKLrETgB) the already-generated datasets used in generating all figures including in this paper.
+If you'd like to simulate your own gene circuits, continue reading! If you just want to replicate the paper results, jump to [Replicating paper results](#replicating-paper-results). Instead of regenerating the data using the Julia scripts, you may want to [download](https://doi.org/10.5281/zenodo.7041641) the already-generated datasets used in generating all figures including in this paper.
 
 ## Simulating your own gene networks
 The full model described in our work is mostly contained within [TanglesModel.jl](src/TanglesModel.jl), a Julia implementation.
@@ -67,7 +67,44 @@ sim_params = SimulationParameters(
         0.025    # alpha
     )
 ```
-However, all other parameters could be changed as well
+However, all other parameters could be changed as well.
+
+#### Specifying RNA polymerase binding, torque-response, or topoisomerase perturbations
+To support additional model tweaks, it is possible to change the RNA polymerase binding curve and the torque-response curve.
+For detailed examples on how to use these, look at `src/simulate_fig_energy_perturbations.jl` and `src/simulate_fig_zinani_topo_perturbations.jl`
+
+Changes can be encoded by passing three additional parameters to the `SimulationParameters` constructor than listed above.
+The first extra parameter is the topisomerase activity type. The major ones used in the paper are:
+- `NoTopoisomerase()`: the default, where no topoisomerase relaxation occurs
+- `IntragenicTopoisomerase()`: relax the intragenic region between genes
+- `IntergenicTopoisomerase()`: relax the intergenic region within genes
+
+The second extra parameter is the torque perturbation type. It can take values:
+- `NoTorqueFunctionPerturbation()`: the default, uses the normal torque function.
+- `PositiveSupercoilingBuffering(bufferingAmount)`: extends the torque-response curve with a zero-torque region for $0 <= \sigma <= \text{bufferingAmount}$, useful for simulating nucleosomes.
+
+The third extra parameter is the RNAP initation pertubation type. It can take values:
+- `NoRNAPInitPerturbation()`: the default, uses the normal RNAP initiation energy curve.
+- `RNAPInitEnergyWell(leftEdge, rightEdge)`: prevents polymerases from binding in the region $\text{leftEdge} <= \sigma <= \text{rightEdge}$.
+
+You may add your own perturbations to override torque function behavior, but will have to edit the `TanglesModel.jl` file with the desired behavior.
+
+An example of setting up a SimulationParams with nucleosomes, an RNAP initation energy well, and topoisomerase activity would look like:
+```
+sim_params = SimulationParameters(
+        DEFAULT_SIM_PARAMS.mRNA_params,
+        DEFAULT_SIM_PARAMS.RNAP_params,
+        DEFAULT_SIM_PARAMS.DNA_params,
+        DEFAULT_SIM_PARAMS.temperature,
+        DEFAULT_SIM_PARAMS.topoisomerase_rate,
+        DEFAULT_SIM_PARAMS.mRNA_degradation_rate,
+        true,     # Supercoiling dependence
+        0.025,    # alpha
+        IntragenicTopoisomerase(),
+        PositiveSupercoilingBuffering(0.031),
+        RNAPInitEnergyWell(-0.06,0.125)
+    )
+```
 
 #### Boundary conditions
 Two types of boundary conditions can be created. Circular boundary conditions are created via:
